@@ -1,7 +1,7 @@
 <?php
 /**
  * HERO BANNER SLIDER & TRUST BADGES - ALICE COSMETIC (LUXURY ROSE PASTEL)
- * Tự động xoay vòng 5s (5000ms) liên tục, chiều cao cố định đồng bộ & hình ảnh giới hạn kích thước gọn gàng
+ * Tự động xoay vòng 5s (5000ms) liên tục, chiều cao cố định đồng bộ, hình ảnh gọn gàng & giao diện sạch thoáng
  */
 $banners = !empty($activeBanners) ? $activeBanners : [];
 ?>
@@ -163,7 +163,7 @@ $banners = !empty($activeBanners) ? $activeBanners : [];
         color: #635b6b;
     }
 
-    /* ĐIỀU HƯỚNG MŨI TÊN & CHẤM TRÒN */
+    /* ĐIỀU HƯỚNG MŨI TÊN (SANG TRỌNG & TINH TẾ) */
     #heroBannerCarousel .hero-nav-btn {
         width: 42px;
         height: 42px;
@@ -184,45 +184,6 @@ $banners = !empty($activeBanners) ? $activeBanners : [];
         opacity: 1;
         transform: translateY(-50%) scale(1.08);
     }
-    /* Capsule hiển thị chấm tròn tinh tế bên trong Banner */
-    #heroBannerCarousel .hero-indicators-wrap {
-        position: absolute;
-        bottom: 14px !important;
-        left: 50%;
-        transform: translateX(-50%);
-        margin: 0 !important;
-        padding: 4px 12px;
-        background: rgba(255, 255, 255, 0.78);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 204, 218, 0.7);
-        border-radius: 999px;
-        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
-        z-index: 10;
-        gap: 6px;
-        width: auto;
-        display: inline-flex;
-        align-items: center;
-    }
-    #heroBannerCarousel .hero-indicator-dot {
-        width: 7px !important;
-        height: 7px !important;
-        border-radius: 50% !important;
-        background: #fcc2d2 !important;
-        border: none !important;
-        padding: 0;
-        transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
-        opacity: 0.75 !important;
-        cursor: pointer;
-    }
-    #heroBannerCarousel .hero-indicator-dot.active {
-        width: 22px !important;
-        height: 7px !important;
-        border-radius: 999px !important;
-        background: linear-gradient(90deg, #ff4081, #ff6b8b) !important;
-        opacity: 1 !important;
-        box-shadow: 0 2px 6px rgba(255, 64, 129, 0.35);
-    }
 
     /* RESPONSIVE TRÊN DI ĐỘNG */
     @media (max-width: 991.98px) {
@@ -242,10 +203,6 @@ $banners = !empty($activeBanners) ? $activeBanners : [];
         #heroBannerCarousel .hero-img-showcase {
             height: 180px;
             max-height: 180px;
-        }
-        #heroBannerCarousel .hero-indicators-wrap {
-            bottom: 10px !important;
-            padding: 3px 10px;
         }
     }
     </style>
@@ -362,19 +319,6 @@ $banners = !empty($activeBanners) ? $activeBanners : [];
                     <button class="carousel-control-next hero-nav-btn next-btn" type="button" data-bs-target="#heroBannerCarousel" data-bs-slide="next" aria-label="Slide tiếp theo" style="right: 12px;">
                         <i class="fa-solid fa-chevron-right"></i>
                     </button>
-
-                    <!-- Indicators with Expanding Smooth Active Pill -->
-                    <div class="carousel-indicators hero-indicators-wrap">
-                        <?php foreach ($banners as $idx => $b): ?>
-                            <button type="button" 
-                                    data-bs-target="#heroBannerCarousel" 
-                                    data-bs-slide-to="<?= $idx ?>" 
-                                    class="hero-indicator-dot <?= $idx === 0 ? 'active' : '' ?>" 
-                                    aria-current="<?= $idx === 0 ? 'true' : 'false' ?>" 
-                                    aria-label="Chuyển đến banner <?= $idx + 1 ?>">
-                            </button>
-                        <?php endforeach; ?>
-                    </div>
                 <?php endif; ?>
             </div>
         <?php else: ?>
@@ -386,7 +330,7 @@ $banners = !empty($activeBanners) ? $activeBanners : [];
         <?php endif; ?>
 
         <!-- Trust Badges Bar (Luxe Style) -->
-        <div class="trust-badges-bar mt-3 pt-2">
+        <div class="trust-badges-bar mt-4 pt-2">
             <div class="row g-3">
                 <div class="col-6 col-md-3">
                     <div class="trust-item">

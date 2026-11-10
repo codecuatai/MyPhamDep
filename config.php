@@ -6,7 +6,7 @@
  */
 
 define('APP_NAME', 'ALICE Cosmetic');
-define('APP_VERSION', '2.3.0');
+define('APP_VERSION', '2.4.0');
 
 // Cấu hình Google OAuth 2.0 (Google Identity Services)
 // Nhập Client ID lấy từ https://console.cloud.google.com/apis/credentials
