@@ -135,18 +135,12 @@ $isAdmin = ($currentUser && ($currentUser['role'] ?? '') === 'admin');
                 <p class="text-muted small mb-0"><?= htmlspecialchars($shopConfig['shop_name']) ?></p>
             </div>
 
-            <div class="alert alert-info py-2 px-3 small text-start mb-4 border-0 rounded-3" style="background: #eef2ff; color: #3730a3;">
-                <i class="fa-solid fa-circle-info me-1"></i> <strong>Tài khoản mặc định:</strong><br>
-                • Email: <code>admin@alicecosmetic.vn</code><br>
-                • Mật khẩu: <code>Admin@123</code>
-            </div>
-
             <form id="formAdminLogin" onsubmit="AdminApp.handleLogin(event)">
                 <div class="mb-3 text-start">
                     <label class="form-label small fw-semibold text-secondary">Email Quản Trị</label>
                     <div class="input-group">
                         <span class="input-group-text bg-light border-end-0"><i class="fa-regular fa-envelope text-muted"></i></span>
-                        <input type="email" id="adminEmail" class="form-control border-start-0" value="admin@alicecosmetic.vn" required placeholder="admin@alicecosmetic.vn">
+                        <input type="email" id="adminEmail" class="form-control border-start-0" required placeholder="admin@alicecosmetic.vn">
                     </div>
                 </div>
 
@@ -154,7 +148,7 @@ $isAdmin = ($currentUser && ($currentUser['role'] ?? '') === 'admin');
                     <label class="form-label small fw-semibold text-secondary">Mật Khẩu Quản Trị</label>
                     <div class="input-group">
                         <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-lock text-muted"></i></span>
-                        <input type="password" id="adminPassword" class="form-control border-start-0" value="Admin@123" required placeholder="Nhập mật khẩu...">
+                        <input type="password" id="adminPassword" class="form-control border-start-0" required placeholder="Nhập mật khẩu...">
                     </div>
                 </div>
 
