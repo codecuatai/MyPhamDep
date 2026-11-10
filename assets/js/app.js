@@ -1151,7 +1151,8 @@ const AliceApp = {
         // 2. NẾU LÀ FACEBOOK VÀ ĐÃ CÓ FACEBOOK_APP_ID
         if (!isGoogle && window.FACEBOOK_APP_ID && window.FACEBOOK_APP_ID.trim() !== '') {
             const appId = window.FACEBOOK_APP_ID.trim();
-            const redirectUri = window.location.origin + window.location.pathname;
+            // Chuẩn hóa redirectUri luôn có dấu / ở cuối theo chuẩn Meta
+            const redirectUri = window.location.origin.replace(/\/+$/, '') + '/';
             const fbOAuthUrl = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${encodeURIComponent(appId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=public_profile,email`;
 
             const redirectToFacebook = () => {
