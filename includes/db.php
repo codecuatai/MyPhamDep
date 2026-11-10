@@ -120,7 +120,7 @@ function initDatabaseTables(PDO $pdo) {
         `value` TEXT
     )");
 
-    // 7. Bảng Users (Hệ thống thành viên Đăng ký / Đăng nhập)
+    // 7. Bảng Users (Hệ thống thành viên Đăng ký / Đăng nhập & Phân quyền)
     $pdo->exec("CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         fullname VARCHAR(150) NOT NULL,
@@ -128,8 +128,16 @@ function initDatabaseTables(PDO $pdo) {
         phone VARCHAR(50),
         password VARCHAR(255) NOT NULL,
         avatar TEXT,
+        role VARCHAR(20) DEFAULT 'customer',
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )");
+
+    // Đảm bảo cột role tồn tại nếu DB đã tạo từ trước
+    try {
+        $pdo->exec("ALTER TABLE users ADD COLUMN role VARCHAR(20) DEFAULT 'customer'");
+    } catch (Exception $e) {
+        // Cột đã tồn tại, bỏ qua
+    }
 
     // 8. Bảng User Carts (Đồng bộ giỏ hàng cá nhân đa thiết bị)
     $pdo->exec("CREATE TABLE IF NOT EXISTS user_carts (
@@ -139,16 +147,30 @@ function initDatabaseTables(PDO $pdo) {
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )");
 
-    // Tự động thêm tài khoản mẫu nếu chưa có user nào
+    // Tự động thêm tài khoản khách hàng mẫu nếu chưa có user nào
     $userCount = $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
     if ($userCount == 0) {
-        $stmtUser = $pdo->prepare("INSERT INTO users (fullname, email, phone, password, avatar) VALUES (?, ?, ?, ?, ?)");
+        $stmtUser = $pdo->prepare("INSERT INTO users (fullname, email, phone, password, avatar, role) VALUES (?, ?, ?, ?, ?, 'customer')");
         $stmtUser->execute([
             'Ngọc Linh',
             'ngoclinh@gmail.com',
             '0987654321',
             password_hash('123456', PASSWORD_DEFAULT),
             'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80'
+        ]);
+    }
+
+    // Tự động khởi tạo tài khoản Quản Trị Viên (Admin)
+    $adminCheck = $pdo->prepare("SELECT id FROM users WHERE email = ? LIMIT 1");
+    $adminCheck->execute(['admin@alicecosmetic.vn']);
+    if (!$adminCheck->fetch()) {
+        $adminStmt = $pdo->prepare("INSERT INTO users (fullname, email, phone, password, avatar, role) VALUES (?, ?, ?, ?, ?, 'admin')");
+        $adminStmt->execute([
+            'Quản Trị Viên ALICE',
+            'admin@alicecosmetic.vn',
+            '0869571734',
+            password_hash('Admin@123', PASSWORD_DEFAULT),
+            'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&q=80'
         ]);
     }
 

@@ -881,10 +881,17 @@ const AliceApp = {
         const btnLogin = document.getElementById('btn-header-login');
         const dropLogged = document.getElementById('dropdown-user-logged');
         const mobileLabel = document.getElementById('mobile-nav-user-label');
+        const adminLink = document.getElementById('dropdown-admin-link');
 
         if (this.currentUser) {
             if (btnLogin) btnLogin.style.display = 'none';
             if (dropLogged) dropLogged.style.display = 'block';
+
+            if (this.currentUser.role === 'admin') {
+                if (adminLink) adminLink.style.display = 'block';
+            } else {
+                if (adminLink) adminLink.style.display = 'none';
+            }
 
             const nameEl = document.getElementById('header-user-name');
             const avatarEl = document.getElementById('header-user-avatar');

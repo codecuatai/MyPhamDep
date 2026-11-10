@@ -76,6 +76,10 @@
             </div>
             <div class="col-md-6 text-center text-md-end">
                 <span>Hệ thống bán hàng mỹ phẩm tự động hóa & Thanh toán VietQR</span>
+                <span class="mx-2">•</span>
+                <a href="admin.php" class="text-decoration-none text-muted" title="Cổng Quản Trị Hệ Thống">
+                    <i class="fa-solid fa-user-shield me-1"></i>Quản Trị
+                </a>
             </div>
         </div>
     </div>

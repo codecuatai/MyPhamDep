@@ -10,8 +10,9 @@ header('Content-Type: application/json; charset=utf-8');
 
 $pdo = getDbConnection();
 
-$code = strtoupper(trim($_GET['code'] ?? ''));
-$subtotal = (float)($_GET['subtotal'] ?? 0);
+$input = json_decode(file_get_contents('php://input'), true) ?: $_POST;
+$code = strtoupper(trim($input['code'] ?? ($_GET['code'] ?? '')));
+$subtotal = (float)($input['subtotal'] ?? ($_GET['subtotal'] ?? 0));
 
 if (empty($code)) {
     jsonResponse(['success' => false, 'message' => 'Vui lòng nhập mã giảm giá!'], 400);

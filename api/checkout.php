@@ -26,10 +26,18 @@ $address        = cleanInput($input['address'] ?? '');
 $note           = cleanInput($input['note'] ?? '');
 $paymentMethod  = cleanInput($input['payment_method'] ?? 'vietqr');
 $couponCode     = cleanInput($input['coupon_code'] ?? '');
+$items          = $input['items'] ?? ($input['cart'] ?? []);
 $totalAmount    = (float)($input['total_amount'] ?? 0);
 $discountAmount = (float)($input['discount_amount'] ?? 0);
-$finalAmount    = (float)($input['final_amount'] ?? ($totalAmount - $discountAmount));
-$items          = $input['items'] ?? [];
+
+if ($totalAmount <= 0 && !empty($items)) {
+    foreach ($items as $it) {
+        $price = (float)($it['price'] ?? 0);
+        $qty = (int)($it['quantity'] ?? 1);
+        $totalAmount += $price * $qty;
+    }
+}
+$finalAmount    = (float)($input['final_amount'] ?? max(0, $totalAmount - $discountAmount));
 
 if (empty($customerName) || empty($phone) || empty($address)) {
     jsonResponse(['success' => false, 'message' => 'Vui lòng điền đầy đủ Họ tên, Số điện thoại và Địa chỉ nhận hàng!'], 400);
@@ -134,6 +142,7 @@ jsonResponse([
     'final_amount' => $finalAmount,
     'final_amount_formatted' => formatVND($finalAmount),
     'payment_method' => $paymentMethod,
+    'vietqr_url' => $vietqrData ? $vietqrData['qr_image_url'] : null,
     'vietqr' => $vietqrData,
     'synced_to_sheets' => $syncSuccess
 ]);

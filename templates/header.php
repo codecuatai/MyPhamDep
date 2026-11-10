@@ -88,6 +88,11 @@
                                         <i class="fa-solid fa-receipt me-2 text-danger"></i>Đơn mua của tôi
                                     </a>
                                 </li>
+                                <li id="dropdown-admin-link" style="display: none;">
+                                    <a class="dropdown-item small py-2 rounded-3 text-dark fw-bold" href="admin.php" style="background: #fff0f5; color: #ff4d8d !important;">
+                                        <i class="fa-solid fa-gauge-high me-2 text-danger"></i>Quản Trị Hệ Thống
+                                    </a>
+                                </li>
                                 <li><hr class="dropdown-divider my-1"></li>
                                 <li>
                                     <a class="dropdown-item small py-2 rounded-3 text-danger font-bold" href="javascript:void(0)" onclick="AliceApp.logout()">

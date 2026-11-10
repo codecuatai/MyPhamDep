@@ -106,6 +106,7 @@ if ($action === 'register') {
             'email' => $email,
             'phone' => $phone,
             'avatar' => $defaultAvatar,
+            'role' => 'customer',
             'created_at' => date('Y-m-d H:i:s')
         ];
 
@@ -165,6 +166,7 @@ if ($action === 'oauth') {
             'email' => $email,
             'phone' => '',
             'avatar' => $avatar,
+            'role' => 'customer',
             'created_at' => date('Y-m-d H:i:s')
         ];
 
@@ -275,6 +277,7 @@ if ($action === 'google_login') {
             'email' => $email,
             'phone' => '',
             'avatar' => $avatar,
+            'role' => 'customer',
             'created_at' => date('Y-m-d H:i:s')
         ];
 
