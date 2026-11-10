@@ -57,27 +57,45 @@ jobs:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY || secrets.HEROKU_TOKEN || secrets.HEROKU_APIKEY }}
           HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME || vars.HEROKU_APP_NAME || secrets.HEROKU_APP }}
         run: |
-          MISSING=0
+          # 1. Kiểm tra tồn tại của biến môi trường
           if [ -z "$HEROKU_API_KEY" ]; then
-            echo "::error title=Thiếu HEROKU_API_KEY::Không tìm thấy HEROKU_API_KEY trong GitHub Secrets. Hãy kiểm tra tên biến trong Settings -> Secrets and variables -> Actions."
-            MISSING=1
-          fi
-
-          if [ -z "$HEROKU_APP_NAME" ]; then
-            echo "::error title=Thiếu HEROKU_APP_NAME::Không tìm thấy HEROKU_APP_NAME trong GitHub Secrets hoặc Variables."
-            MISSING=1
-          fi
-
-          if [ $MISSING -eq 1 ]; then
+            echo "::error title=Thiếu HEROKU_API_KEY::Không tìm thấy HEROKU_API_KEY trong GitHub Secrets!"
             exit 1
           fi
 
-          echo "✅ Đã tìm thấy cấu hình Heroku App: $HEROKU_APP_NAME"
+          if [ -z "$HEROKU_APP_NAME" ]; then
+            echo "::error title=Thiếu HEROKU_APP_NAME::Không tìm thấy HEROKU_APP_NAME trong GitHub Secrets hoặc Variables!"
+            exit 1
+          fi
 
+          echo "🔍 Đang xác thực thông tin với Heroku API..."
+          echo "🎯 Heroku App Name: $HEROKU_APP_NAME"
+
+          # 2. Pre-flight check: Kiểm tra API Key và Tên App trực tiếp qua Heroku API
+          HTTP_STATUS=$(curl -s -o heroku_api_check.json -w "%{http_code}" \
+            -H "Accept: application/vnd.heroku+json; version=3" \
+            -H "Authorization: Bearer $HEROKU_API_KEY" \
+            "https://api.heroku.com/apps/$HEROKU_APP_NAME")
+
+          echo "Mã phản hồi từ Heroku API: $HTTP_STATUS"
+
+          if [ "$HTTP_STATUS" -eq 401 ]; then
+            echo "::error title=Lỗi xác thực Heroku (401)::HEROKU_API_KEY không chính xác hoặc đã hết hạn. Hãy kiểm tra lại API Key trong Heroku Account Settings!"
+            exit 1
+          elif [ "$HTTP_STATUS" -eq 404 ]; then
+            echo "::error title=Không tìm thấy App Heroku (404)::Không tìm thấy ứng dụng có tên '$HEROKU_APP_NAME' trên Heroku. Hãy kiểm tra lại tên App trong Heroku Dashboard (lưu ý chữ hoa/thường hoặc gõ sai tên)!"
+            exit 1
+          elif [ "$HTTP_STATUS" -ne 200 ]; then
+            echo "::error title=Lỗi Heroku API ($HTTP_STATUS)::$(cat heroku_api_check.json)"
+            exit 1
+          fi
+
+          echo "✅ Xác thực Heroku API thành công! Ứng dụng '$HEROKU_APP_NAME' tồn tại và sẵn sàng nhận code."
+
+          # 3. Cấu hình git & netrc để đẩy code
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # Cấu hình file .netrc để xác thực an toàn với Heroku CLI / Git
           cat << EOF > ~/.netrc
           machine api.heroku.com
             login _
@@ -86,12 +104,29 @@ jobs:
             login _
             password $HEROKU_API_KEY
           EOF
-
           chmod 600 ~/.netrc
 
-          # Add Heroku Git Remote và Push
-          git remote add heroku https://git.heroku.com/${HEROKU_APP_NAME}.git
-          git push heroku HEAD:main --force || git push heroku HEAD:master --force
+          # Add Remote Heroku
+          git remote add heroku "https://git.heroku.com/${HEROKU_APP_NAME}.git"
+
+          echo "🚀 Đang đẩy code lên Heroku..."
+          PUSH_LOG=$(git push heroku HEAD:main --force 2>&1)
+          PUSH_EXIT=$?
+
+          if [ $PUSH_EXIT -ne 0 ]; then
+            echo "Thử lại với nhánh master..."
+            PUSH_LOG=$(git push heroku HEAD:master --force 2>&1)
+            PUSH_EXIT=$?
+          fi
+
+          echo "$PUSH_LOG"
+
+          if [ $PUSH_EXIT -ne 0 ]; then
+            echo "::error title=Lỗi Git Push Heroku::$PUSH_LOG"
+            exit $PUSH_EXIT
+          fi
+
+          echo "🎉 Đẩy mã nguồn lên Heroku thành công!"
 
       - name: 🩺 Smoke Test / Health Check Live Site
         env:
