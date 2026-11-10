@@ -99,7 +99,7 @@ try {
 $vietqrData = null;
 if ($paymentMethod === 'vietqr') {
     $bankId = $config['bank_id'] ?? 'MB';
-    $accountNo = $config['account_no'] ?? '0869571734';
+    $accountNo = $config['account_no'] ?? '5550372005777';
     $accountName = $config['account_name'] ?? 'ALICE COSMETIC';
     $template = $config['qr_template'] ?? 'compact2';
 

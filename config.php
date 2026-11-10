@@ -6,7 +6,7 @@
  */
 
 define('APP_NAME', 'ALICE Cosmetic');
-define('APP_VERSION', '2.4.0');
+define('APP_VERSION', '2.5.0');
 
 // Cấu hình Google OAuth 2.0 (Google Identity Services)
 // Nhập Client ID lấy từ https://console.cloud.google.com/apis/credentials
@@ -48,7 +48,7 @@ define('SHOP_CONFIG', [
     // Cấu hình VietQR mặc định (Có thể thay đổi trong modal Admin Cài Đặt)
     'bank_id'       => 'MB',
     'bank_name'     => 'MBBank - Ngân hàng TMCP Quân Đội',
-    'account_no'    => '0869571734',
+    'account_no'    => '5550372005777',
     'account_name'  => 'ALICE COSMETIC',
     'qr_template'   => 'compact2',
 

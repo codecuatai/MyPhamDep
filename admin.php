@@ -1675,7 +1675,7 @@ const AdminApp = {
 
     updatePreviewQR() {
         const bankId = document.getElementById('cfg_bank_id').value || 'MB';
-        const accountNo = document.getElementById('cfg_account_no').value.trim() || '0869571734';
+        const accountNo = document.getElementById('cfg_account_no').value.trim() || '5550372005777';
         const accountName = document.getElementById('cfg_account_name').value.trim() || 'ALICE COSMETIC';
 
         const qrUrl = `https://img.vietqr.io/image/${bankId}-${accountNo}-compact2.png?accountName=${encodeURIComponent(accountName)}`;
