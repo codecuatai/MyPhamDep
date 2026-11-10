@@ -819,18 +819,40 @@ const AliceApp = {
         }
     },
 
-    quickGoogleLogin() {
-        this.currentUser = {
-            id: 999,
-            fullname: 'Khách Hàng Google',
-            email: 'user.google@gmail.com',
-            phone: '0987654321',
-            avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80'
-        };
-        this.updateAuthUI();
-        this.showToast('Đăng nhập thành công với tài khoản Google!', 'success');
-        const modal = bootstrap.Modal.getInstance(document.getElementById('modalAuth'));
-        if (modal) modal.hide();
+    async loginWithSocial(provider = 'google') {
+        const isGoogle = (provider === 'google');
+        const defaultName = isGoogle ? 'Thu Trang (Google)' : 'Ngọc Anh (Facebook)';
+        const defaultEmail = isGoogle ? 'thutrang.beauty@gmail.com' : 'ngocanh.fb@facebook.com';
+        const defaultAvatar = isGoogle 
+            ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80'
+            : 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=150&q=80';
+
+        this.showToast(`Đang kết nối tài khoản ${isGoogle ? 'Google' : 'Facebook'}...`, 'info');
+
+        try {
+            const res = await fetch('api/auth.php?action=oauth', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    provider: provider,
+                    fullname: defaultName,
+                    email: defaultEmail,
+                    avatar: defaultAvatar
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                this.currentUser = data.user;
+                this.updateAuthUI();
+                this.showToast(data.message, 'success');
+                const modal = bootstrap.Modal.getInstance(document.getElementById('modalAuth'));
+                if (modal) modal.hide();
+            } else {
+                this.showToast(data.message || 'Lỗi đăng nhập mạng xã hội', 'warning');
+            }
+        } catch(e) {
+            this.showToast('Lỗi kết nối mạng xã hội!', 'warning');
+        }
     },
 
     openAccountOrAuth() {

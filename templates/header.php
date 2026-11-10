@@ -35,8 +35,8 @@
                 </a>
             </div>
 
-            <!-- Cột 2: Thanh tìm kiếm Shopee-style Tone Hồng (Nhỏ gọn & Thanh thoát) -->
-            <div class="col-lg-5 col-md-5 col">
+            <!-- Cột 2: Thanh tìm kiếm Shopee-style Tone Hồng (Dài rộng & Thanh thoát) -->
+            <div class="col-lg-6 col-md-5 col">
                 <div class="search-container">
                     <div class="search-input-group">
                         <i class="fa-solid fa-magnifying-glass text-muted me-2" style="font-size: 0.8rem;"></i>
@@ -57,7 +57,7 @@
             </div>
 
             <!-- Cột 3: Nút Hành động & Giỏ hàng -->
-            <div class="col-lg-4 col-md-4 col-auto">
+            <div class="col-lg-3 col-md-3 col-auto">
                 <div class="header-actions justify-content-end align-items-center">
                     <!-- Nút Tra cứu đơn hàng -->
                     <button class="btn-header-icon" title="Tra cứu đơn hàng" data-bs-toggle="modal" data-bs-target="#modalOrderLookup">

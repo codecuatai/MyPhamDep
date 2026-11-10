@@ -467,22 +467,30 @@ async function lookupOrders() {
                                 </div>
                             </div>
 
-                            <!-- Tài khoản gợi ý sẵn tiện test -->
-                            <div class="p-2 mb-3 rounded-3 small" style="background: var(--primary-soft); border: 1px dashed var(--primary-border);">
-                                <span class="d-block font-semibold" style="color: var(--primary-dark); font-size: 0.76rem;">
-                                    💡 <strong>Tài khoản mẫu:</strong> ngoclinh@gmail.com | <strong>MK:</strong> 123456
-                                </span>
-                            </div>
-
                             <button type="submit" id="btn-submit-login" class="btn btn-danger w-100 rounded-pill py-2 font-bold mb-3 shadow-sm" style="background: var(--gradient-pink); border: none;">
                                 Đăng Nhập Ngay
                             </button>
 
-                            <div class="text-center small text-muted mb-2">Hoặc đăng nhập nhanh bằng:</div>
-                            <button type="button" class="btn btn-light w-100 rounded-pill py-2 border small font-bold d-flex align-items-center justify-content-center gap-2" onclick="AliceApp.quickGoogleLogin()">
-                                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" height="18">
-                                <span>Tiếp tục với Google</span>
-                            </button>
+                            <div class="d-flex align-items-center my-3">
+                                <hr class="flex-grow-1 my-0" style="border-color: var(--primary-border);">
+                                <span class="px-2 small text-muted font-semibold" style="font-size: 0.72rem;">HOẶC TIẾP TỤC VỚI</span>
+                                <hr class="flex-grow-1 my-0" style="border-color: var(--primary-border);">
+                            </div>
+
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <button type="button" class="btn btn-outline-danger w-100 rounded-pill py-2 small font-bold d-flex align-items-center justify-content-center gap-2 border shadow-sm" style="background: #ffffff; border-color: #e5e7eb !important; color: #374151;" onclick="AliceApp.loginWithSocial('google')">
+                                        <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.05h3.9c2.28-2.1 3.645-5.2 3.645-9.15z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.9-3.05c-1.08.72-2.45 1.16-4.03 1.16-3.1 0-5.74-2.09-6.68-4.9H1.21v3.13C3.25 21.36 7.33 24 12 24z"/><path fill="#FBBC05" d="M5.32 14.3c-.24-.72-.38-1.49-.38-2.3s.14-1.58.38-2.3V6.57H1.21C.44 8.11 0 9.99 0 12s.44 3.89 1.21 5.43l4.11-3.13z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.25 2.64 1.21 6.57l4.11 3.13c.94-2.81 3.58-4.95 6.68-4.95z"/></svg>
+                                        <span>Google</span>
+                                    </button>
+                                </div>
+                                <div class="col-6">
+                                    <button type="button" class="btn w-100 rounded-pill py-2 small font-bold d-flex align-items-center justify-content-center gap-2 border shadow-sm" style="background: #1877f2; border-color: #1877f2 !important; color: #ffffff;" onclick="AliceApp.loginWithSocial('facebook')">
+                                        <i class="fa-brands fa-facebook-f fs-6"></i>
+                                        <span>Facebook</span>
+                                    </button>
+                                </div>
+                            </div>
                         </form>
                     </div>
 
@@ -509,9 +517,30 @@ async function lookupOrders() {
                                 <input type="password" name="password" class="form-control" placeholder="••••••••" minlength="6" required>
                             </div>
 
-                            <button type="submit" id="btn-submit-register" class="btn btn-danger w-100 rounded-pill py-2 font-bold shadow-sm" style="background: var(--gradient-pink); border: none;">
+                            <button type="submit" id="btn-submit-register" class="btn btn-danger w-100 rounded-pill py-2 font-bold mb-3 shadow-sm" style="background: var(--gradient-pink); border: none;">
                                 <i class="fa-solid fa-sparkles me-1"></i>Đăng Ký Thành Viên
                             </button>
+
+                            <div class="d-flex align-items-center my-3">
+                                <hr class="flex-grow-1 my-0" style="border-color: var(--primary-border);">
+                                <span class="px-2 small text-muted font-semibold" style="font-size: 0.72rem;">HOẶC ĐĂNG KÝ NHANH</span>
+                                <hr class="flex-grow-1 my-0" style="border-color: var(--primary-border);">
+                            </div>
+
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <button type="button" class="btn btn-outline-danger w-100 rounded-pill py-2 small font-bold d-flex align-items-center justify-content-center gap-2 border shadow-sm" style="background: #ffffff; border-color: #e5e7eb !important; color: #374151;" onclick="AliceApp.loginWithSocial('google')">
+                                        <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.05h3.9c2.28-2.1 3.645-5.2 3.645-9.15z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.9-3.05c-1.08.72-2.45 1.16-4.03 1.16-3.1 0-5.74-2.09-6.68-4.9H1.21v3.13C3.25 21.36 7.33 24 12 24z"/><path fill="#FBBC05" d="M5.32 14.3c-.24-.72-.38-1.49-.38-2.3s.14-1.58.38-2.3V6.57H1.21C.44 8.11 0 9.99 0 12s.44 3.89 1.21 5.43l4.11-3.13z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.25 2.64 1.21 6.57l4.11 3.13c.94-2.81 3.58-4.95 6.68-4.95z"/></svg>
+                                        <span>Google</span>
+                                    </button>
+                                </div>
+                                <div class="col-6">
+                                    <button type="button" class="btn w-100 rounded-pill py-2 small font-bold d-flex align-items-center justify-content-center gap-2 border shadow-sm" style="background: #1877f2; border-color: #1877f2 !important; color: #ffffff;" onclick="AliceApp.loginWithSocial('facebook')">
+                                        <i class="fa-brands fa-facebook-f fs-6"></i>
+                                        <span>Facebook</span>
+                                    </button>
+                                </div>
+                            </div>
                         </form>
                     </div>
                 </div>

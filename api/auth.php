@@ -116,4 +116,60 @@ if ($action === 'register') {
     }
 }
 
+// 5. Đăng nhập qua mạng xã hội (Google, Facebook)
+if ($action === 'oauth') {
+    $input = json_decode(file_get_contents('php://input'), true) ?: $_POST;
+    $provider = strtolower(cleanInput($input['provider'] ?? 'google'));
+    $fullname = cleanInput($input['fullname'] ?? ($provider === 'google' ? 'Khách Hàng Google' : 'Khách Hàng Facebook'));
+    $email = cleanInput($input['email'] ?? '');
+    $avatar = cleanInput($input['avatar'] ?? '');
+
+    if (empty($email)) {
+        $email = $provider . '_' . substr(md5(uniqid()), 0, 8) . '@social.alice';
+    }
+
+    if (empty($avatar)) {
+        $avatar = ($provider === 'google')
+            ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80'
+            : 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80';
+    }
+
+    // Kiểm tra xem user đã tồn tại chưa
+    $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ? LIMIT 1");
+    $stmt->execute([$email]);
+    $user = $stmt->fetch();
+
+    if ($user) {
+        unset($user['password']);
+        $_SESSION['user'] = $user;
+        jsonResponse([
+            'success' => true,
+            'message' => 'Đăng nhập thành công với ' . ucfirst($provider) . '! Chào mừng ' . $user['fullname'],
+            'user' => $user
+        ]);
+    } else {
+        // Tạo tài khoản mới cho user mạng xã hội
+        $randomPwd = password_hash(bin2hex(random_bytes(10)), PASSWORD_DEFAULT);
+        $insert = $pdo->prepare("INSERT INTO users (fullname, email, phone, password, avatar) VALUES (?, ?, '', ?, ?)");
+        $insert->execute([$fullname, $email, $randomPwd, $avatar]);
+        $newId = $pdo->lastInsertId();
+
+        $newUser = [
+            'id' => $newId,
+            'fullname' => $fullname,
+            'email' => $email,
+            'phone' => '',
+            'avatar' => $avatar,
+            'created_at' => date('Y-m-d H:i:s')
+        ];
+
+        $_SESSION['user'] = $newUser;
+        jsonResponse([
+            'success' => true,
+            'message' => 'Đăng nhập thành công với ' . ucfirst($provider) . '! Chào mừng ' . $fullname,
+            'user' => $newUser
+        ]);
+    }
+}
+
 jsonResponse(['success' => false, 'message' => 'Yêu cầu không hợp lệ'], 400);
