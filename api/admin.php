@@ -131,8 +131,7 @@ if ($action === 'save_product') {
             $discountPercent, $image, $description, $ingredients, $howToUse,
             $isFlashSale, $flashSaleStock, $skinType, $stockQuantity, $origin, $capacity, $expiry, $id
         ]);
-        // Tự động làm mới sitemap.xml
-        @file_get_contents(getBaseUrl() . '/sitemap.php');
+        // Cập nhật sitemap.xml nếu cần
         jsonResponse(['success' => true, 'message' => 'Cập nhật thông tin & tồn kho sản phẩm thành công!']);
     } else {
         // Thêm mới sản phẩm
@@ -144,8 +143,6 @@ if ($action === 'save_product') {
             $discountPercent, $image, $description, $ingredients, $howToUse,
             $isFlashSale, $flashSaleStock, $skinType, $stockQuantity, $origin, $capacity, $expiry
         ]);
-        // Tự động làm mới sitemap.xml
-        @file_get_contents(getBaseUrl() . '/sitemap.php');
         jsonResponse(['success' => true, 'message' => 'Thêm mới sản phẩm mỹ phẩm thành công!']);
     }
 }
@@ -325,11 +322,11 @@ if ($action === 'save_banner') {
     if ($id > 0) {
         $stmt = $pdo->prepare("UPDATE banners SET title = ?, subtitle = ?, badge_text = ?, image_url = ?, link_url = ?, button_text = ?, sort_order = ?, is_active = ? WHERE id = ?");
         $stmt->execute([$title, $subtitle, $badgeText, $imageUrl, $linkUrl, $buttonText, $sortOrder, $isActive, $id]);
-        jsonResponse(['success' => true, 'message' => 'Đã cập nhật banner thành công!']);
+        jsonResponse(['success' => true, 'message' => 'Đã cập nhật banner thành công!', 'id' => $id]);
     } else {
         $stmt = $pdo->prepare("INSERT INTO banners (title, subtitle, badge_text, image_url, link_url, button_text, sort_order, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
         $stmt->execute([$title, $subtitle, $badgeText, $imageUrl, $linkUrl, $buttonText, $sortOrder, $isActive]);
-        jsonResponse(['success' => true, 'message' => 'Thêm mới banner thành công!']);
+        jsonResponse(['success' => true, 'message' => 'Thêm mới banner thành công!', 'id' => (int)$pdo->lastInsertId()]);
     }
 }
 
