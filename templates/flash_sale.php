@@ -36,7 +36,12 @@
                         <div class="product-thumb-wrap">
                             <span class="badge-mall-official">MALL CHÍNH HÃNG</span>
                             <span class="badge-discount-tag">-<?= $p['discount_percent'] ?>%</span>
-                            <img src="<?= htmlspecialchars($p['image']) ?>" alt="<?= htmlspecialchars($p['name']) ?>" class="product-thumb-img" onclick="AliceApp.openProductDetail(<?= $p['id'] ?>)" style="cursor: pointer;">
+                            <img src="<?= htmlspecialchars($p['image']) ?>" 
+                                 alt="<?= htmlspecialchars($p['name']) ?>" 
+                                 class="product-thumb-img" 
+                                 onclick="AliceApp.openProductDetail(<?= $p['id'] ?>)" 
+                                 style="cursor: pointer;"
+                                 onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=600&q=80';">
                         </div>
                         <div class="product-info-wrap">
                             <div class="product-brand"><?= htmlspecialchars($p['brand']) ?></div>

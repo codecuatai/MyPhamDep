@@ -64,6 +64,30 @@ const AliceApp = {
         }, 3200);
     },
 
+    closeModal(btnOrModalId) {
+        let modalEl = null;
+        if (typeof btnOrModalId === 'string') {
+            modalEl = document.getElementById(btnOrModalId);
+        } else if (btnOrModalId && btnOrModalId.closest) {
+            modalEl = btnOrModalId.closest('.modal');
+        }
+        if (modalEl) {
+            try {
+                const instance = bootstrap.Modal.getInstance(modalEl) || bootstrap.Modal.getOrCreateInstance(modalEl);
+                if (instance) instance.hide();
+            } catch(e) {}
+            // Đảm bảo dọn dẹp backdrop và lớp modal ngay lập tức
+            modalEl.classList.remove('show');
+            modalEl.style.display = 'none';
+            modalEl.setAttribute('aria-hidden', 'true');
+            modalEl.removeAttribute('aria-modal');
+            document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.removeProperty('padding-right');
+            document.body.style.removeProperty('overflow');
+        }
+    },
+
     updateCartBadge() {
         const count = this.cart.reduce((sum, it) => sum + (it.quantity || 1), 0);
         const badges = document.querySelectorAll('.cart-badge-count');
@@ -130,6 +154,7 @@ const AliceApp = {
             // Image Gallery
             const mainImg = document.getElementById('pdp-main-img');
             mainImg.src = product.image;
+            mainImg.onerror = () => { mainImg.src = 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=600&q=80'; };
 
             const galleryContainer = document.getElementById('pdp-gallery-thumbs');
             galleryContainer.innerHTML = '';
@@ -137,6 +162,7 @@ const AliceApp = {
             allImages.forEach((imgUrl, idx) => {
                 const thumb = document.createElement('img');
                 thumb.src = imgUrl;
+                thumb.onerror = () => { thumb.src = 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=600&q=80'; };
                 thumb.className = `pdp-thumb-item ${idx === 0 ? 'active' : ''}`;
                 thumb.style.cssText = 'width: 55px; height: 55px; border-radius: 8px; object-fit: cover; cursor: pointer; border: 2px solid ' + (idx === 0 ? 'var(--primary)' : 'var(--primary-border)');
                 thumb.onclick = () => {
@@ -387,7 +413,7 @@ const AliceApp = {
             const row = document.createElement('div');
             row.className = 'cart-item-row';
             row.innerHTML = `
-                <img src="${it.image}" class="cart-item-img" alt="${it.name}">
+                <img src="${it.image}" class="cart-item-img" alt="${it.name}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=600&q=80';">
                 <div class="cart-item-details">
                     <div class="d-flex justify-content-between">
                         <div class="cart-item-title text-truncate" style="max-width: 220px;">${it.name}</div>
@@ -868,6 +894,23 @@ const AliceApp = {
     },
 
     bindEvents() {
+        // Bắt sự kiện click vào bất kỳ nút đóng modal nào
+        document.addEventListener('click', (e) => {
+            const closeBtn = e.target.closest('[data-bs-dismiss="modal"], .btn-close');
+            if (closeBtn && closeBtn.closest('.modal')) {
+                e.preventDefault();
+                AliceApp.closeModal(closeBtn);
+            }
+        });
+
+        // Bắt sự kiện phím ESC để thoát modal
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const openModal = document.querySelector('.modal.show');
+                if (openModal) AliceApp.closeModal(openModal);
+            }
+        });
+
         // Skincare Routine Tab clicks
         document.querySelectorAll('.routine-tab-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {

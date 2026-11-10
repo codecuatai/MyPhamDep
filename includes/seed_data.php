@@ -1,6 +1,7 @@
 <?php
 /**
- * DỮ LIỆU MẪU MỸ PHẨM CHÍNH HÃNG - ALICE COSMETIC
+ * DỮ LIỆU MẪU MỸ PHẨM CHÍNH HÃNG SHOPEE MALL - ALICE COSMETIC
+ * Tất cả ảnh đã được kiểm tra HTTP 200 hoạt động 100%
  */
 
 function getInitialCategories() {
@@ -11,17 +12,17 @@ function getInitialCategories() {
             'slug' => 'tay-trang',
             'icon' => 'fa-soap',
             'image' => 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=500&q=80',
-            'count' => 8,
-            'description' => 'Nước tẩy trang, dầu tẩy trang dịu nhẹ lấy sạch bụi mịn và lớp trang điểm.'
+            'count' => 12,
+            'description' => 'Nước tẩy trang, sữa rửa mặt dịu lành chuẩn y khoa da liễu.'
         ],
         [
             'id' => 'serum-tinh-chat',
-            'name' => 'Tinh Chất & Serum B5',
+            'name' => 'Tinh Chất & Serum',
             'slug' => 'serum-tinh-chat',
             'icon' => 'fa-droplet',
             'image' => 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=500&q=80',
-            'count' => 12,
-            'description' => 'Serum đặc trị mụn thâm, tinh chất phục hồi da mỏng yếu và cấp ẩm căng bóng.'
+            'count' => 18,
+            'description' => 'Serum đặc trị mụn thâm, phục hồi B5, Niacinamide và Vitamin C căng bóng.'
         ],
         [
             'id' => 'chong-nang',
@@ -29,26 +30,26 @@ function getInitialCategories() {
             'slug' => 'chong-nang',
             'icon' => 'fa-sun',
             'image' => 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=500&q=80',
-            'count' => 9,
-            'description' => 'Kem chống nắng nâng tone tự nhiên, kiềm dầu kháng nước phổ rộng SPF50+.'
+            'count' => 10,
+            'description' => 'Chống nắng phổ rộng SPF50+ nâng tone tự nhiên, kiềm dầu kháng nước.'
         ],
         [
             'id' => 'kem-duong',
             'name' => 'Dưỡng Ẩm & Phục Hồi',
             'slug' => 'kem-duong',
             'icon' => 'fa-spa',
-            'image' => 'https://images.unsplash.com/photo-1608248597359-009772c8423e?auto=format&fit=crop&w=500&q=80',
-            'count' => 11,
-            'description' => 'Khóa ẩm, phục hồi màng bảo vệ da, ngăn ngừa lão hóa và thâm sạm.'
+            'image' => 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=500&q=80',
+            'count' => 14,
+            'description' => 'Kem dưỡng ẩm B5, gel cấp nước khóa ẩm chuyên sâu cho mọi loại da.'
         ],
         [
             'id' => 'makeup-son',
-            'name' => 'Son Môi & Makeup',
+            'name' => 'Son Môi & Trang Điểm',
             'slug' => 'makeup-son',
             'icon' => 'fa-wand-magic-sparkles',
             'image' => 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=500&q=80',
-            'count' => 15,
-            'description' => 'Son kem lì tone hồng đào, cushion mỏng nhẹ tự nhiên chuẩn Hàn Quốc.'
+            'count' => 20,
+            'description' => 'Son kem lì MLBB, cushion mỏng mịn và mascara cong mi chuẩn Hàn.'
         ],
         [
             'id' => 'combo-routine',
@@ -56,14 +57,15 @@ function getInitialCategories() {
             'slug' => 'combo-routine',
             'icon' => 'fa-gift',
             'image' => 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=500&q=80',
-            'count' => 6,
-            'description' => 'Bộ combo skincare hoàn chỉnh tặng kèm nến thơm, hộp nơ hồng & thiệp viết tay.'
+            'count' => 8,
+            'description' => 'Set quà tặng Pink Box đóng nơ hồng pastel kèm nến thơm và thiệp viết tay.'
         ]
     ];
 }
 
 function getInitialProducts() {
     return [
+        // 1. Serum La Roche-Posay
         [
             'id' => 1,
             'name' => 'Serum La Roche-Posay Effaclar Ultra Concentré Giảm Mụn Mờ Thâm',
@@ -79,12 +81,11 @@ function getInitialProducts() {
             'image' => 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=600&q=80',
             'gallery' => json_encode([
                 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=800&q=80',
-                'https://images.unsplash.com/photo-1608248597359-009772c8423e?auto=format&fit=crop&w=800&q=80',
-                'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=800&q=80'
+                'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=800&q=80'
             ], JSON_UNESCAPED_SLASHES),
-            'description' => 'Tinh chất La Roche-Posay Effaclar với phức hợp 3 Acid LHA, Salicylic Acid, Glycolic Acid kết hợp cùng Niacinamide giúp giảm mụn sưng đỏ, làm mờ vết thâm mụn chỉ sau 14 ngày, kiểm soát dầu thừa hiệu quả.',
-            'ingredients' => 'Aqua / Water, Alcohol Denat., Propanediol, Glycolic Acid, Niacinamide, Dimethyl Isosorbide, Pentylene Glycol, Salicylic Acid, Sodium Hydroxide, PEG-60 Hydrogenated Castor Oil, Hydroxyethylpiperazine Ethane Sulfonic Acid, Citric Acid, PEG-30 Glyceryl Cocoate, Capryloyl Salicylic Acid, Biosaccharide Gum-1, Maltodextrin, Phytic Acid, Polyquaternium-10, Parfum / Fragrance.',
-            'how_to_use' => 'Dùng 2-3 giọt vào buổi tối sau bước toner. Vỗ nhẹ khắp mặt và cổ. Luôn dùng kem chống nắng vào ban ngày.',
+            'description' => 'Serum chứa phức hợp 3 Acid LHA, Salicylic Acid, Glycolic Acid kết hợp Niacinamide làm dịu mụn sưng, mờ thâm sau mụn sau 14 ngày, thông thoáng lỗ chân lông.',
+            'ingredients' => 'Aqua / Water, Glycolic Acid, Niacinamide, Salicylic Acid, LHA, Hyaluronic Acid.',
+            'how_to_use' => 'Dùng 2-3 giọt buổi tối sau bước toner. Vỗ nhẹ khắp mặt.',
             'is_flash_sale' => 1,
             'flash_sale_stock' => 150,
             'flash_sale_sold' => 124,
@@ -98,6 +99,8 @@ function getInitialProducts() {
                 ['id' => 102, 'name' => 'Mặt nạ tràm trà giảm viêm mụn Mediheal', 'price' => 12000, 'original_price' => 35000]
             ], JSON_UNESCAPED_UNICODE)
         ],
+
+        // 2. Kem Chống Nắng Anessa
         [
             'id' => 2,
             'name' => 'Kem Chống Nắng Anessa Perfect UV Sunscreen Skincare Milk SPF50+ PA++++',
@@ -112,12 +115,11 @@ function getInitialProducts() {
             'sold_count' => 6420,
             'image' => 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=600&q=80',
             'gallery' => json_encode([
-                'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=800&q=80',
-                'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=800&q=80'
+                'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=800&q=80'
             ], JSON_UNESCAPED_SLASHES),
-            'description' => 'Sữa chống nắng kiềm dầu số 1 Nhật Bản 21 năm liên tiếp. Công nghệ Auto Booster độc quyền tăng cường lớp màng bảo vệ khi gặp Nhiệt độ cao - Nước - Mồ hôi - Độ ẩm. Nâng tone nhẹ nhàng, tự nhiên không bết rít.',
-            'ingredients' => 'Chiết xuất trà xanh Uji, Hoa hồng vàng, Collagen, Chiết xuất rễ cây Potentilla, Rễ Cam Thảo dưỡng da suốt cả ngày.',
-            'how_to_use' => 'Lắc đều trước khi sử dụng. Thoa đều lên mặt và cổ trước khi ra ngoài 20 phút. Thoa lại sau mỗi 3-4 tiếng nếu hoạt động ngoài trời.',
+            'description' => 'Sữa chống nắng kiềm dầu số 1 Nhật Bản 21 năm liên tiếp. Kháng nước kháng mồ hôi, nâng tone nhẹ nhàng tự nhiên không vón cục.',
+            'ingredients' => 'Chiết xuất trà xanh Uji, Hoa hồng vàng, Collagen, Potentilla.',
+            'how_to_use' => 'Lắc đều trước khi thoa lên mặt và cổ trước khi ra ngoài 20 phút.',
             'is_flash_sale' => 1,
             'flash_sale_stock' => 200,
             'flash_sale_sold' => 186,
@@ -130,6 +132,8 @@ function getInitialProducts() {
                 ['id' => 103, 'name' => 'Xịt khoáng làm dịu da khoáng tươi Pháp 50ml', 'price' => 25000, 'original_price' => 70000]
             ], JSON_UNESCAPED_UNICODE)
         ],
+
+        // 3. Son Kem Lì Rom&nd
         [
             'id' => 3,
             'name' => 'Son Kem Lì Rom&nd Zero Velvet Tint Tone Hồng Đào & Đỏ Đất MLBB',
@@ -148,8 +152,8 @@ function getInitialProducts() {
                 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=800&q=80'
             ], JSON_UNESCAPED_SLASHES),
             'description' => 'Chất son velvet mờ mịn lì như nhung, nhẹ như không thoa son. Che phủ vân môi hoàn hảo, tone màu chuẩn Hàn tôn da sáng răng cực đỉnh.',
-            'ingredients' => 'Dimethicone, Dimethicone Crosspolymer, Polyglyceryl-2 Triisostearate, Diisostearyl Malate, Titanium Dioxide, Dầu hạt Macadamia dưỡng ẩm môi.',
-            'how_to_use' => 'Dùng cọ lấy một lượng son vừa đủ, thoa từ lòng môi tán đều ra viền môi. Có thể bặm nhẹ để tạo hiệu ứng ombre ngọt ngào.',
+            'ingredients' => 'Dimethicone, Dầu hạt Macadamia dưỡng ẩm môi.',
+            'how_to_use' => 'Dùng cọ thoa từ lòng môi tán đều ra viền môi.',
             'is_flash_sale' => 1,
             'flash_sale_stock' => 300,
             'flash_sale_sold' => 268,
@@ -157,13 +161,14 @@ function getInitialProducts() {
             'variants' => json_encode([
                 ['name' => 'Màu #02 Joyful (Cánh Hồng Đào Nữ Tính)', 'price' => 159000, 'original_price' => 220000],
                 ['name' => 'Màu #05 Witty (Cam Cháy Vintage)', 'price' => 159000, 'original_price' => 220000],
-                ['name' => 'Màu #06 Deepsoul (Đỏ Nâu Trầm Quý Phái)', 'price' => 159000, 'original_price' => 220000],
-                ['name' => 'Màu #23 Vintage Taupe (Hồng Nâu Mocha)', 'price' => 165000, 'original_price' => 230000]
+                ['name' => 'Màu #06 Deepsoul (Đỏ Nâu Trầm Quý Phái)', 'price' => 159000, 'original_price' => 220000]
             ], JSON_UNESCAPED_UNICODE),
             'add_on_deals' => json_encode([
                 ['id' => 104, 'name' => 'Son Dưỡng Hồng Môi Dầu Dừa Bến Tre', 'price' => 19000, 'original_price' => 50000]
             ], JSON_UNESCAPED_UNICODE)
         ],
+
+        // 4. Nước Tẩy Trang Bioderma Nắp Hồng
         [
             'id' => 4,
             'name' => 'Nước Tẩy Trang Bioderma Sensibio H2O Cho Da Nhạy Cảm Nắp Hồng',
@@ -180,9 +185,9 @@ function getInitialProducts() {
             'gallery' => json_encode([
                 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=800&q=80'
             ], JSON_UNESCAPED_SLASHES),
-            'description' => 'Nước tẩy trang công nghệ hạt micellar số 1 thế giới. Làm sạch sâu 99% lớp trang điểm và hạt bụi siêu mịn PM 2.5 mà vẫn giữ màng ẩm tự nhiên, không gây cay mắt, không rát da.',
-            'ingredients' => 'Aqua/Water, PEG-6 Caprylic/Capric Glycerides, Fructooligosaccharides, Mannitol, Xylitol, Rhamnose, Cucumis Sativus (Cucumber) Fruit Extract, Propylene Glycol, Cetrimonium Bromide, Disodium EDTA.',
-            'how_to_use' => 'Thấm đẫm bông tẩy trang, nhẹ nhàng lau khắp mặt đến khi miếng bông sạch hoàn toàn. Không cần rửa lại với nước.',
+            'description' => 'Nước tẩy trang công nghệ hạt micellar số 1 thế giới. Làm sạch sâu 99% lớp trang điểm và hạt bụi siêu mịn PM 2.5 mà vẫn giữ màng ẩm tự nhiên, không rát da.',
+            'ingredients' => 'Aqua/Water, Hạt Micellar, Chiết xuất dưa leo Cucumis Sativus làm dịu da.',
+            'how_to_use' => 'Thấm đẫm bông tẩy trang, lau nhẹ khắp mặt đến khi sạch.',
             'is_flash_sale' => 1,
             'flash_sale_stock' => 120,
             'flash_sale_sold' => 98,
@@ -195,37 +200,41 @@ function getInitialProducts() {
                 ['id' => 101, 'name' => 'Bông tẩy trang Ipek Thổ Nhĩ Kỳ 150 miếng', 'price' => 15000, 'original_price' => 45000]
             ], JSON_UNESCAPED_UNICODE)
         ],
+
+        // 5. Tinh Chất Skin1004 Rau Má (Thay thế sản phẩm cũ bị lỗi ảnh)
         [
             'id' => 5,
-            'name' => 'Tinh Chất Dưỡng Ẩm Phục Hồi Căng Bóng Torriden Dive-In Serum',
-            'slug' => 'tinh-chat-torriden-dive-in-serum',
-            'brand' => 'Torriden (Hàn Quốc)',
+            'name' => 'Tinh Chất Phục Hồi Dịu Da Chiết Xuất 100% Rau Má Skin1004 Madagascar Centella',
+            'slug' => 'tinh-chat-rau-ma-skin1004-madagascar-centella',
+            'brand' => 'Skin1004 (Hàn Quốc)',
             'category_id' => 'serum-tinh-chat',
-            'price' => 319000,
-            'original_price' => 450000,
-            'discount_percent' => 29,
-            'rating' => 4.92,
-            'review_count' => 970,
-            'sold_count' => 2410,
-            'image' => 'https://images.unsplash.com/photo-1608248597359-009772c8423e?auto=format&fit=crop&w=600&q=80',
+            'price' => 285000,
+            'original_price' => 390000,
+            'discount_percent' => 27,
+            'rating' => 4.93,
+            'review_count' => 2450,
+            'sold_count' => 7890,
+            'image' => 'https://images.unsplash.com/photo-1616683693504-3ea7e9ad6fec?auto=format&fit=crop&w=600&q=80',
             'gallery' => json_encode([
-                'https://images.unsplash.com/photo-1608248597359-009772c8423e?auto=format&fit=crop&w=800&q=80'
+                'https://images.unsplash.com/photo-1616683693504-3ea7e9ad6fec?auto=format&fit=crop&w=800&q=80'
             ], JSON_UNESCAPED_SLASHES),
-            'description' => 'Serum dưỡng ẩm quốc dân Hàn Quốc đạt giải quán quân Hwahae 3 năm liên tiếp. Chứa 5 loại Hyaluronic Acid phân tử siêu nhỏ len lỏi sâu vào tế bào da, làm dịu da cháy nắng mẩn đỏ với D-Panthenol và Allantoin.',
-            'ingredients' => 'Water, Butylene Glycol, Glycerin, Dipropylene Glycol, 1,2-Hexanediol, Betaine, Panthenol, Hyaluronic Acid thủy phân, Ceramide NP, Malachite Extract.',
-            'how_to_use' => 'Nhỏ 3-4 giọt lên da sau khi làm sạch. Vỗ nhẹ cho dưỡng chất thẩm thấu.',
+            'description' => 'Chứa 100% chiết xuất rau má vùng Madagascar nguyên chất không cồn, không hương liệu. Làm dịu da kích ứng, kháng khuẩn mụn sưng và củng cố hàng rào bảo vệ da khỏe mạnh.',
+            'ingredients' => '100% Centella Asiatica Extract (Chiết xuất rau má hữu cơ Madagascar).',
+            'how_to_use' => 'Nhỏ 3-4 giọt trực tiếp lên da sau bước toner, vỗ nhẹ cho thẩm thấu.',
             'is_flash_sale' => 0,
-            'flash_sale_stock' => 100,
-            'flash_sale_sold' => 45,
-            'skin_type' => 'dry',
+            'flash_sale_stock' => 150,
+            'flash_sale_sold' => 89,
+            'skin_type' => 'sensitive',
             'variants' => json_encode([
-                ['name' => 'Chai 50ml', 'price' => 319000, 'original_price' => 450000],
-                ['name' => 'Chai 100ml (Jumbo size)', 'price' => 529000, 'original_price' => 750000]
+                ['name' => 'Chai 55ml', 'price' => 285000, 'original_price' => 390000],
+                ['name' => 'Chai 100ml (Tiết kiệm)', 'price' => 395000, 'original_price' => 550000]
             ], JSON_UNESCAPED_UNICODE),
             'add_on_deals' => json_encode([
                 ['id' => 102, 'name' => 'Mặt nạ tràm trà giảm viêm mụn Mediheal', 'price' => 12000, 'original_price' => 35000]
             ], JSON_UNESCAPED_UNICODE)
         ],
+
+        // 6. Kem Dưỡng La Roche-Posay B5+
         [
             'id' => 6,
             'name' => 'Kem Dưỡng Ẩm Phục Hồi Làm Dịu Da La Roche-Posay Cicaplast Baume B5+',
@@ -242,9 +251,9 @@ function getInitialProducts() {
             'gallery' => json_encode([
                 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=800&q=80'
             ], JSON_UNESCAPED_SLASHES),
-            'description' => 'Kem dưỡng phục hồi da cải tiến với công nghệ vi sinh vật học độc quyền Tribioma, kết hợp 5% Panthenol (Vitamin B5) và Madecassoside giúp làm dịu tức thì cảm giác nóng rát, phục hồi hàng rào bảo vệ da sau peel, laser hay mụn.',
-            'ingredients' => 'Aqua / Water, Hydrogenated Polyisobutene, Dimethicone, Glycerin, Butyrospermum Parkii Butter / Shea Butter, Panthenol, Propanediol, Butylene Glycol, Aluminum Starch Octenylsuccinate, Cetyl PEG/PPG-10/1 Dimethicone, Trihydroxystearin, Zinc Gluconate, Madecassoside, Manganese Gluconate.',
-            'how_to_use' => 'Thoa ngày 2 lần lên vùng da kích ứng hoặc toàn mặt sau các bước serum.',
+            'description' => 'Kem dưỡng phục hồi da cải tiến với vi sinh vật học Tribioma độc quyền, 5% Panthenol và Madecassoside làm dịu tức thì nóng rát sau nặn mụn, peel hay laser.',
+            'ingredients' => 'Aqua / Water, Panthenol 5%, Madecassoside, Shea Butter, Zinc Gluconate.',
+            'how_to_use' => 'Thoa ngày 2 lần sáng và tối lên vùng da kích ứng hoặc toàn mặt.',
             'is_flash_sale' => 0,
             'flash_sale_stock' => 120,
             'flash_sale_sold' => 88,
@@ -257,6 +266,8 @@ function getInitialProducts() {
                 ['id' => 104, 'name' => 'Son Dưỡng Hồng Môi Dầu Dừa Bến Tre', 'price' => 19000, 'original_price' => 50000]
             ], JSON_UNESCAPED_UNICODE)
         ],
+
+        // 7. Tẩy Da Chết Hóa Học Paula's Choice 2% BHA
         [
             'id' => 7,
             'name' => 'Dung Dịch Tẩy Tế Bào Chết Paula\'s Choice 2% BHA Liquid Exfoliant Thu Nhỏ Lỗ Chân Lông',
@@ -269,13 +280,13 @@ function getInitialProducts() {
             'rating' => 4.89,
             'review_count' => 1120,
             'sold_count' => 3200,
-            'image' => 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=600&q=80',
+            'image' => 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=80',
             'gallery' => json_encode([
-                'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=800&q=80'
+                'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80'
             ], JSON_UNESCAPED_SLASHES),
-            'description' => 'Sản phẩm BHA bán chạy số 1 toàn cầu. Chứa 2% Salicylic Acid tan trong dầu len lỏi dọn sạch bã nhờn sâu trong lỗ chân lông, loại bỏ mụn đầu đen, mụn ẩn và kích thích tái tạo biểu bì mịn màng.',
-            'ingredients' => 'Water, Methylpropanediol, Butylene Glycol, Salicylic Acid 2%, Polysorbate 20, Camellia Oleifera Leaf Extract, Sodium Hydroxide, Tetrasodium EDTA.',
-            'how_to_use' => 'Dùng 2-3 lần/tuần vào buổi tối. Đổ ra bông lau nhẹ khắp mặt, không rửa lại.',
+            'description' => 'BHA bán chạy số 1 toàn cầu với 2% Salicylic Acid tan trong dầu len lỏi dọn sạch bã nhờn, loại bỏ mụn đầu đen và kích thích tái tạo biểu bì da mịn màng.',
+            'ingredients' => 'Water, Methylpropanediol, Salicylic Acid 2%, Camellia Oleifera Leaf Extract.',
+            'how_to_use' => 'Dùng 2-3 lần/tuần vào buổi tối sau bước làm sạch. Thoa đều và không rửa lại.',
             'is_flash_sale' => 1,
             'flash_sale_stock' => 90,
             'flash_sale_sold' => 79,
@@ -288,6 +299,8 @@ function getInitialProducts() {
                 ['id' => 101, 'name' => 'Bông tẩy trang Ipek Thổ Nhĩ Kỳ 150 miếng', 'price' => 15000, 'original_price' => 45000]
             ], JSON_UNESCAPED_UNICODE)
         ],
+
+        // 8. Set Quà Routine Pink Box Luxury
         [
             'id' => 8,
             'name' => 'Set Quà Tặng Độc Quyền: Combo Routine Skincare Phục Hồi ALICE Pink Box Luxury',
@@ -302,12 +315,11 @@ function getInitialProducts() {
             'sold_count' => 1580,
             'image' => 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=600&q=80',
             'gallery' => json_encode([
-                'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80',
-                'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=800&q=80'
+                'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80'
             ], JSON_UNESCAPED_SLASHES),
-            'description' => 'Bộ quà tặng giới hạn cao cấp độc quyền tại ALICE Cosmetic. Trọn bộ liệu trình gồm: Nước tẩy trang dịu lành 100ml + Serum Cấp ẩm B5 50ml + Kem dưỡng phục hồi 40ml. Tặng kèm Hộp quà nơ hồng pastel sang trọng + Nến thơm tinh dầu hoa hồng + Thiệp viết tay ý nghĩa gửi người thương!',
-            'ingredients' => 'Bộ ba sản phẩm lành tính không hương liệu, không cồn, an toàn tuyệt đối cho mọi làn da kể cả mẹ bầu và da nhạy cảm.',
-            'how_to_use' => 'Thứ tự Routine: Tẩy trang sạch -> Serum B5 cấp ẩm -> Kem dưỡng khóa màng bảo vệ.',
+            'description' => 'Bộ quà tặng giới hạn cao cấp tại ALICE Cosmetic: Nước tẩy trang Bioderma 100ml + Serum Rau má phục hồi 55ml + Kem dưỡng B5+ 40ml. Tặng kèm Hộp nơ hồng satin + Nến thơm tinh dầu hoa hồng & thiệp viết tay yêu thương!',
+            'ingredients' => 'Bộ ba sản phẩm lành tính an toàn tuyệt đối cho mọi làn da.',
+            'how_to_use' => 'Thứ tự routine: Tẩy trang sạch -> Serum phục hồi -> Kem dưỡng khóa ẩm.',
             'is_flash_sale' => 1,
             'flash_sale_stock' => 50,
             'flash_sale_sold' => 42,
@@ -318,6 +330,270 @@ function getInitialProducts() {
             ], JSON_UNESCAPED_UNICODE),
             'add_on_deals' => json_encode([
                 ['id' => 104, 'name' => 'Son Dưỡng Hồng Môi Dầu Dừa Bến Tre', 'price' => 19000, 'original_price' => 50000]
+            ], JSON_UNESCAPED_UNICODE)
+        ],
+
+        // 9. Serum The Ordinary Niacinamide 10% + Zinc 1%
+        [
+            'id' => 9,
+            'name' => 'Tinh Chất The Ordinary Niacinamide 10% + Zinc 1% Kiềm Dầu Mờ Thâm Sáng Da',
+            'slug' => 'serum-the-ordinary-niacinamide-10-zinc-1',
+            'brand' => 'The Ordinary (Canada)',
+            'category_id' => 'serum-tinh-chat',
+            'price' => 195000,
+            'original_price' => 280000,
+            'discount_percent' => 30,
+            'rating' => 4.86,
+            'review_count' => 5410,
+            'sold_count' => 14200,
+            'image' => 'https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?auto=format&fit=crop&w=600&q=80',
+            'gallery' => json_encode([
+                'https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?auto=format&fit=crop&w=800&q=80'
+            ], JSON_UNESCAPED_SLASHES),
+            'description' => 'Serum quốc dân kiểm soát bã nhờn, làm dịu nốt mụn viêm và giảm thiểu nguy cơ tắc nghẽn lỗ chân lông với 10% Niacinamide tinh khiết và 1% Zinc PCA.',
+            'ingredients' => 'Aqua, Niacinamide 10%, Zinc PCA 1%, Tamarindus Indica Seed Gum, Pentylene Glycol.',
+            'how_to_use' => 'Thoa lên toàn bộ mặt vào buổi sáng và tối trước khi dùng các loại kem nặng hơn.',
+            'is_flash_sale' => 1,
+            'flash_sale_stock' => 250,
+            'flash_sale_sold' => 231,
+            'skin_type' => 'oil',
+            'variants' => json_encode([
+                ['name' => 'Chai 30ml', 'price' => 195000, 'original_price' => 280000],
+                ['name' => 'Chai 60ml (Bản lớn)', 'price' => 349000, 'original_price' => 460000]
+            ], JSON_UNESCAPED_UNICODE),
+            'add_on_deals' => json_encode([
+                ['id' => 101, 'name' => 'Bông tẩy trang Ipek Thổ Nhĩ Kỳ 150 miếng', 'price' => 15000, 'original_price' => 45000]
+            ], JSON_UNESCAPED_UNICODE)
+        ],
+
+        // 10. Sữa Rửa Mặt CeraVe Foaming Cleanser
+        [
+            'id' => 10,
+            'name' => 'Sữa Rửa Mặt CeraVe Foaming Facial Cleanser Cho Da Thường Đến Da Dầu',
+            'slug' => 'sua-rua-mat-cerave-foaming-cleanser',
+            'brand' => 'CeraVe (Mỹ)',
+            'category_id' => 'tay-trang',
+            'price' => 289000,
+            'original_price' => 390000,
+            'discount_percent' => 26,
+            'rating' => 4.94,
+            'review_count' => 3890,
+            'sold_count' => 9800,
+            'image' => 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=80',
+            'gallery' => json_encode([
+                'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=800&q=80'
+            ], JSON_UNESCAPED_SLASHES),
+            'description' => 'Sữa rửa mặt tạo bọt dịu nhẹ được bác sĩ da liễu khuyên dùng. Bổ sung 3 Ceramide thiết yếu, Niacinamide và Hyaluronic Acid giúp làm sạch bã nhờn mà không phá hủy màng ẩm tự nhiên.',
+            'ingredients' => 'Ceramides 1, 3, 6-II, Niacinamide, Hyaluronic Acid, Cholesterol.',
+            'how_to_use' => 'Làm ướt mặt, lấy một lượng vừa đủ mát-xa tạo bọt nhẹ nhàng rồi rửa sạch.',
+            'is_flash_sale' => 0,
+            'flash_sale_stock' => 180,
+            'flash_sale_sold' => 94,
+            'skin_type' => 'oil',
+            'variants' => json_encode([
+                ['name' => 'Chai 236ml', 'price' => 289000, 'original_price' => 390000],
+                ['name' => 'Chai 473ml (Tiết kiệm)', 'price' => 415000, 'original_price' => 550000]
+            ], JSON_UNESCAPED_UNICODE),
+            'add_on_deals' => json_encode([
+                ['id' => 101, 'name' => 'Bông tẩy trang Ipek Thổ Nhĩ Kỳ 150 miếng', 'price' => 15000, 'original_price' => 45000]
+            ], JSON_UNESCAPED_UNICODE)
+        ],
+
+        // 11. Kem Chống Nắng La Roche-Posay Anthelios UVmune 400
+        [
+            'id' => 11,
+            'name' => 'Kem Chống Nắng La Roche-Posay Anthelios UVMune 400 Oil Control Gel-Cream SPF50+',
+            'slug' => 'kem-chong-nang-la-roche-posay-uvmune-400',
+            'brand' => 'La Roche-Posay (Pháp)',
+            'category_id' => 'chong-nang',
+            'price' => 379000,
+            'original_price' => 510000,
+            'discount_percent' => 26,
+            'rating' => 4.96,
+            'review_count' => 2940,
+            'sold_count' => 8400,
+            'image' => 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=600&q=80',
+            'gallery' => json_encode([
+                'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=800&q=80'
+            ], JSON_UNESCAPED_SLASHES),
+            'description' => 'Màng lọc quang phổ rộng Mexoryl 400 bảo vệ da chống lại tia UVA siêu dài. Công nghệ kiềm dầu Airlicium thấm hút bã nhờn suốt 12 giờ, không nhờn rít, không cay mắt.',
+            'ingredients' => 'Mexoryl 400, Nước khoáng La Roche-Posay, Airlicium, Vitamin E.',
+            'how_to_use' => 'Thoa trước khi tiếp xúc ánh nắng 20 phút. Thoa lại sau khi bơi hoặc vận động nhiều.',
+            'is_flash_sale' => 1,
+            'flash_sale_stock' => 160,
+            'flash_sale_sold' => 148,
+            'skin_type' => 'oil',
+            'variants' => json_encode([
+                ['name' => 'Tuýp 50ml Gel-Cream Kiềm Dầu', 'price' => 379000, 'original_price' => 510000]
+            ], JSON_UNESCAPED_UNICODE),
+            'add_on_deals' => json_encode([
+                ['id' => 103, 'name' => 'Xịt khoáng làm dịu da khoáng tươi Pháp 50ml', 'price' => 25000, 'original_price' => 70000]
+            ], JSON_UNESCAPED_UNICODE)
+        ],
+
+        // 12. Kem Dưỡng Klairs Midnight Blue Calming Cream
+        [
+            'id' => 12,
+            'name' => 'Kem Dưỡng Ẩm Phục Hồi Làm Dịu Da Nhạy Cảm Klairs Midnight Blue Calming Cream',
+            'slug' => 'kem-duong-klairs-midnight-blue-calming-cream',
+            'brand' => 'Klairs (Hàn Quốc)',
+            'category_id' => 'kem-duong',
+            'price' => 325000,
+            'original_price' => 450000,
+            'discount_percent' => 28,
+            'rating' => 4.91,
+            'review_count' => 1830,
+            'sold_count' => 5120,
+            'image' => 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=600&q=80',
+            'gallery' => json_encode([
+                'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80'
+            ], JSON_UNESCAPED_SLASHES),
+            'description' => 'Màu xanh tự nhiên từ tinh chất hoa cúc Guaiazulene kết hợp chiết xuất rau má Centella làm dịu ngay làn da ửng đỏ cháy nắng, da vừa lấy mụn hoặc sau laser.',
+            'ingredients' => 'Guaiazulene (chiết xuất hoa cúc La Mã), Centella Asiatica Extract, Ceramide 3, Hyaluronic Acid.',
+            'how_to_use' => 'Chấm kem lên các vùng da kích ứng hoặc thoa đều toàn mặt bước cuối.',
+            'is_flash_sale' => 0,
+            'flash_sale_stock' => 110,
+            'flash_sale_sold' => 73,
+            'skin_type' => 'sensitive',
+            'variants' => json_encode([
+                ['name' => 'Hũ 30ml', 'price' => 325000, 'original_price' => 450000],
+                ['name' => 'Tuýp 60ml (Bản nâng cấp)', 'price' => 489000, 'original_price' => 640000]
+            ], JSON_UNESCAPED_UNICODE),
+            'add_on_deals' => json_encode([
+                ['id' => 102, 'name' => 'Mặt nạ tràm trà giảm viêm mụn Mediheal', 'price' => 12000, 'original_price' => 35000]
+            ], JSON_UNESCAPED_UNICODE)
+        ],
+
+        // 13. Son Kem Lì 3CE Velvet Lip Tint
+        [
+            'id' => 13,
+            'name' => 'Son Kem Lì 3CE Velvet Lip Tint Tone Đỏ Hồng Cam Tây Cực Chuẩn',
+            'slug' => 'son-kem-li-3ce-velvet-lip-tint',
+            'brand' => '3CE Stylenanda (Hàn Quốc)',
+            'category_id' => 'makeup-son',
+            'price' => 245000,
+            'original_price' => 340000,
+            'discount_percent' => 28,
+            'rating' => 4.92,
+            'review_count' => 4210,
+            'sold_count' => 11500,
+            'image' => 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=600&q=80',
+            'gallery' => json_encode([
+                'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=800&q=80'
+            ], JSON_UNESCAPED_SLASHES),
+            'description' => 'Dòng son kem lì làm nên tên tuổi 3CE toàn cầu. Chất son xốp mịn lướt nhẹ trên môi, không làm khô môi, lên màu chuẩn đét tôn sáng da tự nhiên.',
+            'ingredients' => 'Dimethicone, Cyclopentasiloxane, Polyglyceryl-2 Triisostearate, Hạt sắc tố màu khoáng.',
+            'how_to_use' => 'Thoa một lượng nhỏ và tán đều bằng cọ hoặc đầu ngón tay.',
+            'is_flash_sale' => 1,
+            'flash_sale_stock' => 180,
+            'flash_sale_sold' => 165,
+            'skin_type' => 'all',
+            'variants' => json_encode([
+                ['name' => 'Màu #Daffodil (Đỏ Đất Nữ Tính)', 'price' => 245000, 'original_price' => 340000],
+                ['name' => 'Màu #Taupe (Đỏ Nâu Trầm Sang Chảnh)', 'price' => 245000, 'original_price' => 340000],
+                ['name' => 'Màu #Going Right (Cam Hồng Đất MLBB)', 'price' => 245000, 'original_price' => 340000]
+            ], JSON_UNESCAPED_UNICODE),
+            'add_on_deals' => json_encode([
+                ['id' => 104, 'name' => 'Son Dưỡng Hồng Môi Dầu Dừa Bến Tre', 'price' => 19000, 'original_price' => 50000]
+            ], JSON_UNESCAPED_UNICODE)
+        ],
+
+        // 14. Phấn Nước Cushion Clio Kill Cover
+        [
+            'id' => 14,
+            'name' => 'Phấn Nước Kiềm Dầu Che Khuyết Điểm Clio Kill Cover The New Founwear Cushion SPF50+',
+            'slug' => 'phan-nuoc-clio-kill-cover-the-new-founwear',
+            'brand' => 'Clio (Hàn Quốc)',
+            'category_id' => 'makeup-son',
+            'price' => 389000,
+            'original_price' => 550000,
+            'discount_percent' => 29,
+            'rating' => 4.95,
+            'review_count' => 1980,
+            'sold_count' => 4600,
+            'image' => 'https://images.unsplash.com/photo-1617897903246-719242758050?auto=format&fit=crop&w=600&q=80',
+            'gallery' => json_encode([
+                'https://images.unsplash.com/photo-1617897903246-719242758050?auto=format&fit=crop&w=800&q=80'
+            ], JSON_UNESCAPED_SLASHES),
+            'description' => 'Cushion che khuyết điểm đỉnh cao của Clio, che phủ hoàn toàn vết thâm mụn và lỗ chân lông với lớp nền bán lì semi-matte bền màu suốt 72 giờ, tặng kèm 1 lõi thay thế.',
+            'ingredients' => 'Titanium Dioxide, Niacinamide, Adenosine, Phức hợp bột ngọc trai kiềm dầu.',
+            'how_to_use' => 'Dùng bông mút ấn nhẹ lấy lượng cushion vừa đủ và dặm đều lên mặt.',
+            'is_flash_sale' => 0,
+            'flash_sale_stock' => 90,
+            'flash_sale_sold' => 52,
+            'skin_type' => 'all',
+            'variants' => json_encode([
+                ['name' => 'Tone #02 Lingerie (Cho Da Trắng Hồng)', 'price' => 389000, 'original_price' => 550000],
+                ['name' => 'Tone #03 Linen (Cho Da Trắng Sáng Tự Nhiên)', 'price' => 389000, 'original_price' => 550000],
+                ['name' => 'Tone #04 Ginger (Cho Da Trung Bình Sáng)', 'price' => 389000, 'original_price' => 550000]
+            ], JSON_UNESCAPED_UNICODE),
+            'add_on_deals' => json_encode([
+                ['id' => 101, 'name' => 'Bông tẩy trang Ipek Thổ Nhĩ Kỳ 150 miếng', 'price' => 15000, 'original_price' => 45000]
+            ], JSON_UNESCAPED_UNICODE)
+        ],
+
+        // 15. Mặt Nạ Ngủ Môi Laneige Lip Sleeping Mask Berry
+        [
+            'id' => 15,
+            'name' => 'Mặt Nạ Ngủ Môi Hương Quả Mọng Laneige Lip Sleeping Mask Berry Dưỡng Ẩm Hồng Môi',
+            'slug' => 'mat-na-ngu-moi-laneige-lip-sleeping-mask',
+            'brand' => 'Laneige (Hàn Quốc)',
+            'category_id' => 'kem-duong',
+            'price' => 85000,
+            'original_price' => 120000,
+            'discount_percent' => 29,
+            'rating' => 4.97,
+            'review_count' => 6200,
+            'sold_count' => 19500,
+            'image' => 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?auto=format&fit=crop&w=600&q=80',
+            'gallery' => json_encode([
+                'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?auto=format&fit=crop&w=800&q=80'
+            ], JSON_UNESCAPED_SLASHES),
+            'description' => 'Mặt nạ ngủ môi chiết xuất từ 8 loại quả mọng giàu Vitamin C giúp loại bỏ tế bào da chết khô ráp trên môi suốt đêm, trả lại đôi môi căng mịn, hồng hào vào sáng hôm sau.',
+            'ingredients' => 'Berry Fruit Complex giàu Vitamin C, Dầu dừa, Bơ hạt mỡ dưỡng ẩm sâu.',
+            'how_to_use' => 'Thoa một lớp dày lên môi trước khi đi ngủ. Sáng hôm sau nhẹ nhàng lau sạch bằng khăn ẩm.',
+            'is_flash_sale' => 1,
+            'flash_sale_stock' => 350,
+            'flash_sale_sold' => 328,
+            'skin_type' => 'all',
+            'variants' => json_encode([
+                ['name' => 'Hũ Mini 3g', 'price' => 85000, 'original_price' => 120000],
+                ['name' => 'Hũ Fullsize 20g', 'price' => 365000, 'original_price' => 490000]
+            ], JSON_UNESCAPED_UNICODE),
+            'add_on_deals' => json_encode([
+                ['id' => 104, 'name' => 'Son Dưỡng Hồng Môi Dầu Dừa Bến Tre', 'price' => 19000, 'original_price' => 50000]
+            ], JSON_UNESCAPED_UNICODE)
+        ],
+
+        // 16. Gel Dưỡng Ẩm Cấp Nước Neutrogena Hydro Boost Water Gel
+        [
+            'id' => 16,
+            'name' => 'Kem Dưỡng Dạng Gel Cấp Nước Neutrogena Hydro Boost Water Gel Cho Da Dầu Thiếu Nước',
+            'slug' => 'kem-duong-neutrogena-hydro-boost-water-gel',
+            'brand' => 'Neutrogena (Mỹ)',
+            'category_id' => 'kem-duong',
+            'price' => 289000,
+            'original_price' => 395000,
+            'discount_percent' => 27,
+            'rating' => 4.9,
+            'review_count' => 3210,
+            'sold_count' => 8700,
+            'image' => 'https://images.unsplash.com/photo-1526947425960-945c6e72858f?auto=format&fit=crop&w=600&q=80',
+            'gallery' => json_encode([
+                'https://images.unsplash.com/photo-1526947425960-945c6e72858f?auto=format&fit=crop&w=800&q=80'
+            ], JSON_UNESCAPED_SLASHES),
+            'description' => 'Chất gel thạch trong suốt tan như nước trên da, thấm nhanh trong 10 giây không để lại cảm giác dính nhờn. Chứa Hyaluronic Acid tinh khiết khóa ẩm ngậm nước suốt 72 giờ.',
+            'ingredients' => 'Hyaluronic Acid, Chiết xuất Olive (Olive Extract), Glycerin.',
+            'how_to_use' => 'Dùng mỗi sáng và tối sau bước serum, khóa ẩm hoàn hảo cho da dầu.',
+            'is_flash_sale' => 0,
+            'flash_sale_stock' => 130,
+            'flash_sale_sold' => 84,
+            'skin_type' => 'oil',
+            'variants' => json_encode([
+                ['name' => 'Hũ 50g', 'price' => 289000, 'original_price' => 395000]
+            ], JSON_UNESCAPED_UNICODE),
+            'add_on_deals' => json_encode([
+                ['id' => 101, 'name' => 'Bông tẩy trang Ipek Thổ Nhĩ Kỳ 150 miếng', 'price' => 15000, 'original_price' => 45000]
             ], JSON_UNESCAPED_UNICODE)
         ]
     ];

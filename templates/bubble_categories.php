@@ -19,7 +19,10 @@
                 <div class="col">
                     <a href="javascript:void(0)" onclick="AliceApp.filterProducts('all', '<?= $cat['id'] ?>'); document.getElementById('san-pham-section').scrollIntoView({behavior: 'smooth'});" class="bubble-category-item">
                         <div class="bubble-circle-wrap">
-                            <img src="<?= htmlspecialchars($cat['image']) ?>" alt="<?= htmlspecialchars($cat['name']) ?>" class="bubble-img-inner">
+                            <img src="<?= htmlspecialchars($cat['image']) ?>" 
+                                 alt="<?= htmlspecialchars($cat['name']) ?>" 
+                                 class="bubble-img-inner"
+                                 onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=500&q=80';">
                             <span class="bubble-badge-count"><?= $cat['count'] ?></span>
                         </div>
                         <div class="bubble-name"><?= htmlspecialchars($cat['name']) ?></div>

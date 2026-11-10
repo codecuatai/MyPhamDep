@@ -1091,3 +1091,25 @@ a {
     display: inline-block;
     animation: flameWiggle 0.6s infinite ease-in-out;
 }
+
+/* Modal Close Button Reliability */
+.modal .btn-close {
+    z-index: 1070 !important;
+    position: relative;
+    cursor: pointer !important;
+    opacity: 0.75;
+    padding: 0.6rem !important;
+    transition: all 0.2s ease;
+}
+
+.modal .btn-close:hover {
+    opacity: 1;
+    transform: scale(1.15) rotate(90deg);
+}
+
+.modal-header .btn-close.position-absolute {
+    position: absolute !important;
+    top: 14px !important;
+    right: 14px !important;
+    z-index: 1080 !important;
+}

@@ -75,7 +75,7 @@
         <div class="modal-content rounded-4 border-0 overflow-hidden shadow-lg">
             <div class="modal-header border-0 pb-0" style="background: var(--primary-soft);">
                 <span class="badge rounded-pill bg-danger px-3 py-1 font-bold">MALL CHÍNH HÃNG 100%</span>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="AliceApp.closeModal(this)"></button>
             </div>
             <div class="modal-body p-4 pt-2">
                 <div class="row g-4">
