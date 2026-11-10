@@ -18,6 +18,7 @@ const AliceApp = {
     init() {
         this.loadStorage();
         this.checkAuth();
+        this.handleSocialRedirects();
         this.initFlashSaleTimer();
         this.bindEvents();
         this.updateCartBadge();
@@ -1061,6 +1062,42 @@ const AliceApp = {
         }
     },
 
+    async handleSocialRedirects() {
+        // 1. Kiểm tra access_token từ Facebook OAuth Redirect trong URL hash
+        if (window.location.hash && window.location.hash.includes('access_token=')) {
+            try {
+                const hash = window.location.hash.substring(1);
+                const params = new URLSearchParams(hash);
+                const accessToken = params.get('access_token');
+                if (accessToken) {
+                    // Xóa token trên thanh URL ngay lập tức để giữ URL sạch
+                    window.history.replaceState(null, null, window.location.pathname + window.location.search);
+                    this.showToast('Đang kết nối thông tin tài khoản Facebook...', 'info');
+
+                    const fbRes = await fetch(`https://graph.facebook.com/me?fields=id,name,email,picture.width(150).height(150)&access_token=${accessToken}`);
+                    const profile = await fbRes.json();
+
+                    if (profile && profile.name) {
+                        const fbName = profile.name;
+                        const fbEmail = profile.email || (`fb_${profile.id}@social.alice`);
+                        const fbAvatar = profile.picture?.data?.url || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80';
+                        await this.sendOAuthRequest('facebook', fbName, fbEmail, fbAvatar);
+                    } else if (profile && profile.error) {
+                        this.showToast('Lỗi Facebook: ' + (profile.error.message || 'Không thể lấy thông tin'), 'warning');
+                    }
+                }
+            } catch (err) {
+                console.error('Facebook redirect error:', err);
+            }
+        }
+
+        // 2. Kiểm tra nếu người dùng bấm Hủy trên Facebook Dialog
+        if (window.location.search && (window.location.search.includes('error=access_denied') || window.location.search.includes('error_reason=user_denied'))) {
+            this.showToast('Bạn đã từ chối cấp quyền đăng nhập Facebook!', 'info');
+            window.history.replaceState(null, null, window.location.pathname);
+        }
+    },
+
     async loginWithSocial(provider = 'google') {
         const isGoogle = (provider === 'google');
 
@@ -1113,34 +1150,53 @@ const AliceApp = {
 
         // 2. NẾU LÀ FACEBOOK VÀ ĐÃ CÓ FACEBOOK_APP_ID
         if (!isGoogle && window.FACEBOOK_APP_ID && window.FACEBOOK_APP_ID.trim() !== '') {
-            if (typeof FB !== 'undefined') {
-                try {
-                    FB.init({
-                        appId: window.FACEBOOK_APP_ID.trim(),
-                        cookie: true,
-                        xfbml: true,
-                        version: 'v19.0'
-                    });
-                } catch(e) {}
+            const appId = window.FACEBOOK_APP_ID.trim();
+            const redirectUri = window.location.origin + window.location.pathname;
+            const fbOAuthUrl = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${encodeURIComponent(appId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=public_profile,email`;
 
+            const redirectToFacebook = () => {
+                this.showToast('Đang chuyển hướng sang đăng nhập Facebook...', 'info');
+                setTimeout(() => {
+                    window.location.href = fbOAuthUrl;
+                }, 300);
+            };
+
+            if (typeof FB !== 'undefined') {
                 this.showToast('Đang mở cửa sổ đăng nhập Facebook...', 'info');
-                FB.login((response) => {
-                    if (response.authResponse) {
-                        FB.api('/me', { fields: 'name,email,picture.width(150).height(150)' }, async (profile) => {
-                            if (profile && profile.name) {
-                                const fbName = profile.name;
-                                const fbEmail = profile.email || (`fb_${profile.id}@social.alice`);
-                                const fbAvatar = profile.picture?.data?.url || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80';
-                                await this.sendOAuthRequest('facebook', fbName, fbEmail, fbAvatar);
+                const startTime = Date.now();
+
+                try {
+                    FB.login((response) => {
+                        const elapsed = Date.now() - startTime;
+                        if (response && response.authResponse) {
+                            FB.api('/me', { fields: 'name,email,picture.width(150).height(150)' }, async (profile) => {
+                                if (profile && profile.name) {
+                                    const fbName = profile.name;
+                                    const fbEmail = profile.email || (`fb_${profile.id}@social.alice`);
+                                    const fbAvatar = profile.picture?.data?.url || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80';
+                                    await this.sendOAuthRequest('facebook', fbName, fbEmail, fbAvatar);
+                                } else {
+                                    this.showToast('Không thể lấy thông tin trang cá nhân Facebook!', 'warning');
+                                }
+                            });
+                        } else {
+                            // Nếu callback chạy dưới 1200ms, chắc chắn trình duyệt đã chặn popup cửa sổ
+                            if (elapsed < 1200) {
+                                console.warn(`Popup bị trình duyệt chặn (thời gian: ${elapsed}ms). Tự động chuyển hướng sang Facebook OAuth...`);
+                                redirectToFacebook();
+                            } else {
+                                this.showToast('Bạn đã đóng hoặc hủy đăng nhập Facebook!', 'info');
                             }
-                        });
-                    } else {
-                        this.showToast('Bạn đã đóng hoặc hủy đăng nhập Facebook!', 'info');
-                    }
-                }, { scope: 'public_profile,email' });
+                        }
+                    }, { scope: 'public_profile,email', return_scopes: true });
+                } catch (err) {
+                    console.error('FB.login exception:', err);
+                    redirectToFacebook();
+                }
                 return;
             } else {
-                this.showToast('Đang kết nối Facebook SDK, vui lòng thử lại sau 1 giây...', 'info');
+                // Nếu Facebook SDK bị trình chặn quảng cáo chặn hoặc chưa tải xong, chuyển hướng trực tiếp
+                redirectToFacebook();
                 return;
             }
         }
@@ -1275,17 +1331,19 @@ const AliceApp = {
     }
 };
 
-// Khởi tạo Facebook SDK khi tải xong
-window.fbAsyncInit = function() {
-    if (window.FACEBOOK_APP_ID && window.FACEBOOK_APP_ID.trim() !== '') {
-        FB.init({
-            appId: window.FACEBOOK_APP_ID.trim(),
-            cookie: true,
-            xfbml: true,
-            version: 'v19.0'
-        });
-    }
-};
+// Khởi tạo Facebook SDK dự phòng nếu chưa khai báo ở header
+if (!window.fbAsyncInit) {
+    window.fbAsyncInit = function() {
+        if (window.FACEBOOK_APP_ID && window.FACEBOOK_APP_ID.trim() !== '') {
+            FB.init({
+                appId: window.FACEBOOK_APP_ID.trim(),
+                cookie: true,
+                xfbml: false,
+                version: 'v19.0'
+            });
+        }
+    };
+}
 
 // Khởi chạy khi DOM sẵn sàng
 document.addEventListener('DOMContentLoaded', () => {

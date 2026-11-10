@@ -51,6 +51,16 @@ $allProducts = $prodStmt->fetchAll();
     <script>
         window.GOOGLE_CLIENT_ID = "<?= htmlspecialchars(defined('GOOGLE_CLIENT_ID') ? GOOGLE_CLIENT_ID : '') ?>";
         window.FACEBOOK_APP_ID = "<?= htmlspecialchars(defined('FACEBOOK_APP_ID') ? FACEBOOK_APP_ID : '') ?>";
+        window.fbAsyncInit = function() {
+            if (window.FACEBOOK_APP_ID && window.FACEBOOK_APP_ID.trim() !== '') {
+                FB.init({
+                    appId: window.FACEBOOK_APP_ID.trim(),
+                    cookie: true,
+                    xfbml: false,
+                    version: 'v19.0'
+                });
+            }
+        };
     </script>
     <!-- Facebook SDK for JavaScript -->
     <script async defer crossorigin="anonymous" src="https://connect.facebook.net/vi_VN/sdk.js"></script>
