@@ -19,6 +19,7 @@ const AliceApp = {
         this.loadStorage();
         this.checkAuth();
         this.handleSocialRedirects();
+        this.initHeroCarousel();
         this.initFlashSaleTimer();
         this.bindEvents();
         this.updateCartBadge();
@@ -238,6 +239,23 @@ const AliceApp = {
             b.textContent = count;
             b.style.display = count > 0 ? 'flex' : 'none';
         });
+    },
+
+    // ==========================================
+    // 0. HERO LUXE BANNER AUTOPLAY (5s CONTINUOUS LOOP)
+    // ==========================================
+    initHeroCarousel() {
+        const carouselEl = document.getElementById('heroBannerCarousel');
+        if (!carouselEl || !window.bootstrap) return;
+
+        // Khởi tạo Bootstrap Carousel với chu kỳ 5 giây, quay vòng liên tục
+        const carousel = bootstrap.Carousel.getOrCreateInstance(carouselEl, {
+            interval: 5000,
+            ride: 'carousel',
+            pause: false, // Tiếp tục quay vòng kể cả khi rê chuột
+            wrap: true
+        });
+        carousel.cycle();
     },
 
     // ==========================================

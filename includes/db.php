@@ -197,7 +197,7 @@ function initDatabaseTables(PDO $pdo) {
     if ($bannerCount === 0) {
         $sampleBanners = [
             [
-                'title' => 'Vẻ Đẹp Rạng Ngời Từ Làn Da Thuần Khiết',
+                'title' => 'Vẻ Đẹp Thuần Khiết Từ Thiên Nhiên',
                 'subtitle' => 'Bộ sưu tập mỹ phẩm skincare & makeup chuẩn Hàn, cam kết chính hãng 100%, freeship từ 299k kèm hộp quà nơ hồng.',
                 'badge_text' => '🌸 MỪNG KHAI TRƯƠNG ALICE',
                 'image_url' => 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=1200&q=80',
@@ -206,9 +206,9 @@ function initDatabaseTables(PDO $pdo) {
                 'sort_order' => 1
             ],
             [
-                'title' => 'Săn Flash Sale Mỹ Phẩm Giảm Tới 50%',
-                'subtitle' => 'Serum phục hồi B5, kem chống nắng phổ rộng & son kem lì chính hãng giá sốc mỗi ngày.',
-                'badge_text' => '⚡ FLASH SALE CHỚP NHOÁNG',
+                'title' => 'Flash Sale Mỹ Phẩm Giảm Đến 50%',
+                'subtitle' => 'Săn ngay Serum B5 phục hồi, Kem chống nắng quang phổ rộng & Son kem lì chính hãng giá sốc mỗi ngày.',
+                'badge_text' => '⚡ FLASH SALE HÔM NAY',
                 'image_url' => 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=1200&q=80',
                 'link_url' => '#flash-sale-section',
                 'button_text' => 'Săn Deal Ngay',
@@ -216,7 +216,7 @@ function initDatabaseTables(PDO $pdo) {
             ],
             [
                 'title' => 'Set Quà Tặng Pink Box Cao Cấp',
-                'subtitle' => 'Combo Skincare đóng hộp nơ hồng pastel sang trọng, tặng kèm nến thơm & thiệp viết tay ý nghĩa.',
+                'subtitle' => 'Hộp quà nơ hồng pastel sang trọng, tặng kèm nến thơm & thiệp viết tay ý nghĩa cho người thương.',
                 'badge_text' => '🎁 QUÀ TẶNG YÊU THƯƠNG',
                 'image_url' => 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1200&q=80',
                 'link_url' => '#combo-routine',
