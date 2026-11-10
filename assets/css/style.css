@@ -1,0 +1,1091 @@
+/* ==========================================================================
+   ALICE COSMETIC - TONE HỒNG PASTEL CAO CẤP & HIỆN ĐẠI
+   Giao diện kết hợp tính thẩm mỹ Mộc Miên Books x Sức mạnh chuyển đổi Shopee
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Quicksand:wght@400;500;600;700;800&display=swap');
+
+:root {
+    --primary: #ff5c8a;
+    --primary-dark: #e03163;
+    --primary-light: #ff8dae;
+    --primary-soft: #fff0f5;
+    --primary-pastel: #ffe4ec;
+    --primary-border: #ffccd9;
+    --accent: #ff4081;
+    --gold: #d4a373;
+    --text-main: #3d2b33;
+    --text-muted: #7d6b73;
+    --bg-body: #fffbfd;
+    --card-shadow: 0 10px 30px rgba(255, 92, 138, 0.10);
+    --card-shadow-hover: 0 16px 36px rgba(255, 92, 138, 0.18);
+    --gradient-pink: linear-gradient(135deg, #ff758c 0%, #ff5c8a 100%);
+    --gradient-soft: linear-gradient(180deg, #fff0f5 0%, #fffbfd 100%);
+    --shopee-orange: #ee4d2d;
+    --font-heading: 'Playfair Display', Georgia, serif;
+    --font-body: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-body);
+    color: var(--text-main);
+    background-color: var(--bg-body);
+    line-height: 1.6;
+    overflow-x: hidden;
+    padding-bottom: 70px; /* Chừa chỗ cho Mobile Bottom Bar */
+}
+
+@media (min-width: 992px) {
+    body {
+        padding-bottom: 0;
+    }
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+    transition: all 0.25s ease;
+}
+
+/* ==========================================================================
+   1. TOP PROMO BAR (Mộc Miên Style)
+   ========================================================================== */
+.top-promo-bar {
+    background: var(--gradient-pink);
+    color: #ffffff;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 7px 0;
+    letter-spacing: 0.2px;
+}
+
+.top-promo-bar a {
+    color: #ffffff;
+}
+
+.top-badge-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.22);
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+}
+
+/* ==========================================================================
+   2. MAIN HEADER (Lai ghép Shopee Search + Mộc Miên Branding)
+   ========================================================================== */
+.site-header {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--primary-border);
+    position: sticky;
+    top: 0;
+    z-index: 1020;
+    transition: box-shadow 0.3s ease;
+}
+
+.brand-logo-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.brand-icon-box {
+    width: 44px;
+    height: 44px;
+    background: var(--gradient-pink);
+    color: #fff;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    box-shadow: 0 4px 14px rgba(255, 92, 138, 0.3);
+}
+
+.brand-name {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1.55rem;
+    color: var(--primary-dark);
+    letter-spacing: 0.5px;
+    line-height: 1.1;
+}
+
+.brand-sub {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--primary);
+    letter-spacing: 1px;
+}
+
+/* Shopee-style Search Box with Pink Aesthetics */
+.search-container {
+    position: relative;
+    width: 100%;
+}
+
+.search-input-group {
+    display: flex;
+    align-items: center;
+    background: var(--primary-soft);
+    border: 2px solid var(--primary-border);
+    border-radius: 999px;
+    padding: 4px 6px 4px 18px;
+    transition: all 0.25s ease;
+}
+
+.search-input-group:focus-within {
+    border-color: var(--primary);
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(255, 92, 138, 0.15);
+}
+
+.search-input-group input {
+    border: none;
+    outline: none;
+    background: transparent;
+    width: 100%;
+    font-size: 0.9rem;
+    color: var(--text-main);
+    font-family: var(--font-body);
+}
+
+.btn-search-pink {
+    background: var(--gradient-pink);
+    color: #ffffff;
+    border: none;
+    outline: none;
+    border-radius: 999px;
+    padding: 8px 18px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-search-pink:hover {
+    transform: scale(1.03);
+    box-shadow: 0 4px 12px rgba(255, 92, 138, 0.35);
+}
+
+.search-quick-tags {
+    display: flex;
+    gap: 10px;
+    font-size: 0.75rem;
+    margin-top: 5px;
+    color: var(--text-muted);
+}
+
+.search-quick-tags a:hover {
+    color: var(--primary);
+    text-decoration: underline;
+}
+
+/* Header Action Buttons */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.btn-header-icon {
+    position: relative;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--primary-soft);
+    color: var(--primary-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    border: 1px solid var(--primary-border);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-header-icon:hover {
+    background: var(--primary);
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 92, 138, 0.25);
+}
+
+.header-badge-count {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: var(--primary-dark);
+    color: #ffffff;
+    font-size: 0.7rem;
+    font-weight: 800;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #ffffff;
+}
+
+/* ==========================================================================
+   3. HERO BANNER & TRUST BADGES
+   ========================================================================== */
+.hero-pink-section {
+    background: linear-gradient(135deg, #fff0f5 0%, #ffe4ec 60%, #fffbfc 100%);
+    padding: 30px 0 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-pink-card {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 36px 32px;
+    box-shadow: var(--card-shadow);
+    border: 1px solid rgba(255, 204, 217, 0.5);
+    position: relative;
+    z-index: 2;
+}
+
+.hero-badge-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--primary-pastel);
+    color: var(--primary-dark);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    margin-bottom: 14px;
+    border: 1px solid var(--primary-border);
+}
+
+.hero-title {
+    font-family: var(--font-heading);
+    font-size: 2.3rem;
+    font-weight: 700;
+    color: var(--text-main);
+    line-height: 1.25;
+    margin-bottom: 12px;
+}
+
+.hero-title span {
+    color: var(--primary);
+    position: relative;
+}
+
+.hero-desc {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-bottom: 22px;
+}
+
+.btn-hero-cta {
+    background: var(--gradient-pink);
+    color: #ffffff;
+    border-radius: 999px;
+    padding: 12px 28px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 8px 20px rgba(255, 92, 138, 0.35);
+}
+
+.btn-hero-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 26px rgba(255, 92, 138, 0.45);
+    color: #ffffff;
+}
+
+.trust-badges-bar {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 16px 20px;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
+    border: 1px solid var(--primary-pastel);
+    margin-top: 20px;
+}
+
+.trust-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.trust-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: var(--primary-soft);
+    color: var(--primary-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.trust-text h6 {
+    font-weight: 700;
+    font-size: 0.85rem;
+    margin-bottom: 2px;
+}
+
+.trust-text p {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+/* ==========================================================================
+   4. BUBBLE CATEGORIES (Mộc Miên Books Cute Circular Style)
+   ========================================================================== */
+.section-bubble-categories {
+    padding: 30px 0 10px;
+}
+
+.bubble-category-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.25s ease;
+    padding: 10px;
+}
+
+.bubble-circle-wrap {
+    position: relative;
+    width: 82px;
+    height: 82px;
+    border-radius: 50%;
+    padding: 4px;
+    background: linear-gradient(135deg, #ffccd9 0%, #ff8dae 100%);
+    box-shadow: 0 8px 18px rgba(255, 92, 138, 0.16);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    margin-bottom: 8px;
+}
+
+.bubble-category-item:hover .bubble-circle-wrap {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 12px 24px rgba(255, 92, 138, 0.3);
+}
+
+.bubble-img-inner {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #ffffff;
+}
+
+.bubble-badge-count {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background: var(--primary-dark);
+    color: #ffffff;
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 999px;
+    border: 2px solid #ffffff;
+}
+
+.bubble-name {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text-main);
+    max-width: 100px;
+    line-height: 1.25;
+    transition: color 0.2s;
+}
+
+.bubble-category-item:hover .bubble-name {
+    color: var(--primary);
+}
+
+/* ==========================================================================
+   5. FLASH SALE WIDGET (Shopee Style with Pink Theme)
+   ========================================================================== */
+.section-flash-sale {
+    background: linear-gradient(180deg, #fff0f5 0%, #fffbfc 100%);
+    padding: 30px 0;
+    margin: 20px 0;
+    border-radius: 24px;
+    border: 1px solid var(--primary-border);
+}
+
+.flash-sale-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 24px;
+}
+
+.flash-sale-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.flash-sale-title h3 {
+    font-family: var(--font-heading);
+    font-weight: 800;
+    font-size: 1.6rem;
+    color: var(--primary-dark);
+    margin: 0;
+    letter-spacing: 0.5px;
+}
+
+.flash-sale-timer {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 800;
+    font-size: 0.85rem;
+}
+
+.timer-box {
+    background: #2d1822;
+    color: #ffffff;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 0.95rem;
+    min-width: 30px;
+    text-align: center;
+}
+
+/* Shopee-style Sold Progress Bar */
+.sold-progress-box {
+    position: relative;
+    background: #ffe0e9;
+    border-radius: 999px;
+    height: 18px;
+    overflow: hidden;
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+}
+
+.sold-progress-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: var(--gradient-pink);
+    border-radius: 999px;
+    transition: width 0.5s ease;
+}
+
+.sold-progress-text {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    text-align: center;
+    font-size: 0.68rem;
+    font-weight: 800;
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* ==========================================================================
+   6. PRODUCT CARD (Shopee + Boutique Hybrid)
+   ========================================================================== */
+.product-card {
+    background: #ffffff;
+    border-radius: 18px;
+    border: 1px solid var(--primary-pastel);
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
+}
+
+.product-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--card-shadow-hover);
+    border-color: var(--primary-border);
+}
+
+.product-thumb-wrap {
+    position: relative;
+    padding-top: 100%; /* 1:1 Aspect Ratio */
+    background: #fffafa;
+    overflow: hidden;
+}
+
+.product-thumb-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.product-card:hover .product-thumb-img {
+    transform: scale(1.06);
+}
+
+/* Shopee Badges */
+.badge-mall-official {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: #e03163;
+    color: #ffffff;
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    box-shadow: 0 2px 6px rgba(224, 49, 99, 0.35);
+    z-index: 2;
+}
+
+.badge-discount-tag {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #ffeaa7;
+    color: #d63031;
+    font-weight: 800;
+    font-size: 0.72rem;
+    padding: 3px 7px;
+    border-radius: 6px;
+    border: 1px solid rgba(214, 48, 49, 0.2);
+    z-index: 2;
+}
+
+.product-info-wrap {
+    padding: 14px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.product-brand {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--primary);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.product-name {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--text-main);
+    line-height: 1.35;
+    margin-bottom: 8px;
+    height: 2.7em;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.product-rating-sold {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+}
+
+.rating-stars {
+    color: #f59e0b;
+    font-weight: 700;
+}
+
+.product-price-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-top: auto;
+    margin-bottom: 12px;
+}
+
+.price-current {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--primary-dark);
+}
+
+.price-original {
+    font-size: 0.78rem;
+    color: #a09096;
+    text-decoration: line-through;
+}
+
+.btn-add-cart-pink {
+    background: var(--primary-soft);
+    color: var(--primary-dark);
+    border: 1px solid var(--primary-border);
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    width: 100%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.btn-add-cart-pink:hover {
+    background: var(--gradient-pink);
+    color: #ffffff;
+    border-color: transparent;
+    box-shadow: 0 4px 14px rgba(255, 92, 138, 0.3);
+}
+
+/* ==========================================================================
+   7. SKINCARE ROUTINE FILTER TABS
+   ========================================================================== */
+.routine-nav-tabs {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    scrollbar-width: none;
+}
+
+.routine-nav-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.routine-tab-btn {
+    white-space: nowrap;
+    background: #ffffff;
+    border: 1px solid var(--primary-border);
+    color: var(--text-main);
+    padding: 8px 18px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.routine-tab-btn.active, .routine-tab-btn:hover {
+    background: var(--gradient-pink);
+    color: #ffffff;
+    border-color: transparent;
+    box-shadow: 0 4px 12px rgba(255, 92, 138, 0.25);
+}
+
+/* ==========================================================================
+   8. SLIDE-OVER MINI CART DRAWER (Mộc Miên Style)
+   ========================================================================== */
+.cart-drawer-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(45, 24, 34, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 1060;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.cart-drawer-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.cart-drawer {
+    position: fixed;
+    top: 0;
+    right: -420px;
+    width: 100%;
+    max-width: 420px;
+    height: 100vh;
+    background: #ffffff;
+    z-index: 1070;
+    display: flex;
+    flex-direction: column;
+    box-shadow: -8px 0 30px rgba(0, 0, 0, 0.15);
+    transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cart-drawer.active {
+    right: 0;
+}
+
+.cart-drawer-header {
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--primary-pastel);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--primary-soft);
+}
+
+.cart-drawer-title {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: var(--primary-dark);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.freeship-progress-banner {
+    padding: 12px 20px;
+    background: #fff8fa;
+    border-bottom: 1px dashed var(--primary-border);
+}
+
+.freeship-progress-bar-wrap {
+    height: 8px;
+    background: #ffd6e0;
+    border-radius: 999px;
+    overflow: hidden;
+    margin-top: 6px;
+}
+
+.freeship-progress-bar-fill {
+    height: 100%;
+    background: var(--gradient-pink);
+    border-radius: 999px;
+    transition: width 0.4s ease;
+}
+
+.cart-drawer-body {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 16px 20px;
+}
+
+.cart-item-row {
+    display: flex;
+    gap: 12px;
+    padding-bottom: 14px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid var(--primary-pastel);
+}
+
+.cart-item-img {
+    width: 64px;
+    height: 64px;
+    border-radius: 12px;
+    object-fit: cover;
+    border: 1px solid var(--primary-border);
+}
+
+.cart-item-details {
+    flex-grow: 1;
+}
+
+.cart-item-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 4px;
+}
+
+.cart-item-variant {
+    font-size: 0.72rem;
+    color: var(--primary);
+    background: var(--primary-soft);
+    padding: 2px 6px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 6px;
+}
+
+.cart-item-price-qty {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.qty-control-group {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--primary-border);
+    border-radius: 999px;
+    overflow: hidden;
+    background: var(--primary-soft);
+}
+
+.qty-btn {
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: transparent;
+    color: var(--primary-dark);
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.qty-input {
+    width: 30px;
+    text-align: center;
+    border: none;
+    background: transparent;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.cart-drawer-footer {
+    padding: 18px 20px;
+    background: var(--primary-soft);
+    border-top: 1px solid var(--primary-border);
+}
+
+.btn-checkout-now {
+    background: var(--gradient-pink);
+    color: #ffffff;
+    border: none;
+    border-radius: 999px;
+    padding: 12px;
+    font-weight: 800;
+    font-size: 0.95rem;
+    width: 100%;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(255, 92, 138, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: transform 0.2s;
+}
+
+.btn-checkout-now:hover {
+    transform: scale(1.02);
+    color: #ffffff;
+}
+
+/* ==========================================================================
+   9. VIETQR POPUP & MODALS
+   ========================================================================== */
+.vietqr-card {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    border: 2px dashed var(--primary);
+    text-align: center;
+}
+
+.qr-code-img {
+    max-width: 260px;
+    width: 100%;
+    border-radius: 12px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+    margin: 12px auto;
+}
+
+.copy-pill-box {
+    background: var(--primary-soft);
+    border: 1px solid var(--primary-border);
+    border-radius: 12px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 0.85rem;
+}
+
+.btn-copy-code {
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* ==========================================================================
+   10. MOBILE BOTTOM NAVIGATION (Chuẩn App Shopee)
+   ========================================================================== */
+.mobile-bottom-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid var(--primary-border);
+    z-index: 1030;
+    padding: 6px 0 8px;
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.05);
+}
+
+@media (max-width: 991.98px) {
+    .mobile-bottom-nav {
+        display: block;
+    }
+}
+
+.mobile-nav-grid {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    color: var(--text-muted);
+    font-size: 0.68rem;
+    font-weight: 700;
+    position: relative;
+    cursor: pointer;
+}
+
+.mobile-nav-item.active, .mobile-nav-item:hover {
+    color: var(--primary);
+}
+
+.mobile-nav-icon {
+    font-size: 1.25rem;
+}
+
+/* ==========================================================================
+   11. FLOATING CONTACT BUTTONS (Mộc Miên Style)
+   ========================================================================== */
+.floating-contact-wrap {
+    position: fixed;
+    bottom: 85px;
+    right: 20px;
+    z-index: 1010;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+@media (min-width: 992px) {
+    .floating-contact-wrap {
+        bottom: 25px;
+    }
+}
+
+.btn-float-action {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    font-size: 1.3rem;
+    transition: transform 0.25s, box-shadow 0.25s;
+    cursor: pointer;
+}
+
+.btn-float-zalo {
+    background: #0068ff;
+}
+
+.btn-float-messenger {
+    background: #0084ff;
+}
+
+.btn-float-hotline {
+    background: var(--gradient-pink);
+}
+
+.btn-float-action:hover {
+    transform: scale(1.1) rotate(5deg);
+    color: #ffffff;
+}
+
+/* ==========================================================================
+   12. FOOTER BO CONG PASTEL
+   ========================================================================== */
+.site-footer {
+    background: linear-gradient(180deg, #fff0f5 0%, #ffe4ec 100%);
+    border-top: 1px solid var(--primary-border);
+    padding: 50px 0 20px;
+    margin-top: 50px;
+    border-top-left-radius: 36px;
+    border-top-right-radius: 36px;
+}
+
+/* ==========================================================================
+   13. TOAST NOTIFICATIONS
+   ========================================================================== */
+.alice-toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1090;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.alice-toast {
+    background: #ffffff;
+    border-left: 5px solid var(--primary);
+    border-radius: 12px;
+    padding: 12px 18px;
+    box-shadow: 0 8px 24px rgba(255, 92, 138, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    min-width: 280px;
+    animation: slideInRight 0.3s ease;
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes flameWiggle {
+    0%, 100% { transform: rotate(-4deg); }
+    50% { transform: rotate(4deg); }
+}
+
+.flame-icon {
+    display: inline-block;
+    animation: flameWiggle 0.6s infinite ease-in-out;
+}

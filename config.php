@@ -1,0 +1,61 @@
+<?php
+/**
+ * CẤU HÌNH HỆ THỐNG - ALICE COSMETIC
+ * Giao diện Tone Hồng Pastel ngọt ngào & sang trọng
+ * Tự động hóa bán hàng mỹ phẩm, thanh toán VietQR & lưu Google Sheets
+ */
+
+define('APP_NAME', 'ALICE Cosmetic');
+define('APP_VERSION', '1.0.0');
+
+// Cấu hình Database (Mặc định SQLite - Chạy ngay với PHP không cần cài MySQL)
+define('DB_DRIVER', 'sqlite'); 
+define('DB_SQLITE_PATH', __DIR__ . '/database/mypham.sqlite');
+
+// Cấu hình MySQL (nếu muốn dùng thay cho SQLite)
+define('DB_HOST', 'localhost');
+define('DB_NAME', 'alice_cosmetic');
+define('DB_USER', 'root');
+define('DB_PASS', '');
+
+// Thông tin cửa hàng mặc định
+define('SHOP_CONFIG', [
+    'shop_name'     => 'ALICE Cosmetic',
+    'legal_name'    => 'ALICE COSMETIC VIỆT NAM — THẾ GIỚI MỸ PHẨM CHÍNH HÃNG',
+    'slogan'        => 'ALICE Cosmetic — Đánh thức vẻ đẹp rạng rỡ của làn da bạn!',
+    'hotline'       => '0869.571.734',
+    'zalo'          => '0869571734',
+    'email'         => 'cskh@alicecosmetic.vn',
+    'address'       => '175 Tây Sơn, Đống Đa, Hà Nội',
+    'freeship_min'  => 299000, // Freeship từ 299.000đ
+    
+    // Mạng xã hội & Kênh liên hệ
+    'facebook_url'  => 'https://facebook.com',
+    'messenger_url' => 'https://m.me/alicecosmetic',
+    'zalo_url'      => 'https://zalo.me/0869571734',
+    'tiktok_url'    => 'https://tiktok.com/@alicecosmetic',
+    'instagram_url' => 'https://instagram.com/alicecosmetic',
+
+    // Cấu hình VietQR mặc định (Có thể thay đổi trong modal Admin Cài Đặt)
+    'bank_id'       => 'MB',
+    'bank_name'     => 'MBBank - Ngân hàng TMCP Quân Đội',
+    'account_no'    => '0869571734',
+    'account_name'  => 'ALICE COSMETIC',
+    'qr_template'   => 'compact2',
+
+    // Đồng bộ đơn hàng về Google Sheets (qua Google Apps Script WebApp)
+    'google_sheet_webhook' => 'https://script.google.com/macros/s/AKfycbwwnmNJvhW77HaXTrzTjiOmWjtzbJNPxrVJkiuMXppd96TgJ-tGpSGB5HsC39ESOsJs/exec'
+]);
+
+// Danh sách ngân hàng VietQR hỗ trợ
+define('VIETQR_BANKS', [
+    ['id' => 'MB',   'name' => 'MBBank - Ngân hàng TMCP Quân Đội', 'bin' => '970422'],
+    ['id' => 'VCB',  'name' => 'Vietcombank - Ngoại Thương VN',     'bin' => '970436'],
+    ['id' => 'TCB',  'name' => 'Techcombank - Kỹ Thương VN',       'bin' => '970407'],
+    ['id' => 'BIDV', 'name' => 'BIDV - Đầu tư & Phát triển VN',    'bin' => '970418'],
+    ['id' => 'ICB',  'name' => 'VietinBank - Công Thương VN',      'bin' => '970415'],
+    ['id' => 'ACB',  'name' => 'ACB - Ngân hàng Á Châu',           'bin' => '970416'],
+    ['id' => 'VPB',  'name' => 'VPBank - Việt Nam Thịnh Vượng',    'bin' => '970432'],
+    ['id' => 'TPB',  'name' => 'TPBank - Tiên Phong',              'bin' => '970423'],
+    ['id' => 'VIB',  'name' => 'VIB - Quốc Tế',                    'bin' => '970441']
+]);

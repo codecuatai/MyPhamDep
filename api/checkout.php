@@ -1,0 +1,139 @@
+<?php
+/**
+ * API ĐẶT HÀNG & TẠO VIETQR TỰ ĐỘNG - ALICE COSMETIC
+ */
+
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/functions.php';
+
+header('Content-Type: application/json; charset=utf-8');
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    jsonResponse(['success' => false, 'message' => 'Phương thức không được hỗ trợ'], 405);
+}
+
+$input = json_decode(file_get_contents('php://input'), true);
+if (!$input) {
+    $input = $_POST;
+}
+
+$pdo = getDbConnection();
+$config = getShopConfig($pdo);
+
+$customerName   = cleanInput($input['customer_name'] ?? '');
+$phone          = cleanInput($input['phone'] ?? '');
+$address        = cleanInput($input['address'] ?? '');
+$note           = cleanInput($input['note'] ?? '');
+$paymentMethod  = cleanInput($input['payment_method'] ?? 'vietqr');
+$couponCode     = cleanInput($input['coupon_code'] ?? '');
+$totalAmount    = (float)($input['total_amount'] ?? 0);
+$discountAmount = (float)($input['discount_amount'] ?? 0);
+$finalAmount    = (float)($input['final_amount'] ?? ($totalAmount - $discountAmount));
+$items          = $input['items'] ?? [];
+
+if (empty($customerName) || empty($phone) || empty($address)) {
+    jsonResponse(['success' => false, 'message' => 'Vui lòng điền đầy đủ Họ tên, Số điện thoại và Địa chỉ nhận hàng!'], 400);
+}
+
+if (empty($items)) {
+    jsonResponse(['success' => false, 'message' => 'Giỏ hàng đang trống! Vui lòng chọn sản phẩm mỹ phẩm yêu thích.'], 400);
+}
+
+$orderCode = generateOrderCode();
+$itemsJson = json_encode($items, JSON_UNESCAPED_UNICODE);
+
+// Thêm vào cơ sở dữ liệu
+try {
+    $stmt = $pdo->prepare("INSERT INTO orders 
+        (order_code, customer_name, phone, address, note, payment_method, total_amount, discount_amount, final_amount, coupon_code, items_json, payment_status, sync_status, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'pending', datetime('now', 'localtime'))");
+    $stmt->execute([
+        $orderCode, $customerName, $phone, $address, $note,
+        $paymentMethod, $totalAmount, $discountAmount, $finalAmount,
+        $couponCode, $itemsJson
+    ]);
+} catch (Exception $e) {
+    jsonResponse(['success' => false, 'message' => 'Lỗi tạo đơn hàng: ' . $e->getMessage()], 500);
+}
+
+// Tạo thông tin VietQR nếu thanh toán qua chuyển khoản
+$vietqrData = null;
+if ($paymentMethod === 'vietqr') {
+    $bankId = $config['bank_id'] ?? 'MB';
+    $accountNo = $config['account_no'] ?? '0869571734';
+    $accountName = $config['account_name'] ?? 'ALICE COSMETIC';
+    $template = $config['qr_template'] ?? 'compact2';
+
+    // Nội dung chuyển khoản chuẩn: Mã đơn hàng
+    $addInfo = urlencode($orderCode);
+    $accNameEncoded = urlencode($accountName);
+    
+    $qrUrl = "https://api.vietqr.io/image/{$bankId}-{$accountNo}-{$template}.jpg?amount={$finalAmount}&addInfo={$addInfo}&accountName={$accNameEncoded}";
+
+    $vietqrData = [
+        'bank_id' => $bankId,
+        'bank_name' => $config['bank_name'] ?? 'MBBank',
+        'account_no' => $accountNo,
+        'account_name' => $accountName,
+        'amount' => $finalAmount,
+        'amount_formatted' => formatVND($finalAmount),
+        'add_info' => $orderCode,
+        'qr_image_url' => $qrUrl
+    ];
+}
+
+// Tự động đồng bộ sang Google Sheets nếu đã cấu hình WebApp URL
+$syncSuccess = false;
+$webhookUrl = $config['google_sheet_webhook'] ?? '';
+if (!empty($webhookUrl)) {
+    try {
+        $itemNames = array_map(function($it) {
+            $name = $it['name'] ?? 'Sản phẩm';
+            $variant = !empty($it['variant_name']) ? " (" . $it['variant_name'] . ")" : "";
+            $qty = $it['quantity'] ?? 1;
+            return "{$name}{$variant} x{$qty}";
+        }, $items);
+
+        $payload = [
+            'action' => 'create_order',
+            'orderCode' => $orderCode,
+            'customerName' => $customerName,
+            'phone' => $phone,
+            'address' => $address,
+            'note' => $note,
+            'paymentMethod' => $paymentMethod === 'vietqr' ? 'VietQR Chuyển Khoản' : 'COD (Thanh toán khi nhận)',
+            'totalAmount' => $finalAmount,
+            'items' => implode(', ', $itemNames),
+            'createdAt' => date('d/m/Y H:i:s')
+        ];
+
+        $ch = curl_init($webhookUrl);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 3); // Timeout ngắn để không bắt khách chờ
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($httpCode >= 200 && $httpCode < 400) {
+            $syncSuccess = true;
+            $pdo->prepare("UPDATE orders SET sync_status = 'synced' WHERE order_code = ?")->execute([$orderCode]);
+        }
+    } catch (Exception $e) {
+        // Log quietly
+    }
+}
+
+jsonResponse([
+    'success' => true,
+    'message' => 'Đặt hàng thành công tại ALICE Cosmetic!',
+    'order_code' => $orderCode,
+    'final_amount' => $finalAmount,
+    'final_amount_formatted' => formatVND($finalAmount),
+    'payment_method' => $paymentMethod,
+    'vietqr' => $vietqrData,
+    'synced_to_sheets' => $syncSuccess
+]);

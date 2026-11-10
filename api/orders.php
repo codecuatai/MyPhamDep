@@ -1,0 +1,48 @@
+<?php
+/**
+ * API TRA CỨU ĐƠN HÀNG - ALICE COSMETIC
+ */
+
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/functions.php';
+
+header('Content-Type: application/json; charset=utf-8');
+
+$pdo = getDbConnection();
+
+$action = $_GET['action'] ?? 'lookup';
+
+if ($action === 'confirm_payment') {
+    $orderCode = cleanInput($_POST['order_code'] ?? '');
+    if (!empty($orderCode)) {
+        $stmt = $pdo->prepare("UPDATE orders SET payment_status = 'paid' WHERE order_code = ?");
+        $stmt->execute([$orderCode]);
+        jsonResponse(['success' => true, 'message' => 'Đã xác nhận thanh toán cho đơn hàng ' . $orderCode]);
+    }
+    jsonResponse(['success' => false, 'message' => 'Mã đơn không hợp lệ'], 400);
+}
+
+// Tra cứu theo số điện thoại hoặc mã đơn
+$query = trim($_GET['q'] ?? '');
+
+if (empty($query)) {
+    // Trả về 10 đơn gần nhất (đối với view client)
+    $stmt = $pdo->query("SELECT order_code, customer_name, phone, final_amount, payment_method, payment_status, created_at, items_json FROM orders ORDER BY id DESC LIMIT 10");
+    $orders = $stmt->fetchAll();
+    foreach ($orders as &$o) {
+        $o['items'] = json_decode($o['items_json'] ?: '[]', true);
+        $o['final_amount_formatted'] = formatVND($o['final_amount']);
+    }
+    jsonResponse(['orders' => $orders]);
+}
+
+$stmt = $pdo->prepare("SELECT order_code, customer_name, phone, address, final_amount, payment_method, payment_status, created_at, items_json FROM orders WHERE order_code = ? OR phone = ? ORDER BY id DESC");
+$stmt->execute([$query, $query]);
+$orders = $stmt->fetchAll();
+
+foreach ($orders as &$o) {
+    $o['items'] = json_decode($o['items_json'] ?: '[]', true);
+    $o['final_amount_formatted'] = formatVND($o['final_amount']);
+}
+
+jsonResponse(['orders' => $orders]);
