@@ -55,9 +55,13 @@ jobs:
       - name: 🚀 Deploy to Heroku
         id: deploy
         env:
-          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY || secrets.HEROKU_TOKEN || secrets.HEROKU_APIKEY }}
-          HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME || vars.HEROKU_APP_NAME || secrets.HEROKU_APP }}
+          SECRET_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+          SECRET_APP_NAME: ${{ secrets.HEROKU_APP_NAME }}
+          VAR_APP_NAME: ${{ vars.HEROKU_APP_NAME }}
         run: |
+          HEROKU_API_KEY="${SECRET_API_KEY}"
+          HEROKU_APP_NAME="${SECRET_APP_NAME:-$VAR_APP_NAME}"
+
           if [ -z "$HEROKU_API_KEY" ]; then
             echo "::error title=Thiếu HEROKU_API_KEY::Không tìm thấy HEROKU_API_KEY trong GitHub Secrets!"
             exit 1
