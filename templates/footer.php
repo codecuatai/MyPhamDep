@@ -42,6 +42,7 @@
                 <ul class="list-unstyled small text-muted d-flex flex-column gap-2 mb-0">
                     <li><a href="javascript:void(0)">Câu chuyện thương hiệu ALICE</a></li>
                     <li><a href="javascript:void(0)">Cam kết hàng chính hãng 100%</a></li>
+                    <li><a href="privacy.php" class="text-pink-600 font-bold">Chính sách bảo mật & Quyền riêng tư</a></li>
                     <li><a href="javascript:void(0)">Dịch vụ đóng hộp quà & viết thiệp</a></li>
                     <li><a href="javascript:void(0)">Tuyển dụng & Đối tác nhượng quyền</a></li>
                     <li><a href="javascript:void(0)">Hệ thống cửa hàng phân phối</a></li>
