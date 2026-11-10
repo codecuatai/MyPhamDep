@@ -53,11 +53,11 @@ jobs:
           fetch-depth: 0
 
       - name: 🚀 Deploy to Heroku
+        id: deploy
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY || secrets.HEROKU_TOKEN || secrets.HEROKU_APIKEY }}
           HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME || vars.HEROKU_APP_NAME || secrets.HEROKU_APP }}
         run: |
-          # 1. Kiểm tra tồn tại của biến môi trường
           if [ -z "$HEROKU_API_KEY" ]; then
             echo "::error title=Thiếu HEROKU_API_KEY::Không tìm thấy HEROKU_API_KEY trong GitHub Secrets!"
             exit 1
@@ -68,10 +68,9 @@ jobs:
             exit 1
           fi
 
-          echo "🔍 Đang xác thực thông tin với Heroku API..."
+          echo "🔍 Đang xác thực với Heroku API..."
           echo "🎯 Heroku App Name: $HEROKU_APP_NAME"
 
-          # 2. Pre-flight check: Kiểm tra API Key và Tên App trực tiếp qua Heroku API
           HTTP_STATUS=$(curl -s -o heroku_api_check.json -w "%{http_code}" \
             -H "Accept: application/vnd.heroku+json; version=3" \
             -H "Authorization: Bearer $HEROKU_API_KEY" \
@@ -80,19 +79,21 @@ jobs:
           echo "Mã phản hồi từ Heroku API: $HTTP_STATUS"
 
           if [ "$HTTP_STATUS" -eq 401 ]; then
-            echo "::error title=Lỗi xác thực Heroku (401)::HEROKU_API_KEY không chính xác hoặc đã hết hạn. Hãy kiểm tra lại API Key trong Heroku Account Settings!"
+            echo "::error title=Lỗi xác thực (401)::Mã HEROKU_API_KEY không hợp lệ hoặc đã hết hạn!"
             exit 1
           elif [ "$HTTP_STATUS" -eq 404 ]; then
-            echo "::error title=Không tìm thấy App Heroku (404)::Không tìm thấy ứng dụng có tên '$HEROKU_APP_NAME' trên Heroku. Hãy kiểm tra lại tên App trong Heroku Dashboard (lưu ý chữ hoa/thường hoặc gõ sai tên)!"
+            echo "::error title=Không tìm thấy App (404)::App '$HEROKU_APP_NAME' không tồn tại trên tài khoản Heroku này!"
             exit 1
           elif [ "$HTTP_STATUS" -ne 200 ]; then
             echo "::error title=Lỗi Heroku API ($HTTP_STATUS)::$(cat heroku_api_check.json)"
             exit 1
           fi
 
-          echo "✅ Xác thực Heroku API thành công! Ứng dụng '$HEROKU_APP_NAME' tồn tại và sẵn sàng nhận code."
+          WEB_URL=$(jq -r '.web_url' heroku_api_check.json)
+          echo "web_url=$WEB_URL" >> $GITHUB_OUTPUT
+          echo "✅ Xác thực thành công! URL Website: $WEB_URL"
 
-          # 3. Cấu hình git & netrc để đẩy code
+          # Cấu hình git & netrc
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
@@ -106,10 +107,10 @@ jobs:
           EOF
           chmod 600 ~/.netrc
 
-          # Add Remote Heroku
+          # Add Remote Heroku và Push code
           git remote add heroku "https://git.heroku.com/${HEROKU_APP_NAME}.git"
 
-          echo "🚀 Đang đẩy code lên Heroku..."
+          echo "🚀 Đang build và deploy lên Heroku..."
           PUSH_LOG=$(git push heroku HEAD:main --force 2>&1)
           PUSH_EXIT=$?
 
@@ -126,18 +127,18 @@ jobs:
             exit $PUSH_EXIT
           fi
 
-          echo "🎉 Đẩy mã nguồn lên Heroku thành công!"
+          echo "🎉 Đã deploy thành công lên Heroku!"
 
       - name: 🩺 Smoke Test / Health Check Live Site
         env:
-          HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME || vars.HEROKU_APP_NAME || secrets.HEROKU_APP }}
+          LIVE_URL: ${{ steps.deploy.outputs.web_url }}
         run: |
-          echo "Đang đợi Heroku Dyno khởi động..."
+          echo "Đang đợi Heroku Dyno khởi động tại $LIVE_URL ..."
           sleep 12
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://${HEROKU_APP_NAME}.herokuapp.com/")
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$LIVE_URL")
           echo "Health Check Response Code: $HTTP_STATUS"
           if [ "$HTTP_STATUS" -eq 200 ] || [ "$HTTP_STATUS" -eq 301 ] || [ "$HTTP_STATUS" -eq 302 ]; then
-            echo "🎉 Website ALICE Cosmetic đã online và hoạt động bình thường!"
+            echo "🎉 Website ALICE Cosmetic đã online tại: $LIVE_URL"
           else
             echo "⚠️ Phản hồi HTTP $HTTP_STATUS từ Heroku."
           fi
