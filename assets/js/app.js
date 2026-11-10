@@ -294,6 +294,64 @@ const AliceApp = {
             document.getElementById('pdp-ingredients').textContent = product.ingredients || 'Thành phần an toàn, lành tính theo chuẩn quốc tế.';
             document.getElementById('pdp-howtouse').textContent = product.how_to_use || 'Sử dụng đều đặn mỗi ngày sau bước làm sạch.';
 
+            // Populate Specs & Inventory
+            const stockQty = (typeof product.stock_quantity !== 'undefined') ? parseInt(product.stock_quantity) : 50;
+            const origin = product.origin || 'Chính hãng nhập khẩu';
+            const capacity = product.capacity || 'Tiêu chuẩn';
+            const expiry = product.expiry || '36 tháng kể từ NSX';
+
+            const elStockQty = document.getElementById('pdp-stock-qty');
+            if (elStockQty) elStockQty.textContent = stockQty;
+            const elOrigin = document.getElementById('pdp-origin');
+            if (elOrigin) elOrigin.textContent = origin;
+            const elCapacity = document.getElementById('pdp-capacity');
+            if (elCapacity) elCapacity.textContent = capacity;
+            const elExpiry = document.getElementById('pdp-expiry');
+            if (elExpiry) elExpiry.textContent = expiry;
+
+            const elSpecBrand = document.getElementById('pdp-spec-brand');
+            if (elSpecBrand) elSpecBrand.textContent = product.brand || 'ALICE';
+            const elSpecOrigin = document.getElementById('pdp-spec-origin');
+            if (elSpecOrigin) elSpecOrigin.textContent = origin;
+            const elSpecCap = document.getElementById('pdp-spec-capacity');
+            if (elSpecCap) elSpecCap.textContent = capacity;
+            const elSpecExp = document.getElementById('pdp-spec-expiry');
+            if (elSpecExp) elSpecExp.textContent = expiry;
+            const elSpecStock = document.getElementById('pdp-spec-stock');
+            if (elSpecStock) {
+                elSpecStock.innerHTML = stockQty > 0 
+                    ? `<span class="text-success fw-bold"><i class="fa-solid fa-circle-check me-1"></i>Còn hàng (${stockQty} sản phẩm)</span>` 
+                    : `<span class="text-danger fw-bold"><i class="fa-solid fa-circle-xmark me-1"></i>Tạm hết hàng</span>`;
+            }
+
+            // Stock Badge
+            const elStockBadge = document.getElementById('pdp-stock-badge');
+            if (elStockBadge) {
+                if (stockQty > 10) {
+                    elStockBadge.innerHTML = `<span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1"><i class="fa-solid fa-circle-check me-1"></i>Còn hàng (${stockQty})</span>`;
+                } else if (stockQty > 0) {
+                    elStockBadge.innerHTML = `<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1"><i class="fa-solid fa-fire me-1"></i>Sắp hết hàng (${stockQty})</span>`;
+                } else {
+                    elStockBadge.innerHTML = `<span class="badge bg-danger text-white px-2 py-1"><i class="fa-solid fa-circle-xmark me-1"></i>Hết hàng (0)</span>`;
+                }
+            }
+
+            // Disable Add to Cart button if out of stock
+            const btnAddToCart = document.getElementById('pdp-btn-add-cart');
+            if (btnAddToCart) {
+                if (stockQty <= 0) {
+                    btnAddToCart.disabled = true;
+                    btnAddToCart.style.opacity = '0.55';
+                    btnAddToCart.style.cursor = 'not-allowed';
+                    btnAddToCart.innerHTML = `<i class="fa-solid fa-circle-xmark me-2"></i>Tạm Hết Hàng Trong Kho`;
+                } else {
+                    btnAddToCart.disabled = false;
+                    btnAddToCart.style.opacity = '1';
+                    btnAddToCart.style.cursor = 'pointer';
+                    btnAddToCart.innerHTML = `<i class="fa-solid fa-cart-shopping me-2"></i>Thêm Vào Giỏ Hàng`;
+                }
+            }
+
             // Image Gallery
             const mainImg = document.getElementById('pdp-main-img');
             mainImg.src = product.image;
@@ -445,6 +503,13 @@ const AliceApp = {
     addToCartCurrentProduct() {
         if (!this.currentProductDetail) return;
         const p = this.currentProductDetail;
+        
+        // Kiểm tra tồn kho trước khi thêm vào giỏ
+        if (typeof p.stock_quantity !== 'undefined' && parseInt(p.stock_quantity) <= 0) {
+            this.showToast('Sản phẩm "' + p.name + '" tạm thời đã hết hàng trong kho!', 'warning');
+            return;
+        }
+
         const variant = this.selectedVariant;
         const variantName = variant ? variant.name : '';
         const price = variant ? variant.price : p.price;
@@ -776,24 +841,18 @@ const AliceApp = {
         document.getElementById('vqr-account-no').textContent = vqr.account_no;
         document.getElementById('vqr-account-name').textContent = vqr.account_name;
         document.getElementById('vqr-add-info').textContent = vqr.add_info;
-        document.getElementById('vqr-image').src = vqr.qr_image_url;
 
-        // Sinh link và mã QR Quét Điện Thoại Tự Động (Cross-Device Pay)
+        // Sinh link xác nhận thanh toán quét bằng Camera / Zalo điện thoại
         const payUrl = window.location.origin + '/pay.php?code=' + encodeURIComponent(orderData.order_code);
-        const mobileQrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=8&data=' + encodeURIComponent(payUrl);
-        const mobileImg = document.getElementById('vqr-mobile-image');
-        if (mobileImg) mobileImg.src = mobileQrUrl;
+        const smartQrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=8&data=' + encodeURIComponent(payUrl);
+        const vqrImg = document.getElementById('vqr-image');
+        if (vqrImg) {
+            vqrImg.src = smartQrUrl;
+        }
 
         // Reset trạng thái hiển thị
         const statusText = document.getElementById('vqr-status-text');
-        if (statusText) statusText.innerHTML = 'Đang chờ bạn quét mã bằng điện thoại...';
-
-        // Chọn tab mặc định là Quét Điện Thoại
-        const mobileTabBtn = document.getElementById('tab-qr-mobile-btn');
-        if (mobileTabBtn && window.bootstrap) {
-            const tab = bootstrap.Tab.getOrCreateInstance(mobileTabBtn);
-            tab.show();
-        }
+        if (statusText) statusText.innerHTML = 'Hệ thống đang tự động nhận diện thanh toán...';
 
         // Bắt đầu lắng nghe tự động (Polling từ điện thoại)
         this.startPaymentPolling(orderData.order_code);

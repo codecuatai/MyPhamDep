@@ -218,6 +218,11 @@ $isAdmin = ($currentUser && ($currentUser['role'] ?? '') === 'admin');
                 </button>
             </li>
             <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-banners" type="button" onclick="AdminApp.loadBanners()">
+                    <i class="fa-solid fa-images me-1"></i>Banner Quảng Cáo (<span id="count-banners-badge">0</span>)
+                </button>
+            </li>
+            <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-coupons" type="button" onclick="AdminApp.loadCoupons()">
                     <i class="fa-solid fa-ticket me-1"></i>Mã Giảm Giá
                 </button>
@@ -240,7 +245,7 @@ $isAdmin = ($currentUser && ($currentUser['role'] ?? '') === 'admin');
             <!-- TAB 1: TỔNG QUAN -->
             <div class="tab-pane fade show active" id="tab-dashboard" role="tabpanel">
                 <div class="row g-3 mb-4">
-                    <div class="col-12 col-sm-6 col-xl-3">
+                    <div class="col-12 col-sm-6 col-xl">
                         <div class="stat-card">
                             <div class="d-flex align-items-center justify-content-between mb-2">
                                 <span class="text-muted small fw-semibold">DOANH THU ĐÃ THU</span>
@@ -249,10 +254,10 @@ $isAdmin = ($currentUser && ($currentUser['role'] ?? '') === 'admin');
                                 </div>
                             </div>
                             <h3 class="fw-bold mb-1" id="stat-revenue" style="color: #16a34a;">0₫</h3>
-                            <div class="text-muted small">Từ các đơn VietQR & Đã giao</div>
+                            <div class="text-muted small">Đơn VietQR & Đã giao</div>
                         </div>
                     </div>
-                    <div class="col-12 col-sm-6 col-xl-3">
+                    <div class="col-12 col-sm-6 col-xl">
                         <div class="stat-card">
                             <div class="d-flex align-items-center justify-content-between mb-2">
                                 <span class="text-muted small fw-semibold">TỔNG ĐƠN HÀNG</span>
@@ -264,7 +269,7 @@ $isAdmin = ($currentUser && ($currentUser['role'] ?? '') === 'admin');
                             <div class="text-muted small"><span id="stat-pending-orders" class="text-danger fw-bold">0</span> đơn chờ duyệt</div>
                         </div>
                     </div>
-                    <div class="col-12 col-sm-6 col-xl-3">
+                    <div class="col-12 col-sm-6 col-xl">
                         <div class="stat-card">
                             <div class="d-flex align-items-center justify-content-between mb-2">
                                 <span class="text-muted small fw-semibold">SẢN PHẨM MỸ PHẨM</span>
@@ -273,20 +278,61 @@ $isAdmin = ($currentUser && ($currentUser['role'] ?? '') === 'admin');
                                 </div>
                             </div>
                             <h3 class="fw-bold mb-1 text-dark" id="stat-products">0</h3>
-                            <div class="text-muted small">Son, serum, kem chống nắng...</div>
+                            <div class="text-muted small">Kho mỹ phẩm ALICE</div>
                         </div>
                     </div>
-                    <div class="col-12 col-sm-6 col-xl-3">
+                    <div class="col-12 col-sm-6 col-xl">
                         <div class="stat-card">
                             <div class="d-flex align-items-center justify-content-between mb-2">
-                                <span class="text-muted small fw-semibold">THÀNH VIÊN ĐĂNG KÝ</span>
-                                <div class="stat-icon" style="background: #ede9fe; color: #7c3aed;">
-                                    <i class="fa-solid fa-users"></i>
+                                <span class="text-muted small fw-semibold">CẢNH BÁO TỒN KHO</span>
+                                <div class="stat-icon" style="background: #ffedd5; color: #ea580c;">
+                                    <i class="fa-solid fa-boxes-stacked"></i>
                                 </div>
                             </div>
-                            <h3 class="fw-bold mb-1 text-dark" id="stat-users">0</h3>
-                            <div class="text-muted small">Google, Facebook & Web</div>
+                            <h3 class="fw-bold mb-1" id="stat-low-stock" style="color: #ea580c;">0</h3>
+                            <div class="text-muted small"><span id="stat-out-of-stock" class="text-danger fw-bold">0</span> sản phẩm hết sạch kho</div>
                         </div>
+                    </div>
+                    <div class="col-12 col-sm-6 col-xl">
+                        <div class="stat-card">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="text-muted small fw-semibold">BANNER SLIDER</span>
+                                <div class="stat-icon" style="background: #ede9fe; color: #7c3aed;">
+                                    <i class="fa-solid fa-images"></i>
+                                </div>
+                            </div>
+                            <h3 class="fw-bold mb-1 text-dark" id="stat-banners">0</h3>
+                            <div class="text-muted small">Banner đang hoạt động</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CẢNH BÁO TỒN KHO: SẮP HẾT & ĐÃ HẾT HÀNG -->
+                <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 border-start border-4 border-warning">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div>
+                            <h5 class="fw-bold m-0 text-danger"><i class="fa-solid fa-triangle-exclamation me-2"></i>Cảnh Báo Tồn Kho: Sản Phẩm Sắp Hết & Hết Hàng (&lt; 10 sp)</h5>
+                            <p class="text-muted small mb-0">Cần nhập thêm tồn kho kịp thời để khách hàng không bị gián đoạn đơn mua</p>
+                        </div>
+                        <button class="btn btn-outline-danger btn-sm rounded-pill px-3" onclick="AdminApp.switchToTab('tab-products')">Vào Kho Mỹ Phẩm</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr class="small text-muted">
+                                    <th>ẢNH</th>
+                                    <th>TÊN SẢN PHẨM</th>
+                                    <th>THƯƠNG HIỆU & XUẤT XỨ</th>
+                                    <th>GIÁ BÁN</th>
+                                    <th>SỐ LƯỢNG TỒN</th>
+                                    <th>TÌNH TRẠNG</th>
+                                    <th class="text-end">NHẬP THÊM HÀNG NHANH</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-low-stock">
+                                <tr><td colspan="7" class="text-center py-4 text-muted">Đang kiểm tra hàng tồn kho...</td></tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
@@ -366,11 +412,19 @@ $isAdmin = ($currentUser && ($currentUser['role'] ?? '') === 'admin');
                     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
                         <div>
                             <h5 class="fw-bold mb-1">Kho Mỹ Phẩm ALICE Cosmetic</h5>
-                            <p class="text-muted small mb-0">Thêm mới, đổi giá bán, cập nhật chương trình Flash Sale</p>
+                            <p class="text-muted small mb-0">Quản lý số lượng tồn kho, thông số xuất xứ, dung tích, giá bán & Flash Sale</p>
                         </div>
-                        <button class="btn btn-pink rounded-pill px-4" onclick="AdminApp.openModalProduct()">
-                            <i class="fa-solid fa-plus me-2"></i>Thêm Mỹ Phẩm Mới
-                        </button>
+                        <div class="d-flex gap-2">
+                            <select id="filterProductStock" class="form-select form-select-sm rounded-pill" onchange="AdminApp.filterProducts()">
+                                <option value="all">Tất cả tồn kho</option>
+                                <option value="in_stock">Còn hàng (> 10)</option>
+                                <option value="low_stock">Sắp hết hàng (<= 10)</option>
+                                <option value="out_of_stock">Hết sạch hàng (0)</option>
+                            </select>
+                            <button class="btn btn-pink rounded-pill px-4" onclick="AdminApp.openModalProduct()">
+                                <i class="fa-solid fa-plus me-2"></i>Thêm Mỹ Phẩm Mới
+                            </button>
+                        </div>
                     </div>
 
                     <div class="table-responsive">
@@ -379,16 +433,52 @@ $isAdmin = ($currentUser && ($currentUser['role'] ?? '') === 'admin');
                                 <tr class="small text-muted">
                                     <th>ẢNH</th>
                                     <th>TÊN SẢN PHẨM</th>
-                                    <th>THƯƠNG HIỆU</th>
-                                    <th>DANH MỤC</th>
+                                    <th>THƯƠNG HIỆU & XUẤT XỨ</th>
+                                    <th>DANH MỤC & DUNG TÍCH</th>
                                     <th>GIÁ BÁN</th>
                                     <th>GIÁ GỐC</th>
+                                    <th>HÀNG TỒN KHO</th>
                                     <th>FLASH SALE</th>
                                     <th class="text-end">THAO TÁC</th>
                                 </tr>
                             </thead>
                             <tbody id="tbody-products">
-                                <tr><td colspan="8" class="text-center py-4 text-muted">Đang tải sản phẩm...</td></tr>
+                                <tr><td colspan="9" class="text-center py-4 text-muted">Đang tải sản phẩm...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB BANNER: QUẢN LÝ BANNER QUẢNG CÁO -->
+            <div class="tab-pane fade" id="tab-banners" role="tabpanel">
+                <div class="card border-0 shadow-sm rounded-4 p-4">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+                        <div>
+                            <h5 class="fw-bold mb-1"><i class="fa-solid fa-images me-2 text-danger"></i>Banner Quảng Cáo & Slider Trang Chủ</h5>
+                            <p class="text-muted small mb-0">Quản lý các banner carousel nổi bật hiển thị ở đầu trang web</p>
+                        </div>
+                        <button class="btn btn-pink rounded-pill px-4" onclick="AdminApp.openModalBanner()">
+                            <i class="fa-solid fa-plus me-2"></i>Thêm Banner Mới
+                        </button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr class="small text-muted">
+                                    <th style="width: 140px;">HÌNH ẢNH</th>
+                                    <th>TIÊU ĐỀ & PHỤ ĐỀ</th>
+                                    <th>BADGE</th>
+                                    <th>ĐƯỜNG DẪN BẤM</th>
+                                    <th>NÚT CTA</th>
+                                    <th>THỨ TỰ</th>
+                                    <th>HIỂN THỊ</th>
+                                    <th class="text-end">THAO TÁC</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-banners">
+                                <tr><td colspan="8" class="text-center py-4 text-muted">Đang tải danh sách banner...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -656,13 +746,47 @@ $isAdmin = ($currentUser && ($currentUser['role'] ?? '') === 'admin');
                                 <label class="form-label small fw-semibold">Giá Gốc Niêm Yết (VNĐ)</label>
                                 <input type="number" id="prod_original_price" class="form-control" placeholder="219000">
                             </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold text-danger"><i class="fa-solid fa-boxes-stacked me-1"></i>Hàng Tồn Kho *</label>
+                                <input type="number" id="prod_stock_quantity" class="form-control fw-bold" required value="50" min="0" placeholder="50">
+                                <div class="form-text small" style="font-size: 0.72rem;">Tự động trừ khi khách đặt mua</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold">Xuất Xứ (Nước SX)</label>
+                                <input type="text" id="prod_origin" class="form-control" placeholder="Hàn Quốc, Pháp, Mỹ...">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold">Dung Tích / Quy Cách</label>
+                                <input type="text" id="prod_capacity" class="form-control" placeholder="50ml, 30ml, 3.8g...">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold">Hạn Sử Dụng</label>
+                                <input type="text" id="prod_expiry" class="form-control" placeholder="36 tháng kể từ NSX (12 tháng mở nắp)">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold">Loại Da Phù Hợp</label>
+                                <select id="prod_skin_type" class="form-select">
+                                    <option value="all">Mọi loại da (All skin types)</option>
+                                    <option value="oil">Da Dầu / Hỗn hợp thiên dầu</option>
+                                    <option value="dry">Da Khô / Thiếu ẩm</option>
+                                    <option value="sensitive">Da Nhạy Cảm / Dễ kích ứng</option>
+                                </select>
+                            </div>
                             <div class="col-12">
                                 <label class="form-label small fw-semibold">Link Ảnh Sản Phẩm (URL) *</label>
                                 <input type="url" id="prod_image" class="form-control" required placeholder="https://images.unsplash.com/...">
                             </div>
                             <div class="col-12">
-                                <label class="form-label small fw-semibold">Mô Tả Sản Phẩm</label>
-                                <textarea id="prod_description" class="form-control" rows="3" placeholder="Mô tả công dụng, xuất xứ..."></textarea>
+                                <label class="form-label small fw-semibold">Mô Tả Sản Phẩm & Công Dụng</label>
+                                <textarea id="prod_description" class="form-control" rows="3" placeholder="Mô tả công dụng, tính năng nổi bật..."></textarea>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small fw-semibold">Bảng Thành Phần Chi Tiết (Ingredients)</label>
+                                <textarea id="prod_ingredients" class="form-control" rows="2" placeholder="Ví dụ: Niacinamide 10%, Zinc PCA 1%, Chiết xuất Rau má..."></textarea>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small fw-semibold">Hướng Dẫn Sử Dụng & Bảo Quản (How to use)</label>
+                                <textarea id="prod_how_to_use" class="form-control" rows="2" placeholder="Ví dụ: Thoa đều sáng và tối sau bước rửa mặt..."></textarea>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-check form-switch mt-2">
@@ -678,6 +802,67 @@ $isAdmin = ($currentUser && ($currentUser['role'] ?? '') === 'admin');
                         <div class="text-end mt-4">
                             <button type="button" class="btn btn-light rounded-pill px-4 me-2" data-bs-dismiss="modal">Hủy</button>
                             <button type="submit" id="btnSaveProduct" class="btn btn-pink rounded-pill px-4">Lưu Sản Phẩm</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL THÊM / SỬA BANNER TRANG CHỦ -->
+    <div class="modal fade" id="modalAdminBanner" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="modalBannerTitle">Thêm Banner Quảng Cáo Mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formBannerDetail" onsubmit="AdminApp.saveBanner(event)">
+                        <input type="hidden" id="banner_id">
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <label class="form-label small fw-semibold">Tiêu Đề Banner *</label>
+                                <input type="text" id="banner_title" class="form-control" required placeholder="Ví dụ: Đại Tiệc Mỹ Phẩm Chuẩn Hàn">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold">Badge Nổi Bật</label>
+                                <input type="text" id="banner_badge_text" class="form-control" placeholder="Ví dụ: DEAL HOT HÔM NAY">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small fw-semibold">Phụ Đề / Mô Tả Ngắn</label>
+                                <input type="text" id="banner_subtitle" class="form-control" placeholder="Ví dụ: Giảm tới 45% toàn bộ sản phẩm serum & kem chống nắng chính hãng">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small fw-semibold">Link Ảnh Banner (URL) *</label>
+                                <input type="url" id="banner_image_url" class="form-control" required placeholder="https://images.unsplash.com/..." oninput="AdminApp.previewBannerImage(this.value)">
+                                <div class="mt-2 text-center p-2 border rounded-3 bg-light" id="banner-preview-box" style="display: none;">
+                                    <div class="small text-muted mb-1">Xem trước ảnh banner:</div>
+                                    <img id="banner-preview-img" src="" alt="Banner Preview" style="max-height: 180px; width: 100%; object-fit: cover; border-radius: 8px;">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold">Đường Dẫn Bấm Vào (Link URL)</label>
+                                <input type="text" id="banner_link_url" class="form-control" placeholder="#products-all hoặc /san-pham/...">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-semibold">Nút Bấm Kêu Gọi</label>
+                                <input type="text" id="banner_button_text" class="form-control" placeholder="Khám Phá Ngay">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-semibold">Thứ Tự Ưu Tiên</label>
+                                <input type="number" id="banner_sort_order" class="form-control" value="0" min="0">
+                            </div>
+                            <div class="col-12">
+                                <div class="form-check form-switch mt-2">
+                                    <input class="form-check-input" type="checkbox" id="banner_is_active" checked>
+                                    <label class="form-check-label fw-semibold" for="banner_is_active">Kích hoạt hiển thị trên slider trang chủ</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-end mt-4">
+                            <button type="button" class="btn btn-light rounded-pill px-4 me-2" data-bs-dismiss="modal">Hủy</button>
+                            <button type="submit" id="btnSaveBanner" class="btn btn-pink rounded-pill px-4">Lưu Banner</button>
                         </div>
                     </form>
                 </div>
@@ -809,10 +994,58 @@ const AdminApp = {
                 document.getElementById('stat-orders').textContent = s.total_orders;
                 document.getElementById('stat-pending-orders').textContent = s.pending_orders;
                 document.getElementById('stat-products').textContent = s.total_products;
-                document.getElementById('stat-users').textContent = s.total_users;
+                
+                // Cảnh báo tồn kho & Banner
+                const elLowStock = document.getElementById('stat-low-stock');
+                if (elLowStock) elLowStock.textContent = s.low_stock_count;
+                const elOutOfStock = document.getElementById('stat-out-of-stock');
+                if (elOutOfStock) elOutOfStock.textContent = s.out_of_stock_count;
+                const elBanners = document.getElementById('stat-banners');
+                if (elBanners) elBanners.textContent = s.total_banners || 0;
 
                 document.getElementById('count-orders-badge').textContent = s.total_orders;
                 document.getElementById('count-products-badge').textContent = s.total_products;
+                const badgeBanners = document.getElementById('count-banners-badge');
+                if (badgeBanners) badgeBanners.textContent = s.total_banners || 0;
+
+                // Render danh sách cảnh báo tồn kho sắp hết (< 10)
+                const tbodyLowStock = document.getElementById('tbody-low-stock');
+                if (tbodyLowStock) {
+                    if (data.low_stock_products && data.low_stock_products.length > 0) {
+                        tbodyLowStock.innerHTML = data.low_stock_products.map(p => {
+                            const isZero = (p.stock_quantity <= 0);
+                            return `
+                                <tr>
+                                    <td><img src="${p.image}" width="42" height="42" class="rounded-3 object-fit-cover border" alt="${p.name}"></td>
+                                    <td>
+                                        <div class="fw-semibold text-dark" style="max-width: 250px;">${p.name}</div>
+                                        <div class="small text-muted font-monospace">SKU: ALICE-${p.id}</div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-secondary border">${p.brand || 'ALICE'}</span>
+                                        <span class="small text-muted ms-1">${p.origin || 'Hàn Quốc'}</span>
+                                    </td>
+                                    <td class="fw-bold text-danger">${this.formatVND(p.price)}</td>
+                                    <td>
+                                        <span class="fw-bold fs-6 ${isZero ? 'text-danger' : 'text-warning-emphasis'}">${p.stock_quantity} sp</span>
+                                    </td>
+                                    <td>
+                                        ${isZero 
+                                            ? '<span class="badge bg-danger text-white"><i class="fa-solid fa-circle-xmark me-1"></i>Hết Hàng (0)</span>' 
+                                            : '<span class="badge bg-warning text-dark"><i class="fa-solid fa-triangle-exclamation me-1"></i>Sắp Hết</span>'}
+                                    </td>
+                                    <td class="text-end">
+                                        <button class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 font-semibold" onclick="AdminApp.quickEditStock(${p.id}, '${p.name.replace(/'/g, "\\'")}', ${p.stock_quantity})">
+                                            <i class="fa-solid fa-plus me-1"></i>Nhập Hàng
+                                        </button>
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('');
+                    } else {
+                        tbodyLowStock.innerHTML = `<tr><td colspan="7" class="text-center py-3 text-success fw-semibold"><i class="fa-solid fa-circle-check me-2"></i>Tuyệt vời! Tất cả sản phẩm mỹ phẩm trong kho đều còn đủ số lượng (> 10 sp).</td></tr>`;
+                    }
+                }
 
                 // Render đơn gần đây
                 const tbody = document.getElementById('tbody-recent-orders');
@@ -924,41 +1157,111 @@ const AdminApp = {
         await this.loadOrders();
     },
 
-    // 3. TẢI & QUẢN LÝ SẢN PHẨM
+    // 3. TẢI & QUẢN LÝ SẢN PHẨM & TỒN KHO
     async loadProducts() {
         try {
             const res = await fetch('api/admin.php?action=products');
             const data = await res.json();
             if (data.success) {
-                const products = data.products || [];
-                document.getElementById('count-products-badge').textContent = products.length;
-                const tbody = document.getElementById('tbody-products');
-                if (products.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="8" class="text-center py-5 text-muted">Kho chưa có sản phẩm nào</td></tr>`;
-                    return;
-                }
-
-                tbody.innerHTML = products.map(p => `
-                    <tr>
-                        <td><img src="${p.image}" width="48" height="48" class="rounded-3 object-fit-cover border" alt="${p.name}"></td>
-                        <td class="fw-semibold text-dark" style="max-width: 250px;">${p.name}</td>
-                        <td><span class="badge bg-light text-secondary border">${p.brand || 'ALICE'}</span></td>
-                        <td class="small text-muted">${p.category_id}</td>
-                        <td class="fw-bold text-danger">${this.formatVND(p.price)}</td>
-                        <td class="text-muted text-decoration-line-through small">${this.formatVND(p.original_price)}</td>
-                        <td>
-                            ${p.is_flash_sale ? '<span class="badge bg-danger rounded-pill">⚡ Bật (' + (p.flash_sale_stock || 0) + ')</span>' : '<span class="badge bg-light text-muted border">Tắt</span>'}
-                        </td>
-                        <td class="text-end">
-                            <button class="btn btn-outline-primary btn-sm rounded-circle me-1" onclick="AdminApp.editProduct(${p.id})" title="Sửa"><i class="fa-solid fa-pen"></i></button>
-                            <button class="btn btn-outline-danger btn-sm rounded-circle" onclick="AdminApp.deleteProduct(${p.id}, '${p.name}')" title="Xóa"><i class="fa-solid fa-trash"></i></button>
-                        </td>
-                    </tr>
-                `).join('');
-                this.cachedProducts = products;
+                this.cachedProducts = data.products || [];
+                document.getElementById('count-products-badge').textContent = this.cachedProducts.length;
+                this.filterProducts();
             }
         } catch(e) {
             console.error(e);
+        }
+    },
+
+    filterProducts() {
+        const filter = document.getElementById('filterProductStock') ? document.getElementById('filterProductStock').value : 'all';
+        const tbody = document.getElementById('tbody-products');
+        let list = this.cachedProducts || [];
+
+        if (filter === 'in_stock') {
+            list = list.filter(p => p.stock_quantity > 10);
+        } else if (filter === 'low_stock') {
+            list = list.filter(p => p.stock_quantity > 0 && p.stock_quantity <= 10);
+        } else if (filter === 'out_of_stock') {
+            list = list.filter(p => p.stock_quantity <= 0);
+        }
+
+        if (list.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="9" class="text-center py-5 text-muted">Không tìm thấy sản phẩm nào phù hợp bộ lọc</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = list.map(p => {
+            const stock = (typeof p.stock_quantity !== 'undefined') ? parseInt(p.stock_quantity) : 50;
+            let stockBadge = '';
+            if (stock > 10) {
+                stockBadge = `<span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1"><i class="fa-solid fa-boxes-stacked me-1"></i>${stock} sp</span>`;
+            } else if (stock > 0) {
+                stockBadge = `<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1"><i class="fa-solid fa-triangle-exclamation me-1"></i>Sắp hết (${stock})</span>`;
+            } else {
+                stockBadge = `<span class="badge bg-danger text-white px-2 py-1"><i class="fa-solid fa-circle-xmark me-1"></i>Hết hàng (0)</span>`;
+            }
+
+            return `
+                <tr>
+                    <td><img src="${p.image}" width="48" height="48" class="rounded-3 object-fit-cover border" alt="${p.name}"></td>
+                    <td>
+                        <div class="fw-semibold text-dark" style="max-width: 230px;">${p.name}</div>
+                        <div class="small text-muted font-monospace">SKU: ALICE-${p.id}</div>
+                    </td>
+                    <td>
+                        <span class="badge bg-light text-secondary border">${p.brand || 'ALICE'}</span>
+                        <div class="small text-muted mt-1"><i class="fa-solid fa-earth-americas me-1 text-danger"></i>${p.origin || 'Hàn Quốc'}</div>
+                    </td>
+                    <td>
+                        <div class="small text-dark fw-semibold">${p.category_id}</div>
+                        <div class="small text-muted">${p.capacity || 'Tiêu chuẩn'}</div>
+                    </td>
+                    <td class="fw-bold text-danger">${this.formatVND(p.price)}</td>
+                    <td class="text-muted text-decoration-line-through small">${this.formatVND(p.original_price)}</td>
+                    <td>
+                        <div class="d-flex align-items-center gap-1">
+                            ${stockBadge}
+                            <button class="btn btn-sm btn-outline-secondary rounded-pill px-2 py-0" style="font-size: 0.72rem;" onclick="AdminApp.quickEditStock(${p.id}, '${p.name.replace(/'/g, "\\'")}', ${stock})" title="Sửa nhanh số lượng kho">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>
+                        </div>
+                    </td>
+                    <td>
+                        ${p.is_flash_sale ? '<span class="badge bg-danger rounded-pill">⚡ Bật (' + (p.flash_sale_stock || 0) + ')</span>' : '<span class="badge bg-light text-muted border">Tắt</span>'}
+                    </td>
+                    <td class="text-end">
+                        <button class="btn btn-outline-primary btn-sm rounded-circle me-1" onclick="AdminApp.editProduct(${p.id})" title="Chỉnh sửa chi tiết"><i class="fa-solid fa-pen"></i></button>
+                        <button class="btn btn-outline-danger btn-sm rounded-circle" onclick="AdminApp.deleteProduct(${p.id}, '${p.name.replace(/'/g, "\\'")}')" title="Xóa"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    },
+
+    async quickEditStock(id, name, currentStock) {
+        const input = prompt(`Nhập số lượng tồn kho mới cho sản phẩm:\n"${name}"`, currentStock);
+        if (input === null) return;
+        const newStock = parseInt(input.trim());
+        if (isNaN(newStock) || newStock < 0) {
+            alert('Vui lòng nhập số lượng hợp lệ (>= 0)!');
+            return;
+        }
+
+        try {
+            const res = await fetch('api/admin.php?action=update_stock', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ id: id, stock_quantity: newStock })
+            });
+            const data = await res.json();
+            if (data.success) {
+                this.loadProducts();
+                this.loadStats();
+            } else {
+                alert(data.message || 'Lỗi cập nhật tồn kho!');
+            }
+        } catch(e) {
+            alert('Lỗi kết nối máy chủ!');
         }
     },
 
@@ -966,6 +1269,13 @@ const AdminApp = {
         document.getElementById('modalProductTitle').textContent = 'Thêm Mỹ Phẩm Mới';
         document.getElementById('formProductDetail').reset();
         document.getElementById('prod_id').value = '';
+        document.getElementById('prod_stock_quantity').value = 50;
+        document.getElementById('prod_origin').value = 'Hàn Quốc';
+        document.getElementById('prod_capacity').value = '50ml';
+        document.getElementById('prod_expiry').value = '36 tháng kể từ NSX (12 tháng mở nắp)';
+        document.getElementById('prod_skin_type').value = 'all';
+        document.getElementById('prod_ingredients').value = '';
+        document.getElementById('prod_how_to_use').value = '';
         new bootstrap.Modal(document.getElementById('modalAdminProduct')).show();
     },
 
@@ -985,6 +1295,15 @@ const AdminApp = {
         document.getElementById('prod_is_flash_sale').checked = (p.is_flash_sale == 1);
         document.getElementById('prod_flash_sale_stock').value = p.flash_sale_stock || 50;
 
+        // Các thông số mới & tồn kho
+        document.getElementById('prod_stock_quantity').value = (typeof p.stock_quantity !== 'undefined') ? p.stock_quantity : 50;
+        document.getElementById('prod_origin').value = p.origin || 'Hàn Quốc';
+        document.getElementById('prod_capacity').value = p.capacity || 'Tiêu chuẩn';
+        document.getElementById('prod_expiry').value = p.expiry || '36 tháng kể từ NSX (12 tháng mở nắp)';
+        document.getElementById('prod_skin_type').value = p.skin_type || 'all';
+        document.getElementById('prod_ingredients').value = p.ingredients || '';
+        document.getElementById('prod_how_to_use').value = p.how_to_use || '';
+
         new bootstrap.Modal(document.getElementById('modalAdminProduct')).show();
     },
 
@@ -1003,7 +1322,14 @@ const AdminApp = {
             image: document.getElementById('prod_image').value.trim(),
             description: document.getElementById('prod_description').value.trim(),
             is_flash_sale: document.getElementById('prod_is_flash_sale').checked ? 1 : 0,
-            flash_sale_stock: document.getElementById('prod_flash_sale_stock').value
+            flash_sale_stock: document.getElementById('prod_flash_sale_stock').value,
+            stock_quantity: document.getElementById('prod_stock_quantity').value,
+            origin: document.getElementById('prod_origin').value.trim(),
+            capacity: document.getElementById('prod_capacity').value.trim(),
+            expiry: document.getElementById('prod_expiry').value.trim(),
+            skin_type: document.getElementById('prod_skin_type').value,
+            ingredients: document.getElementById('prod_ingredients').value.trim(),
+            how_to_use: document.getElementById('prod_how_to_use').value.trim()
         };
 
         try {
@@ -1042,6 +1368,187 @@ const AdminApp = {
                 this.loadStats();
             } else {
                 alert(data.message || 'Không thể xóa sản phẩm!');
+            }
+        } catch(e) {
+            alert('Lỗi kết nối máy chủ!');
+        }
+    },
+
+    // ==========================================
+    // 3.1 QUẢN LÝ BANNER QUẢNG CÁO
+    // ==========================================
+    async loadBanners() {
+        const tbody = document.getElementById('tbody-banners');
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted"><i class="fa-solid fa-spinner fa-spin me-2"></i>Đang tải danh sách banner...</td></tr>';
+
+        try {
+            const res = await fetch('api/admin.php?action=banners');
+            const data = await res.json();
+            if (data.success) {
+                this.cachedBanners = data.banners || [];
+                const countBadge = document.getElementById('count-banners-badge');
+                if (countBadge) countBadge.textContent = this.cachedBanners.length;
+                const statBanners = document.getElementById('stat-banners');
+                if (statBanners) statBanners.textContent = this.cachedBanners.filter(b => b.is_active == 1).length;
+
+                if (this.cachedBanners.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="8" class="text-center py-5 text-muted">Chưa có banner nào. Hãy bấm "Thêm Banner Mới"!</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = this.cachedBanners.map(b => `
+                    <tr>
+                        <td>
+                            <img src="${b.image_url}" width="130" height="60" class="rounded-3 object-fit-cover border shadow-sm" alt="${b.title}">
+                        </td>
+                        <td>
+                            <div class="fw-bold text-dark">${b.title}</div>
+                            <div class="small text-muted text-truncate" style="max-width: 250px;">${b.subtitle || ''}</div>
+                        </td>
+                        <td>
+                            ${b.badge_text ? '<span class="badge bg-pink text-white rounded-pill px-2 py-1">' + b.badge_text + '</span>' : '<span class="text-muted small">—</span>'}
+                        </td>
+                        <td>
+                            <span class="small font-monospace text-primary text-truncate d-inline-block" style="max-width: 140px;">${b.link_url || '#'}</span>
+                        </td>
+                        <td>
+                            <span class="small fw-semibold text-dark">${b.button_text || 'Xem Ngay'}</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark border px-2 py-1">${b.sort_order || 0}</span>
+                        </td>
+                        <td>
+                            <div class="form-check form-switch m-0">
+                                <input class="form-check-input" type="checkbox" role="switch" ${b.is_active == 1 ? 'checked' : ''} onchange="AdminApp.toggleBanner(${b.id})">
+                                <label class="form-check-label small ${b.is_active == 1 ? 'text-success fw-bold' : 'text-muted'}">${b.is_active == 1 ? 'Bật' : 'Tắt'}</label>
+                            </div>
+                        </td>
+                        <td class="text-end">
+                            <button class="btn btn-outline-primary btn-sm rounded-circle me-1" onclick="AdminApp.editBanner(${b.id})" title="Chỉnh sửa"><i class="fa-solid fa-pen"></i></button>
+                            <button class="btn btn-outline-danger btn-sm rounded-circle" onclick="AdminApp.deleteBanner(${b.id}, '${b.title.replace(/'/g, "\\'")}')" title="Xóa"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        } catch(e) {
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-danger">Lỗi kết nối tải banner!</td></tr>';
+        }
+    },
+
+    openModalBanner() {
+        document.getElementById('modalBannerTitle').textContent = 'Thêm Banner Quảng Cáo Mới';
+        document.getElementById('formBannerDetail').reset();
+        document.getElementById('banner_id').value = '';
+        document.getElementById('banner_sort_order').value = 0;
+        document.getElementById('banner_is_active').checked = true;
+        document.getElementById('banner_button_text').value = 'Khám Phá Ngay';
+        document.getElementById('banner_badge_text').value = 'MỸ PHẨM CHÍNH HÃNG';
+        document.getElementById('banner-preview-box').style.display = 'none';
+        new bootstrap.Modal(document.getElementById('modalAdminBanner')).show();
+    },
+
+    previewBannerImage(url) {
+        const box = document.getElementById('banner-preview-box');
+        const img = document.getElementById('banner-preview-img');
+        if (url && url.trim().length > 5) {
+            box.style.display = 'block';
+            img.src = url.trim();
+        } else {
+            box.style.display = 'none';
+        }
+    },
+
+    editBanner(id) {
+        const b = (this.cachedBanners || []).find(it => it.id == id);
+        if (!b) return;
+
+        document.getElementById('modalBannerTitle').textContent = 'Sửa Banner: ' + b.title;
+        document.getElementById('banner_id').value = b.id;
+        document.getElementById('banner_title').value = b.title;
+        document.getElementById('banner_subtitle').value = b.subtitle || '';
+        document.getElementById('banner_badge_text').value = b.badge_text || '';
+        document.getElementById('banner_image_url').value = b.image_url;
+        document.getElementById('banner_link_url').value = b.link_url || '';
+        document.getElementById('banner_button_text').value = b.button_text || 'Khám Phá Ngay';
+        document.getElementById('banner_sort_order').value = b.sort_order || 0;
+        document.getElementById('banner_is_active').checked = (b.is_active == 1);
+
+        this.previewBannerImage(b.image_url);
+        new bootstrap.Modal(document.getElementById('modalAdminBanner')).show();
+    },
+
+    async saveBanner(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btnSaveBanner');
+        btn.disabled = true;
+
+        const payload = {
+            id: document.getElementById('banner_id').value || null,
+            title: document.getElementById('banner_title').value.trim(),
+            subtitle: document.getElementById('banner_subtitle').value.trim(),
+            badge_text: document.getElementById('banner_badge_text').value.trim(),
+            image_url: document.getElementById('banner_image_url').value.trim(),
+            link_url: document.getElementById('banner_link_url').value.trim(),
+            button_text: document.getElementById('banner_button_text').value.trim(),
+            sort_order: parseInt(document.getElementById('banner_sort_order').value) || 0,
+            is_active: document.getElementById('banner_is_active').checked ? 1 : 0
+        };
+
+        try {
+            const res = await fetch('api/admin.php?action=save_banner', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            btn.disabled = false;
+            if (data.success) {
+                alert(data.message || 'Đã lưu banner thành công!');
+                bootstrap.Modal.getInstance(document.getElementById('modalAdminBanner')).hide();
+                this.loadBanners();
+                this.loadStats();
+            } else {
+                alert(data.message || 'Lỗi lưu banner!');
+            }
+        } catch(err) {
+            btn.disabled = false;
+            alert('Lỗi kết nối máy chủ!');
+        }
+    },
+
+    async toggleBanner(id) {
+        try {
+            const res = await fetch('api/admin.php?action=toggle_banner', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ id: id })
+            });
+            const data = await res.json();
+            if (data.success) {
+                this.loadBanners();
+                this.loadStats();
+            } else {
+                alert(data.message || 'Lỗi đổi trạng thái banner!');
+            }
+        } catch(e) {
+            alert('Lỗi kết nối máy chủ!');
+        }
+    },
+
+    async deleteBanner(id, title) {
+        if (!confirm(`Bạn có chắc chắn muốn xóa vĩnh viễn banner "${title}"?`)) return;
+        try {
+            const res = await fetch('api/admin.php?action=delete_banner', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ id: id })
+            });
+            const data = await res.json();
+            if (data.success) {
+                this.loadBanners();
+                this.loadStats();
+            } else {
+                alert(data.message || 'Lỗi xóa banner!');
             }
         } catch(e) {
             alert('Lỗi kết nối máy chủ!');

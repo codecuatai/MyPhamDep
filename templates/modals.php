@@ -91,13 +91,40 @@
 
                     <!-- Thông tin & Chọn biến thể -->
                     <div class="col-md-7">
-                        <div id="pdp-brand" class="small font-bold text-uppercase" style="color: var(--primary);"></div>
+                        <div class="d-flex align-items-center justify-content-between mb-1">
+                            <div id="pdp-brand" class="small font-bold text-uppercase" style="color: var(--primary);"></div>
+                            <div id="pdp-stock-badge"></div>
+                        </div>
                         <h4 id="pdp-name" class="font-bold mt-1 mb-2" style="font-family: var(--font-heading); color: var(--text-main); font-size: 1.3rem;"></h4>
                         
                         <div class="d-flex align-items-center gap-3 small text-muted mb-3">
                             <span class="text-warning font-bold">★ <span id="pdp-rating">5.0</span></span>
                             <span>|</span>
                             <span>Đã bán <strong id="pdp-sold">0</strong></span>
+                            <span>|</span>
+                            <span>Kho: <strong id="pdp-stock-qty" class="text-dark">100</strong> sản phẩm</span>
+                        </div>
+
+                        <!-- Khung thông số nổi bật (Xuất xứ, Dung tích, Hạn sử dụng) -->
+                        <div class="row g-2 mb-3 small">
+                            <div class="col-4">
+                                <div class="p-2 rounded-3 text-center border" style="background: #fafafa;">
+                                    <div class="text-muted" style="font-size: 0.72rem;"><i class="fa-solid fa-earth-americas me-1 text-danger"></i>Xuất xứ</div>
+                                    <strong id="pdp-origin" class="text-dark text-truncate d-block" style="font-size: 0.82rem;">Hàn Quốc</strong>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="p-2 rounded-3 text-center border" style="background: #fafafa;">
+                                    <div class="text-muted" style="font-size: 0.72rem;"><i class="fa-solid fa-flask-vial me-1 text-primary"></i>Dung tích</div>
+                                    <strong id="pdp-capacity" class="text-dark text-truncate d-block" style="font-size: 0.82rem;">Tiêu chuẩn</strong>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="p-2 rounded-3 text-center border" style="background: #fafafa;">
+                                    <div class="text-muted" style="font-size: 0.72rem;"><i class="fa-regular fa-calendar-check me-1 text-success"></i>Hạn dùng</div>
+                                    <strong id="pdp-expiry" class="text-dark text-truncate d-block" style="font-size: 0.82rem;">36 tháng</strong>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Khung giá -->
@@ -127,18 +154,21 @@
 
                         <!-- Nút Mua ngay -->
                         <div class="d-flex gap-2 pt-2">
-                            <button type="button" class="btn btn-danger flex-grow-1 rounded-pill py-2 font-bold" style="background: var(--gradient-pink); border: none;" onclick="AliceApp.addToCartCurrentProduct()">
+                            <button type="button" id="pdp-btn-add-cart" class="btn btn-danger flex-grow-1 rounded-pill py-2 font-bold" style="background: var(--gradient-pink); border: none;" onclick="AliceApp.addToCartCurrentProduct()">
                                 <i class="fa-solid fa-cart-shopping me-2"></i>Thêm Vào Giỏ Hàng
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Tabs: Mô tả chi tiết, Thành phần, Review -->
+                <!-- Tabs: Mô tả chi tiết, Thông số, Thành phần, Review -->
                 <div class="mt-4 pt-3 border-top">
                     <ul class="nav nav-pills mb-3 gap-2" id="pdp-tabs" role="tablist">
                         <li class="nav-item">
-                            <button class="nav-link active rounded-pill px-3 py-1 font-bold small" data-bs-toggle="pill" data-bs-target="#tab-desc" type="button">Công Dụng</button>
+                            <button class="nav-link active rounded-pill px-3 py-1 font-bold small" data-bs-toggle="pill" data-bs-target="#tab-desc" type="button">Mô Tả & Công Dụng</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link rounded-pill px-3 py-1 font-bold small" data-bs-toggle="pill" data-bs-target="#tab-specs" type="button">Thông Số Kỹ Thuật</button>
                         </li>
                         <li class="nav-item">
                             <button class="nav-link rounded-pill px-3 py-1 font-bold small" data-bs-toggle="pill" data-bs-target="#tab-ingredients" type="button">Bảng Thành Phần</button>
@@ -150,8 +180,19 @@
                     <div class="tab-content" id="pdp-tab-content">
                         <div class="tab-pane fade show active small text-muted" id="tab-desc">
                             <p id="pdp-desc" style="line-height: 1.6;"></p>
-                            <h6 class="font-bold text-dark mt-2 mb-1">Hướng dẫn sử dụng:</h6>
+                            <h6 class="font-bold text-dark mt-2 mb-1">Hướng dẫn sử dụng & bảo quản:</h6>
                             <p id="pdp-howtouse" style="line-height: 1.6;"></p>
+                        </div>
+                        <div class="tab-pane fade small" id="tab-specs">
+                            <table class="table table-bordered table-sm mb-0">
+                                <tbody>
+                                    <tr><td class="bg-light fw-bold" style="width: 35%;">Thương hiệu</td><td id="pdp-spec-brand">ALICE</td></tr>
+                                    <tr><td class="bg-light fw-bold">Xuất xứ thương hiệu</td><td id="pdp-spec-origin">Hàn Quốc</td></tr>
+                                    <tr><td class="bg-light fw-bold">Dung tích / Trọng lượng</td><td id="pdp-spec-capacity">50ml</td></tr>
+                                    <tr><td class="bg-light fw-bold">Hạn sử dụng</td><td id="pdp-spec-expiry">36 tháng kể từ NSX</td></tr>
+                                    <tr><td class="bg-light fw-bold">Tình trạng tồn kho</td><td id="pdp-spec-stock" class="fw-semibold text-success">Còn hàng</td></tr>
+                                </tbody>
+                            </table>
                         </div>
                         <div class="tab-pane fade small text-muted" id="tab-ingredients">
                             <p id="pdp-ingredients" style="line-height: 1.6;"></p>
@@ -252,111 +293,83 @@
                     <i class="fa-solid fa-qrcode"></i>
                 </div>
                 <h5 class="font-bold mb-1" style="color: var(--primary-dark); font-family: var(--font-heading);">
-                    Thanh Toán Tự Động 24/7
+                    Thanh Toán Chuyển Khoản 24/7
                 </h5>
-                <p class="small text-muted mb-0">Quét mã bằng Camera/Zalo điện thoại để tự động hoàn tất</p>
+                <p class="small text-muted mb-0">Mở Camera điện thoại hoặc Zalo quét mã QR bên dưới để thanh toán</p>
             </div>
 
             <div class="modal-body p-4 text-center">
-                <!-- Tabs chuyển đổi chế độ -->
-                <ul class="nav nav-pills nav-fill rounded-pill p-1 border mb-3" role="tablist" style="background: #fff0f5; border-color: var(--primary-border) !important;">
-                    <li class="nav-item">
-                        <button class="nav-link active rounded-pill font-bold py-1 small" id="tab-qr-mobile-btn" data-bs-toggle="pill" data-bs-target="#pane-qr-mobile" type="button">
-                            <i class="fa-solid fa-mobile-screen me-1"></i>Quét Điện Thoại (Demo 0đ)
-                        </button>
-                    </li>
-                    <li class="nav-item">
-                        <button class="nav-link rounded-pill font-bold py-1 small" id="tab-qr-bank-btn" data-bs-toggle="pill" data-bs-target="#pane-qr-bank" type="button">
-                            <i class="fa-solid fa-building-columns me-1"></i>Chuyển Khoản Ngân Hàng
-                        </button>
-                    </li>
-                </ul>
+                <div class="badge rounded-pill px-3 py-2 mb-3" style="background: #fff0f5; color: var(--primary-dark); font-weight: 700;">
+                    <i class="fa-regular fa-clock me-1"></i>Mã thanh toán giữ hàng: <span id="vqr-countdown" class="text-danger">10:00</span>
+                </div>
 
-                <!-- TAB 1: QUÉT DI ĐỘNG TỰ ĐỘNG CHUYỂN TRANG -->
-                <div class="tab-content">
-                    <div class="tab-pane fade show active" id="pane-qr-mobile" role="tabpanel">
-                        <!-- Trạng thái lắng nghe Realtime -->
-                        <div id="vqr-polling-box" class="alert alert-light border small text-muted py-2 px-3 rounded-pill d-inline-flex align-items-center gap-2 mb-2" style="background: #fdf2f8; border-color: #ffd4e3 !important;">
-                            <span class="spinner-grow spinner-grow-sm text-danger" role="status"></span>
-                            <span id="vqr-status-text" class="fw-semibold text-danger">Đang chờ bạn quét mã bằng điện thoại...</span>
-                        </div>
-
-                        <!-- Ảnh QR Quét Điện Thoại -->
-                        <div class="my-2">
-                            <img id="vqr-mobile-image" src="" alt="Mã QR Di Động" class="qr-code-img border shadow-sm rounded-4" style="width: 220px; height: 220px; object-fit: contain;">
-                        </div>
-
-                        <p class="small text-muted mb-2 px-2" style="font-size: 0.8rem;">
-                            <i class="fa-solid fa-camera text-primary me-1"></i> Mở <strong>Camera điện thoại</strong> hoặc <strong>Zalo</strong> quét mã trên -> Bấm xác nhận trên điện thoại -> Màn hình này sẽ <strong>tự động nhảy thành công</strong>!
-                        </p>
-
-                        <!-- Nút mô phỏng nhanh cho người test -->
-                        <div class="mt-3 pt-2 border-top">
-                            <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-3 py-1 font-semibold" onclick="AliceApp.simulatePhoneScan()">
-                                <i class="fa-solid fa-wand-magic-sparkles me-1"></i>Bấm để mô phỏng quét thành công ngay
-                            </button>
-                        </div>
+                <!-- Khung Mã QR Quét Zalo / Camera -->
+                <div class="p-3 bg-white rounded-4 border shadow-sm mx-auto mb-3" style="max-width: 270px; border-color: #ffd4e3 !important;">
+                    <div class="d-flex align-items-center justify-content-center gap-2 mb-2">
+                        <span class="badge bg-danger rounded-pill px-2 py-1" style="font-size: 0.7rem;">VIETQR</span>
+                        <span class="small font-bold text-muted" style="font-size: 0.75rem;">NAPAS 247</span>
                     </div>
+                    <img id="vqr-image" src="" alt="Mã QR Chuyển Khoản" class="img-fluid rounded-3" style="width: 230px; height: 230px; object-fit: contain;">
+                    <div class="small text-muted mt-2 font-semibold" style="font-size: 0.72rem;">
+                        <i class="fa-solid fa-camera text-primary me-1"></i>Hỗ trợ quét qua Zalo & App Ngân Hàng
+                    </div>
+                </div>
 
-                    <!-- TAB 2: THÔNG TIN TÀI KHOẢN NGÂN HÀNG TRUYỀN THỐNG -->
-                    <div class="tab-pane fade" id="pane-qr-bank" role="tabpanel">
-                        <div class="badge rounded-pill px-3 py-2 mb-2" style="background: #fff0f5; color: var(--primary-dark); font-weight: 700;">
-                            <i class="fa-regular fa-clock me-1"></i>Mã thanh toán giữ hàng: <span id="vqr-countdown" class="text-danger">10:00</span>
-                        </div>
-
+                <!-- Thông tin chuyển khoản truyền thống -->
+                <div class="text-start mt-2">
+                    <div class="copy-pill-box">
                         <div>
-                            <img id="vqr-image" src="" alt="Mã VietQR" class="qr-code-img">
-                        </div>
-
-                        <div class="text-start mt-3">
-                            <div class="copy-pill-box">
-                                <div>
-                                    <span class="small text-muted d-block" style="font-size: 0.72rem;">NGÂN HÀNG THỤ HƯỞNG:</span>
-                                    <strong id="vqr-bank-name" class="small">MBBank</strong>
-                                </div>
-                            </div>
-
-                            <div class="copy-pill-box">
-                                <div>
-                                    <span class="small text-muted d-block" style="font-size: 0.72rem;">SỐ TÀI KHOẢN:</span>
-                                    <strong id="vqr-account-no" class="fs-6 font-bold" style="color: var(--primary-dark);"></strong>
-                                </div>
-                                <button type="button" class="btn-copy-code" onclick="AliceApp.copyText(document.getElementById('vqr-account-no').textContent, 'Số tài khoản')">
-                                    <i class="fa-regular fa-copy me-1"></i>Copy
-                                </button>
-                            </div>
-
-                            <div class="copy-pill-box">
-                                <div>
-                                    <span class="small text-muted d-block" style="font-size: 0.72rem;">CHỦ TÀI KHOẢN:</span>
-                                    <strong id="vqr-account-name" class="small">ALICE COSMETIC</strong>
-                                </div>
-                            </div>
-
-                            <div class="copy-pill-box">
-                                <div>
-                                    <span class="small text-muted d-block" style="font-size: 0.72rem;">SỐ TIỀN:</span>
-                                    <strong id="vqr-amount" class="fs-6 text-danger font-bold"></strong>
-                                </div>
-                            </div>
-
-                            <div class="copy-pill-box" style="border: 2px dashed var(--primary); background: #fff0f5;">
-                                <div>
-                                    <span class="small text-muted d-block" style="font-size: 0.72rem;">NỘI DUNG CHUYỂN KHOẢN:</span>
-                                    <strong id="vqr-add-info" class="font-bold text-danger"></strong>
-                                </div>
-                                <button type="button" class="btn-copy-code" onclick="AliceApp.copyText(document.getElementById('vqr-add-info').textContent, 'Nội dung chuyển khoản')">
-                                    <i class="fa-regular fa-copy me-1"></i>Copy
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="mt-3">
-                            <button type="button" class="btn btn-success w-100 rounded-pill py-2 font-bold mb-2 shadow-sm" onclick="AliceApp.confirmPaymentManual(document.getElementById('vqr-order-code').textContent)">
-                                <i class="fa-solid fa-circle-check me-2"></i>Tôi Đã Chuyển Khoản Xong
-                            </button>
+                            <span class="small text-muted d-block" style="font-size: 0.72rem;">NGÂN HÀNG THỤ HƯỞNG:</span>
+                            <strong id="vqr-bank-name" class="small">MBBank</strong>
                         </div>
                     </div>
+
+                    <div class="copy-pill-box">
+                        <div>
+                            <span class="small text-muted d-block" style="font-size: 0.72rem;">SỐ TÀI KHOẢN:</span>
+                            <strong id="vqr-account-no" class="fs-6 font-bold" style="color: var(--primary-dark);"></strong>
+                        </div>
+                        <button type="button" class="btn-copy-code" onclick="AliceApp.copyText(document.getElementById('vqr-account-no').textContent, 'Số tài khoản')">
+                            <i class="fa-regular fa-copy me-1"></i>Copy
+                        </button>
+                    </div>
+
+                    <div class="copy-pill-box">
+                        <div>
+                            <span class="small text-muted d-block" style="font-size: 0.72rem;">CHỦ TÀI KHOẢN:</span>
+                            <strong id="vqr-account-name" class="small">ALICE COSMETIC</strong>
+                        </div>
+                    </div>
+
+                    <div class="copy-pill-box">
+                        <div>
+                            <span class="small text-muted d-block" style="font-size: 0.72rem;">SỐ TIỀN:</span>
+                            <strong id="vqr-amount" class="fs-6 text-danger font-bold"></strong>
+                        </div>
+                    </div>
+
+                    <div class="copy-pill-box" style="border: 2px dashed var(--primary); background: #fff0f5;">
+                        <div>
+                            <span class="small text-muted d-block" style="font-size: 0.72rem;">NỘI DUNG CHUYỂN KHOẢN:</span>
+                            <strong id="vqr-add-info" class="font-bold text-danger"></strong>
+                        </div>
+                        <button type="button" class="btn-copy-code" onclick="AliceApp.copyText(document.getElementById('vqr-add-info').textContent, 'Nội dung chuyển khoản')">
+                            <i class="fa-regular fa-copy me-1"></i>Copy
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Trạng thái lắng nghe Realtime tự động -->
+                <div class="d-flex align-items-center justify-content-center gap-2 small mt-3 py-2 px-3 rounded-pill" style="background: #fff0f5; border: 1px solid var(--primary-border);">
+                    <span class="spinner-grow spinner-grow-sm text-danger" role="status"></span>
+                    <span id="vqr-status-text" class="fw-semibold text-danger">Hệ thống đang tự động nhận diện thanh toán...</span>
+                </div>
+
+                <!-- Nút mô phỏng nhanh cho test -->
+                <div class="mt-2 text-center">
+                    <button type="button" class="btn btn-link btn-sm text-decoration-none text-muted" style="font-size: 0.75rem;" onclick="AliceApp.simulatePhoneScan()">
+                        <i class="fa-solid fa-wand-magic-sparkles me-1 text-danger"></i>Mô phỏng quét xong ngay (Test nhanh)
+                    </button>
                 </div>
 
                 <div class="small text-muted mt-2">Mã đơn hàng: <strong id="vqr-order-code"></strong></div>

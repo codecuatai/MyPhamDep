@@ -214,8 +214,8 @@ $breadcrumbSchema = generateBreadcrumbJsonLd([
                         <?= htmlspecialchars($product['name']) ?>
                     </h1>
 
-                    <!-- Rating & Sold Row -->
-                    <div class="d-flex align-items-center gap-3 small mb-3 pb-2 border-bottom">
+                    <!-- Rating, Sold & Stock Row -->
+                    <div class="d-flex align-items-center flex-wrap gap-2 small mb-3 pb-2 border-bottom">
                         <div class="d-flex align-items-center text-warning">
                             <span class="font-bold me-1 text-dark"><?= number_format($product['rating'], 1) ?></span>
                             <i class="fa-solid fa-star"></i>
@@ -228,6 +228,38 @@ $breadcrumbSchema = generateBreadcrumbJsonLd([
                         <span class="text-muted"><strong class="text-dark"><?= count($reviews) ?: 12 ?></strong> Đánh giá thực</span>
                         <span class="text-muted">•</span>
                         <span class="text-muted">Đã bán <strong class="text-dark"><?= number_format($product['sold_count']) ?></strong></span>
+                        <span class="text-muted">•</span>
+                        <?php 
+                        $stockQty = (int)($product['stock_quantity'] ?? 50);
+                        if ($stockQty > 10): ?>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1"><i class="fa-solid fa-circle-check me-1"></i>Còn hàng (<?= $stockQty ?>)</span>
+                        <?php elseif ($stockQty > 0): ?>
+                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1"><i class="fa-solid fa-fire me-1"></i>Sắp hết hàng (Chỉ còn <?= $stockQty ?>)</span>
+                        <?php else: ?>
+                            <span class="badge bg-danger text-white px-2 py-1"><i class="fa-solid fa-circle-xmark me-1"></i>Tạm hết hàng</span>
+                        <?php endif; ?>
+                    </div>
+
+                    <!-- Khung thông số nhanh (Xuất xứ, Dung tích, HSD) -->
+                    <div class="row g-2 mb-3 small">
+                        <div class="col-4">
+                            <div class="p-2 rounded-3 text-center border" style="background: #fafafa;">
+                                <div class="text-muted" style="font-size: 0.72rem;"><i class="fa-solid fa-earth-americas me-1 text-danger"></i>Xuất xứ</div>
+                                <strong class="text-dark text-truncate d-block" style="font-size: 0.85rem;"><?= htmlspecialchars($product['origin'] ?: 'Hàn Quốc') ?></strong>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="p-2 rounded-3 text-center border" style="background: #fafafa;">
+                                <div class="text-muted" style="font-size: 0.72rem;"><i class="fa-solid fa-flask-vial me-1 text-primary"></i>Dung tích</div>
+                                <strong class="text-dark text-truncate d-block" style="font-size: 0.85rem;"><?= htmlspecialchars($product['capacity'] ?: 'Tiêu chuẩn') ?></strong>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="p-2 rounded-3 text-center border" style="background: #fafafa;">
+                                <div class="text-muted" style="font-size: 0.72rem;"><i class="fa-regular fa-calendar-check me-1 text-success"></i>Hạn sử dụng</div>
+                                <strong class="text-dark text-truncate d-block" style="font-size: 0.85rem;"><?= htmlspecialchars($product['expiry'] ?: '36 tháng') ?></strong>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Price Box (Shopee Style Tone Hồng) -->
@@ -261,12 +293,18 @@ $breadcrumbSchema = generateBreadcrumbJsonLd([
 
                     <!-- Action Buttons -->
                     <div class="d-flex flex-wrap gap-2 mb-4 mt-2">
-                        <button type="button" class="btn-hero-cta flex-grow-1 border-0 py-3" onclick="AliceApp.quickAddToCart(<?= $product['id'] ?>, '<?= addslashes($product['name']) ?>', '<?= $product['image'] ?>', <?= $product['price'] ?>); AliceApp.openCartDrawer();">
-                            <i class="fa-solid fa-bolt-lightning me-1"></i>Mua Ngay Nhanh Chóng
-                        </button>
-                        <button type="button" class="btn btn-outline-danger rounded-pill px-4 py-3 font-bold" style="border-color: var(--primary); color: var(--primary-dark);" onclick="AliceApp.quickAddToCart(<?= $product['id'] ?>, '<?= addslashes($product['name']) ?>', '<?= $product['image'] ?>', <?= $product['price'] ?>)">
-                            <i class="fa-solid fa-cart-plus me-1"></i>Thêm Vào Giỏ
-                        </button>
+                        <?php if ($stockQty > 0): ?>
+                            <button type="button" class="btn-hero-cta flex-grow-1 border-0 py-3" onclick="AliceApp.quickAddToCart(<?= $product['id'] ?>, '<?= addslashes($product['name']) ?>', '<?= $product['image'] ?>', <?= $product['price'] ?>); AliceApp.openCartDrawer();">
+                                <i class="fa-solid fa-bolt-lightning me-1"></i>Mua Ngay Nhanh Chóng
+                            </button>
+                            <button type="button" class="btn btn-outline-danger rounded-pill px-4 py-3 font-bold" style="border-color: var(--primary); color: var(--primary-dark);" onclick="AliceApp.quickAddToCart(<?= $product['id'] ?>, '<?= addslashes($product['name']) ?>', '<?= $product['image'] ?>', <?= $product['price'] ?>)">
+                                <i class="fa-solid fa-cart-plus me-1"></i>Thêm Vào Giỏ
+                            </button>
+                        <?php else: ?>
+                            <button type="button" class="btn btn-secondary flex-grow-1 rounded-pill py-3 font-bold" disabled>
+                                <i class="fa-solid fa-circle-xmark me-1"></i>Sản Phẩm Tạm Hết Hàng
+                            </button>
+                        <?php endif; ?>
                         <a href="<?= htmlspecialchars($shopConfig['zalo_url']) ?>" target="_blank" class="btn btn-light rounded-pill px-3 py-3 border font-semibold text-primary" title="Tư vấn soi da qua Zalo">
                             <i class="fa-solid fa-comment-dots me-1"></i>Tư vấn Zalo
                         </a>
@@ -290,6 +328,48 @@ $breadcrumbSchema = generateBreadcrumbJsonLd([
             <div class="col-lg-8">
                 <!-- Mô tả & Thành phần chuẩn SEO -->
                 <article class="bg-white rounded-4 shadow-sm p-4 mb-4 border">
+                    <h2 class="font-bold pb-2 border-bottom mb-3" style="font-family: var(--font-heading); font-size: 1.35rem; color: var(--text-main);">
+                        Thông Số Chi Tiết Sản Phẩm
+                    </h2>
+                    <div class="table-responsive mb-4">
+                        <table class="table table-bordered table-striped align-middle small mb-0">
+                            <tbody>
+                                <tr>
+                                    <th class="bg-light text-muted" style="width: 30%;">Thương hiệu</th>
+                                    <td class="fw-bold text-danger"><?= htmlspecialchars($product['brand'] ?: 'ALICE Official') ?></td>
+                                </tr>
+                                <tr>
+                                    <th class="bg-light text-muted">Xuất xứ sản xuất</th>
+                                    <td><?= htmlspecialchars($product['origin'] ?: 'Hàn Quốc') ?></td>
+                                </tr>
+                                <tr>
+                                    <th class="bg-light text-muted">Dung tích / Trọng lượng</th>
+                                    <td><?= htmlspecialchars($product['capacity'] ?: 'Tiêu chuẩn') ?></td>
+                                </tr>
+                                <tr>
+                                    <th class="bg-light text-muted">Hạn sử dụng</th>
+                                    <td><?= htmlspecialchars($product['expiry'] ?: '36 tháng kể từ NSX (12 tháng sau khi mở nắp)') ?></td>
+                                </tr>
+                                <tr>
+                                    <th class="bg-light text-muted">Loại da phù hợp</th>
+                                    <td><?= htmlspecialchars($product['skin_type'] === 'all' ? 'Mọi loại da, kể cả da nhạy cảm' : ($product['skin_type'] ?: 'Mọi loại da')) ?></td>
+                                </tr>
+                                <tr>
+                                    <th class="bg-light text-muted">Tình trạng kho hàng</th>
+                                    <td>
+                                        <?php if ($stockQty > 10): ?>
+                                            <span class="badge bg-success text-white px-2 py-1"><i class="fa-solid fa-boxes-stacked me-1"></i>Sẵn sàng giao ngay (Còn <?= $stockQty ?> sản phẩm)</span>
+                                        <?php elseif ($stockQty > 0): ?>
+                                            <span class="badge bg-warning text-dark px-2 py-1"><i class="fa-solid fa-triangle-exclamation me-1"></i>Sắp hết hàng (Chỉ còn <?= $stockQty ?> sản phẩm)</span>
+                                        <?php else: ?>
+                                            <span class="badge bg-danger text-white px-2 py-1"><i class="fa-solid fa-circle-xmark me-1"></i>Tạm hết hàng</span>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
                     <h2 class="font-bold pb-2 border-bottom mb-3" style="font-family: var(--font-heading); font-size: 1.35rem; color: var(--text-main);">
                         Mô Tả Sản Phẩm & Công Dụng Chi Tiết
                     </h2>

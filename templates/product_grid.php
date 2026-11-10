@@ -35,6 +35,13 @@
                             <?php if ($p['discount_percent'] > 0): ?>
                                 <span class="badge-discount-tag">-<?= $p['discount_percent'] ?>%</span>
                             <?php endif; ?>
+                            <?php 
+                            $stock = (int)($p['stock_quantity'] ?? 50);
+                            if ($stock <= 0): ?>
+                                <span class="badge bg-secondary position-absolute bottom-0 start-0 m-2 z-2"><i class="fa-solid fa-ban me-1"></i>Hết hàng</span>
+                            <?php elseif ($stock <= 10): ?>
+                                <span class="badge bg-warning text-dark position-absolute bottom-0 start-0 m-2 z-2"><i class="fa-solid fa-fire me-1"></i>Còn <?= $stock ?> sp</span>
+                            <?php endif; ?>
                             <a href="san-pham/<?= htmlspecialchars($p['slug']) ?>" onclick="AliceApp.openProductDetail(<?= $p['id'] ?>); return false;" class="d-block w-100 h-100" title="<?= htmlspecialchars($p['name']) ?>">
                                 <img src="<?= htmlspecialchars($p['image']) ?>" 
                                      alt="<?= htmlspecialchars($p['name']) ?>" 

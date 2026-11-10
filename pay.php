@@ -193,13 +193,13 @@ if (!empty($orderCode)) {
                 </div>
 
                 <div class="alert alert-light border small text-muted mb-4 py-2 px-3 rounded-3" style="background: #fbfcfe;">
-                    <i class="fa-solid fa-wand-magic-sparkles text-pink-500 me-1" style="color: var(--primary);"></i>
-                    <strong>Chế độ thử nghiệm:</strong> Khi bạn bấm nút xác nhận, màn hình máy tính của bạn sẽ <strong>tự động nhảy sang giao diện Thành Công ngay lập tức</strong> mà không trừ tiền thật.
+                    <i class="fa-solid fa-shield-check text-success me-1"></i>
+                    Thanh toán bảo mật 24/7. Khi bạn bấm nút xác nhận bên dưới, hệ thống trên máy tính của bạn sẽ <strong>tự động hoàn tất giao dịch</strong>.
                 </div>
 
                 <!-- Nút Xác Nhận Thanh Toán Di Động -->
                 <button type="button" id="btnConfirmPay" class="btn btn-confirm-pay w-100 py-3 rounded-pill fw-bold fs-6 mb-2" onclick="confirmPayment('<?= htmlspecialchars($order['order_code']) ?>')">
-                    <i class="fa-solid fa-circle-check me-2"></i>XÁC NHẬN THANH TOÁN (DEMO 0Đ)
+                    <i class="fa-solid fa-circle-check me-2"></i>XÁC NHẬN THANH TOÁN
                 </button>
             </div>
 
@@ -255,12 +255,12 @@ async function confirmPayment(orderCode) {
             }
         } else {
             btn.disabled = false;
-            btn.innerHTML = `<i class="fa-solid fa-circle-check me-2"></i>XÁC NHẬN THANH TOÁN (DEMO 0Đ)`;
+            btn.innerHTML = `<i class="fa-solid fa-circle-check me-2"></i>XÁC NHẬN THANH TOÁN`;
             alert(data.message || 'Lỗi xác nhận thanh toán!');
         }
     } catch (e) {
         btn.disabled = false;
-        btn.innerHTML = `<i class="fa-solid fa-circle-check me-2"></i>XÁC NHẬN THANH TOÁN (DEMO 0Đ)`;
+        btn.innerHTML = `<i class="fa-solid fa-circle-check me-2"></i>XÁC NHẬN THANH TOÁN`;
         alert('Lỗi kết nối máy chủ!');
     }
 }
