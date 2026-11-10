@@ -218,7 +218,7 @@ function initDatabaseTables(PDO $pdo) {
                 'title' => 'Set Quà Tặng Pink Box Cao Cấp',
                 'subtitle' => 'Hộp quà nơ hồng pastel sang trọng, tặng kèm nến thơm & thiệp viết tay ý nghĩa cho người thương.',
                 'badge_text' => '🎁 QUÀ TẶNG YÊU THƯƠNG',
-                'image_url' => 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1200&q=80',
+                'image_url' => 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80',
                 'link_url' => '#combo-routine',
                 'button_text' => 'Xem Set Quà',
                 'sort_order' => 3

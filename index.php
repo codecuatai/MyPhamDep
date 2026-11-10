@@ -99,8 +99,8 @@ try {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 
-    <!-- Custom Tone Hồng Pastel Stylesheet (Cache tối ưu theo Version) -->
-    <link href="assets/css/style.css?v=<?= defined('APP_VERSION') ? APP_VERSION : '1.0.0' ?>" rel="stylesheet">
+    <!-- Custom Tone Hồng Pastel Stylesheet (Cache tối ưu theo Version & File Timestamp) -->
+    <link href="assets/css/style.css?v=<?= file_exists(__DIR__ . '/assets/css/style.css') ? filemtime(__DIR__ . '/assets/css/style.css') : (defined('APP_VERSION') ? APP_VERSION : time()) ?>" rel="stylesheet">
 
     <!-- Dữ liệu có cấu trúc Schema.org JSON-LD (Hiển thị thông tin thương hiệu & tìm kiếm Google) -->
     <script type="application/ld+json">
