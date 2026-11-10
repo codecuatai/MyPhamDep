@@ -54,31 +54,55 @@ jobs:
 
       - name: 🚀 Deploy to Heroku
         env:
-          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-          HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME }}
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY || secrets.HEROKU_TOKEN || secrets.HEROKU_APIKEY }}
+          HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME || vars.HEROKU_APP_NAME || secrets.HEROKU_APP }}
         run: |
-          if [ -z "$HEROKU_API_KEY" ] || [ -z "$HEROKU_APP_NAME" ]; then
-            echo "::error::HEROKU_API_KEY hoặc HEROKU_APP_NAME chưa được cấu hình trong GitHub Secrets!"
+          MISSING=0
+          if [ -z "$HEROKU_API_KEY" ]; then
+            echo "::error title=Thiếu HEROKU_API_KEY::Không tìm thấy HEROKU_API_KEY trong GitHub Secrets. Hãy kiểm tra tên biến trong Settings -> Secrets and variables -> Actions."
+            MISSING=1
+          fi
+
+          if [ -z "$HEROKU_APP_NAME" ]; then
+            echo "::error title=Thiếu HEROKU_APP_NAME::Không tìm thấy HEROKU_APP_NAME trong GitHub Secrets hoặc Variables."
+            MISSING=1
+          fi
+
+          if [ $MISSING -eq 1 ]; then
             exit 1
           fi
+
+          echo "✅ Đã tìm thấy cấu hình Heroku App: $HEROKU_APP_NAME"
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
+          # Cấu hình file .netrc để xác thực an toàn với Heroku CLI / Git
+          cat << EOF > ~/.netrc
+          machine api.heroku.com
+            login _
+            password $HEROKU_API_KEY
+          machine git.heroku.com
+            login _
+            password $HEROKU_API_KEY
+          EOF
+
+          chmod 600 ~/.netrc
+
           # Add Heroku Git Remote và Push
-          git remote add heroku https://heroku:${HEROKU_API_KEY}@git.heroku.com/${HEROKU_APP_NAME}.git
-          git push heroku HEAD:main --force
+          git remote add heroku https://git.heroku.com/${HEROKU_APP_NAME}.git
+          git push heroku HEAD:main --force || git push heroku HEAD:master --force
 
       - name: 🩺 Smoke Test / Health Check Live Site
         env:
-          HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME }}
+          HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME || vars.HEROKU_APP_NAME || secrets.HEROKU_APP }}
         run: |
           echo "Đang đợi Heroku Dyno khởi động..."
-          sleep 10
+          sleep 12
           HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://${HEROKU_APP_NAME}.herokuapp.com/")
           echo "Health Check Response Code: $HTTP_STATUS"
           if [ "$HTTP_STATUS" -eq 200 ] || [ "$HTTP_STATUS" -eq 301 ] || [ "$HTTP_STATUS" -eq 302 ]; then
             echo "🎉 Website ALICE Cosmetic đã online và hoạt động bình thường!"
           else
-            echo "⚠️ Cảnh báo: Phản hồi HTTP $HTTP_STATUS, kiểm tra heroku logs nếu cần."
+            echo "⚠️ Phản hồi HTTP $HTTP_STATUS từ Heroku."
           fi
