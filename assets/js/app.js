@@ -23,19 +23,147 @@ const AliceApp = {
         this.updateCartBadge();
     },
 
+    getGuestCart() {
+        try {
+            const raw = localStorage.getItem('alice_guest_cart') || localStorage.getItem('alice_cart');
+            return raw ? JSON.parse(raw) : [];
+        } catch(e) { return []; }
+    },
+
+    getGuestCoupon() {
+        try {
+            const raw = localStorage.getItem('alice_guest_coupon') || localStorage.getItem('alice_coupon');
+            return raw ? JSON.parse(raw) : null;
+        } catch(e) { return null; }
+    },
+
+    clearGuestCart() {
+        localStorage.removeItem('alice_guest_cart');
+        localStorage.removeItem('alice_guest_coupon');
+        localStorage.removeItem('alice_cart');
+        localStorage.removeItem('alice_coupon');
+    },
+
+    getUserStorageKey() {
+        return this.currentUser ? `alice_cart_user_${this.currentUser.id}` : 'alice_guest_cart';
+    },
+
+    getUserCouponKey() {
+        return this.currentUser ? `alice_coupon_user_${this.currentUser.id}` : 'alice_guest_coupon';
+    },
+
     loadStorage() {
         try {
-            const savedCart = localStorage.getItem('alice_cart');
+            const cartKey = this.getUserStorageKey();
+            const couponKey = this.getUserCouponKey();
+            let savedCart = localStorage.getItem(cartKey);
+            if (!savedCart && !this.currentUser) {
+                savedCart = localStorage.getItem('alice_cart');
+            }
             if (savedCart) this.cart = JSON.parse(savedCart);
-            const savedCoupon = localStorage.getItem('alice_coupon');
+            else this.cart = [];
+
+            let savedCoupon = localStorage.getItem(couponKey);
+            if (!savedCoupon && !this.currentUser) {
+                savedCoupon = localStorage.getItem('alice_coupon');
+            }
             if (savedCoupon) this.appliedCoupon = JSON.parse(savedCoupon);
+            else this.appliedCoupon = null;
         } catch (e) {
             console.error('Storage error:', e);
         }
     },
 
-    saveCart() {
-        localStorage.setItem('alice_cart', JSON.stringify(this.cart));
+    saveCart(syncCloud = true) {
+        try {
+            const cartKey = this.getUserStorageKey();
+            const couponKey = this.getUserCouponKey();
+            localStorage.setItem(cartKey, JSON.stringify(this.cart));
+            if (this.appliedCoupon) {
+                localStorage.setItem(couponKey, JSON.stringify(this.appliedCoupon));
+            } else {
+                localStorage.removeItem(couponKey);
+            }
+        } catch(e) {
+            console.warn('Save cart local error:', e);
+        }
+
+        this.updateCartBadge();
+        this.renderCartDrawer();
+
+        if (syncCloud && this.currentUser) {
+            this.syncCartWithServer();
+        }
+    },
+
+    syncCartWithServer() {
+        if (!this.currentUser) return;
+        clearTimeout(this._syncCartTimer);
+        this._syncCartTimer = setTimeout(async () => {
+            try {
+                await fetch('api/cart.php?action=save', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        cart: this.cart,
+                        coupon: this.appliedCoupon
+                    })
+                });
+            } catch(e) {
+                console.warn('Sync cart cloud error:', e);
+            }
+        }, 400);
+    },
+
+    async fetchUserCart() {
+        if (!this.currentUser) return;
+        try {
+            const res = await fetch('api/cart.php?action=get');
+            const data = await res.json();
+            if (data.authenticated && Array.isArray(data.cart)) {
+                this.cart = data.cart;
+                this.appliedCoupon = data.coupon || null;
+                this.saveCart(false);
+            }
+        } catch(e) {
+            console.warn('Fetch user cart error:', e);
+        }
+    },
+
+    async onLoginSuccess(user, message) {
+        this.currentUser = user;
+        this.updateAuthUI();
+        if (message) this.showToast(message, 'success');
+        this.closeModal('modalAuth');
+
+        const guestCart = this.getGuestCart();
+        const guestCoupon = this.getGuestCoupon();
+
+        if (guestCart && guestCart.length > 0) {
+            this.showToast('Đang đồng bộ giỏ hàng cá nhân...', 'info');
+            try {
+                const res = await fetch('api/cart.php?action=merge', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        guest_cart: guestCart,
+                        guest_coupon: guestCoupon
+                    })
+                });
+                const mergeData = await res.json();
+                if (mergeData.success && Array.isArray(mergeData.cart)) {
+                    this.cart = mergeData.cart;
+                    this.appliedCoupon = mergeData.coupon || null;
+                    this.clearGuestCart();
+                }
+            } catch(e) {
+                console.error('Merge cart error:', e);
+            }
+        } else {
+            await this.fetchUserCart();
+        }
+
+        this.saveCart(false);
         this.updateCartBadge();
         this.renderCartDrawer();
     },
@@ -500,7 +628,7 @@ const AliceApp = {
 
             if (data.success) {
                 this.appliedCoupon = data;
-                localStorage.setItem('alice_coupon', JSON.stringify(data));
+                this.saveCart();
                 this.showToast(data.message, 'success');
                 this.updateCartSummary(subtotal);
             } else {
@@ -602,9 +730,15 @@ const AliceApp = {
                 // Xóa giỏ hàng
                 this.cart = [];
                 this.appliedCoupon = null;
-                localStorage.removeItem('alice_cart');
-                localStorage.removeItem('alice_coupon');
-                this.saveCart();
+                this.clearGuestCart();
+                if (this.currentUser) {
+                    try {
+                        localStorage.removeItem(this.getUserStorageKey());
+                        localStorage.removeItem(this.getUserCouponKey());
+                        fetch('api/cart.php?action=clear', { method: 'POST' }).catch(() => {});
+                    } catch(e) {}
+                }
+                this.saveCart(false);
 
                 // Đóng modal Checkout
                 const modalCheckout = bootstrap.Modal.getInstance(document.getElementById('modalCheckout'));
@@ -729,12 +863,17 @@ const AliceApp = {
             const data = await res.json();
             if (data.authenticated && data.user) {
                 this.currentUser = data.user;
+                await this.fetchUserCart();
             } else {
                 this.currentUser = null;
+                this.loadStorage();
             }
             this.updateAuthUI();
+            this.updateCartBadge();
+            this.renderCartDrawer();
         } catch(e) {
             console.error('Check auth error:', e);
+            this.loadStorage();
         }
     },
 
@@ -787,10 +926,7 @@ const AliceApp = {
             btn.innerHTML = `Đăng Nhập Ngay`;
 
             if (data.success) {
-                this.currentUser = data.user;
-                this.updateAuthUI();
-                this.showToast(data.message, 'success');
-                this.closeModal('modalAuth');
+                await this.onLoginSuccess(data.user, data.message);
                 form.reset();
             } else {
                 this.showToast(data.message || 'Đăng nhập không thành công', 'warning');
@@ -854,10 +990,7 @@ const AliceApp = {
             btn.innerHTML = `<i class="fa-solid fa-sparkles me-1"></i>Đăng Ký Thành Viên`;
 
             if (data.success) {
-                this.currentUser = data.user;
-                this.updateAuthUI();
-                this.showToast(data.message, 'success');
-                this.closeModal('modalAuth');
+                await this.onLoginSuccess(data.user, data.message);
                 form.reset();
                 const msg = document.getElementById('register-pwd-match-msg');
                 if (msg) msg.style.display = 'none';
@@ -873,13 +1006,32 @@ const AliceApp = {
 
     async logout() {
         try {
+            if (this.currentUser) {
+                await fetch('api/cart.php?action=save', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ cart: this.cart, coupon: this.appliedCoupon })
+                }).catch(() => {});
+            }
+
             const res = await fetch('api/auth.php?action=logout');
             const data = await res.json();
+
             this.currentUser = null;
+            this.cart = [];
+            this.appliedCoupon = null;
+            this.clearGuestCart();
+            this.updateCartBadge();
+            this.renderCartDrawer();
             this.updateAuthUI();
-            this.showToast(data.message || 'Đã đăng xuất!', 'success');
+            this.showToast(data.message || 'Đã đăng xuất! Giỏ hàng đã lưu an toàn trên tài khoản.', 'success');
         } catch(e) {
             this.currentUser = null;
+            this.cart = [];
+            this.appliedCoupon = null;
+            this.clearGuestCart();
+            this.updateCartBadge();
+            this.renderCartDrawer();
             this.updateAuthUI();
         }
     },
@@ -893,10 +1045,7 @@ const AliceApp = {
             });
             const data = await res.json();
             if (data.success) {
-                this.currentUser = data.user;
-                this.updateAuthUI();
-                this.showToast(data.message, 'success');
-                this.closeModal('modalAuth');
+                await this.onLoginSuccess(data.user, data.message);
             } else {
                 this.showToast(data.message || 'Lỗi đăng nhập mạng xã hội', 'warning');
             }
@@ -1023,10 +1172,7 @@ const AliceApp = {
             });
             const data = await res.json();
             if (data.success) {
-                this.currentUser = data.user;
-                this.updateAuthUI();
-                this.showToast(data.message, 'success');
-                this.closeModal('modalAuth');
+                await this.onLoginSuccess(data.user, data.message);
             } else {
                 this.showToast(data.message || 'Xác thực Google thất bại', 'warning');
             }
@@ -1051,10 +1197,7 @@ const AliceApp = {
             });
             const data = await res.json();
             if (data.success) {
-                this.currentUser = data.user;
-                this.updateAuthUI();
-                this.showToast(data.message, 'success');
-                this.closeModal('modalAuth');
+                await this.onLoginSuccess(data.user, data.message);
             } else {
                 this.showToast(data.message || 'Xác thực Google thất bại', 'warning');
             }
