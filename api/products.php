@@ -12,7 +12,7 @@ $pdo = getDbConnection();
 
 $action = $_GET['action'] ?? 'list';
 
-if ($action === 'detail') {
+if ($action === 'detail' || (isset($_GET['id']) && !isset($_GET['category']) && !isset($_GET['search']))) {
     $id = (int)($_GET['id'] ?? 0);
     $stmt = $pdo->prepare("SELECT * FROM products WHERE id = ?");
     $stmt->execute([$id]);
@@ -25,13 +25,16 @@ if ($action === 'detail') {
     $product['gallery'] = json_decode($product['gallery'] ?: '[]', true);
     $product['variants'] = json_decode($product['variants'] ?: '[]', true);
     $product['add_on_deals'] = json_decode($product['add_on_deals'] ?: '[]', true);
+    $product['add_ons'] = $product['add_on_deals'];
 
     // Lấy reviews
     $revStmt = $pdo->prepare("SELECT * FROM reviews WHERE product_id = ? ORDER BY id DESC");
     $revStmt->execute([$id]);
     $product['reviews'] = $revStmt->fetchAll();
 
-    jsonResponse($product);
+    $response = $product;
+    $response['product'] = $product;
+    jsonResponse($response);
 }
 
 // Mặc định: Lấy danh sách sản phẩm theo bộ lọc

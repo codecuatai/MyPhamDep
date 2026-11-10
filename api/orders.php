@@ -13,11 +13,19 @@ $pdo = getDbConnection();
 $action = $_GET['action'] ?? 'lookup';
 
 if ($action === 'confirm_payment') {
-    $orderCode = cleanInput($_POST['order_code'] ?? '');
+    $input = json_decode(file_get_contents('php://input'), true) ?: $_POST;
+    $orderCode = cleanInput($input['order_code'] ?? ($_GET['order_code'] ?? ''));
     if (!empty($orderCode)) {
         $stmt = $pdo->prepare("UPDATE orders SET payment_status = 'paid' WHERE order_code = ?");
         $stmt->execute([$orderCode]);
-        jsonResponse(['success' => true, 'message' => 'Đã xác nhận thanh toán cho đơn hàng ' . $orderCode]);
+        jsonResponse([
+            'success' => true, 
+            'message' => 'Đã xác nhận thanh toán cho đơn hàng ' . $orderCode,
+            'order' => [
+                'order_code' => $orderCode,
+                'payment_status' => 'paid'
+            ]
+        ]);
     }
     jsonResponse(['success' => false, 'message' => 'Mã đơn không hợp lệ'], 400);
 }
