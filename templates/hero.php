@@ -184,28 +184,44 @@ $banners = !empty($activeBanners) ? $activeBanners : [];
         opacity: 1;
         transform: translateY(-50%) scale(1.08);
     }
+    /* Capsule hiển thị chấm tròn tinh tế bên trong Banner */
     #heroBannerCarousel .hero-indicators-wrap {
-        bottom: -28px !important;
-        margin-bottom: 0;
+        position: absolute;
+        bottom: 14px !important;
+        left: 50%;
+        transform: translateX(-50%);
+        margin: 0 !important;
+        padding: 4px 12px;
+        background: rgba(255, 255, 255, 0.78);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 204, 218, 0.7);
+        border-radius: 999px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
         z-index: 10;
-        gap: 8px;
+        gap: 6px;
+        width: auto;
+        display: inline-flex;
+        align-items: center;
     }
     #heroBannerCarousel .hero-indicator-dot {
-        width: 9px !important;
-        height: 9px !important;
+        width: 7px !important;
+        height: 7px !important;
         border-radius: 50% !important;
-        background: rgba(255, 142, 180, 0.45) !important;
+        background: #fcc2d2 !important;
         border: none !important;
         padding: 0;
-        transition: all 0.4s ease !important;
-        opacity: 0.85 !important;
+        transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+        opacity: 0.75 !important;
+        cursor: pointer;
     }
     #heroBannerCarousel .hero-indicator-dot.active {
-        width: 32px !important;
+        width: 22px !important;
+        height: 7px !important;
         border-radius: 999px !important;
-        background: linear-gradient(90deg, #ff4d8d, #ff758c) !important;
+        background: linear-gradient(90deg, #ff4081, #ff6b8b) !important;
         opacity: 1 !important;
-        box-shadow: 0 2px 8px rgba(255, 77, 141, 0.4);
+        box-shadow: 0 2px 6px rgba(255, 64, 129, 0.35);
     }
 
     /* RESPONSIVE TRÊN DI ĐỘNG */
@@ -228,7 +244,8 @@ $banners = !empty($activeBanners) ? $activeBanners : [];
             max-height: 180px;
         }
         #heroBannerCarousel .hero-indicators-wrap {
-            bottom: -24px !important;
+            bottom: 10px !important;
+            padding: 3px 10px;
         }
     }
     </style>
