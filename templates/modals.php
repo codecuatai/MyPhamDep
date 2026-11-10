@@ -514,7 +514,25 @@ async function lookupOrders() {
 
                             <div class="mb-3">
                                 <label class="form-label small font-bold">Mật khẩu (tối thiểu 6 ký tự) (*)</label>
-                                <input type="password" name="password" class="form-control" placeholder="••••••••" minlength="6" required>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0 text-muted"><i class="fa-solid fa-lock"></i></span>
+                                    <input type="password" name="password" id="register-pwd" class="form-control border-start-0 ps-0" placeholder="••••••••" minlength="6" required oninput="AliceApp.checkRegisterPasswordMatch()">
+                                    <button class="btn btn-outline-secondary border-start-0 bg-light text-muted" type="button" onclick="const p = document.getElementById('register-pwd'); p.type = p.type === 'password' ? 'text' : 'password';">
+                                        <i class="fa-regular fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label small font-bold">Nhập lại mật khẩu (*)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0 text-muted"><i class="fa-solid fa-shield-heart"></i></span>
+                                    <input type="password" name="confirm_password" id="register-confirm-pwd" class="form-control border-start-0 ps-0" placeholder="••••••••" minlength="6" required oninput="AliceApp.checkRegisterPasswordMatch()">
+                                    <button class="btn btn-outline-secondary border-start-0 bg-light text-muted" type="button" onclick="const p = document.getElementById('register-confirm-pwd'); p.type = p.type === 'password' ? 'text' : 'password';">
+                                        <i class="fa-regular fa-eye"></i>
+                                    </button>
+                                </div>
+                                <div id="register-pwd-match-msg" class="small mt-1" style="display: none; font-size: 0.75rem;"></div>
                             </div>
 
                             <button type="submit" id="btn-submit-register" class="btn btn-danger w-100 rounded-pill py-2 font-bold mb-3 shadow-sm" style="background: var(--gradient-pink); border: none;">

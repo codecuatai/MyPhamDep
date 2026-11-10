@@ -30,8 +30,8 @@ define('SHOP_CONFIG', [
     'freeship_min'  => 299000, // Freeship từ 299.000đ
     
     // Mạng xã hội & Kênh liên hệ
-    'facebook_url'  => 'https://facebook.com',
-    'messenger_url' => 'https://m.me/alicecosmetic',
+    'facebook_url'  => 'https://www.facebook.com/mduong79#',
+    'messenger_url' => 'https://m.me/mduong79',
     'zalo_url'      => 'https://zaloapp.com/qr/p/12waxvomw9fms?src=qr',
     'zalo_qr_image' => 'assets/images/zalo-qr.png',
     'tiktok_url'    => 'https://tiktok.com/@alicecosmetic',

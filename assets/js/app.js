@@ -802,6 +802,27 @@ const AliceApp = {
         }
     },
 
+    checkRegisterPasswordMatch() {
+        const pwd = document.getElementById('register-pwd');
+        const confirmPwd = document.getElementById('register-confirm-pwd');
+        const msg = document.getElementById('register-pwd-match-msg');
+        if (!pwd || !confirmPwd || !msg) return;
+
+        if (!confirmPwd.value) {
+            msg.style.display = 'none';
+            return;
+        }
+
+        msg.style.display = 'block';
+        if (pwd.value === confirmPwd.value) {
+            msg.className = 'small mt-1 text-success font-semibold';
+            msg.innerHTML = '<i class="fa-solid fa-circle-check me-1"></i>Mật khẩu trùng khớp';
+        } else {
+            msg.className = 'small mt-1 text-danger font-semibold';
+            msg.innerHTML = '<i class="fa-solid fa-circle-xmark me-1"></i>Mật khẩu chưa khớp nhau';
+        }
+    },
+
     async handleRegister(event) {
         event.preventDefault();
         const form = document.getElementById('formRegister');
@@ -809,6 +830,14 @@ const AliceApp = {
         const email = form.email.value.trim();
         const phone = form.phone.value.trim();
         const password = form.password.value.trim();
+        const confirmPassword = form.confirm_password ? form.confirm_password.value.trim() : '';
+
+        if (password !== confirmPassword) {
+            this.showToast('Mật khẩu nhập lại không trùng khớp!', 'warning');
+            if (form.confirm_password) form.confirm_password.focus();
+            return;
+        }
+
         const btn = document.getElementById('btn-submit-register');
 
         btn.disabled = true;
@@ -818,7 +847,7 @@ const AliceApp = {
             const res = await fetch('api/auth.php?action=register', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ fullname, email, phone, password })
+                body: JSON.stringify({ fullname, email, phone, password, confirm_password: confirmPassword })
             });
             const data = await res.json();
             btn.disabled = false;
@@ -830,6 +859,8 @@ const AliceApp = {
                 this.showToast(data.message, 'success');
                 this.closeModal('modalAuth');
                 form.reset();
+                const msg = document.getElementById('register-pwd-match-msg');
+                if (msg) msg.style.display = 'none';
             } else {
                 this.showToast(data.message || 'Đăng ký không thành công', 'warning');
             }

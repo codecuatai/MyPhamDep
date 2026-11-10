@@ -67,9 +67,14 @@ if ($action === 'register') {
     $email = cleanInput($input['email'] ?? '');
     $phone = cleanInput($input['phone'] ?? '');
     $password = trim($input['password'] ?? '');
+    $confirmPassword = trim($input['confirm_password'] ?? '');
 
     if (empty($fullname) || empty($email) || empty($password)) {
         jsonResponse(['success' => false, 'message' => 'Vui lòng điền họ tên, email và mật khẩu!'], 400);
+    }
+
+    if (!empty($confirmPassword) && $password !== $confirmPassword) {
+        jsonResponse(['success' => false, 'message' => 'Mật khẩu nhập lại không trùng khớp!'], 400);
     }
 
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
