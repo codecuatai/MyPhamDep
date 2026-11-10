@@ -10,7 +10,7 @@ define('APP_VERSION', '1.0.0');
 
 // Cấu hình Google OAuth 2.0 (Google Identity Services)
 // Nhập Client ID lấy từ https://console.cloud.google.com/apis/credentials
-define('GOOGLE_CLIENT_ID', ''); 
+define('GOOGLE_CLIENT_ID', '960032265898-lph5fv3cefc0g327k62qidrsqnnvon10.apps.googleusercontent.com'); 
 
 // Cấu hình Database (Mặc định SQLite - Chạy ngay với PHP không cần cài MySQL)
 define('DB_DRIVER', 'sqlite'); 
