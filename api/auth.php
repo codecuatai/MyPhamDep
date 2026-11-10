@@ -177,41 +177,68 @@ if ($action === 'oauth') {
     }
 }
 
-// 6. Đăng nhập bằng Google ID Token thật (Google Identity Services)
+// 6. Đăng nhập bằng Google (Hỗ trợ cả ID Token và Access Token từ Google Identity Services)
 if ($action === 'google_login') {
     $input = json_decode(file_get_contents('php://input'), true) ?: $_POST;
     $credential = trim($input['credential'] ?? '');
+    $accessToken = trim($input['access_token'] ?? '');
 
-    if (empty($credential)) {
+    if (empty($credential) && empty($accessToken)) {
         jsonResponse(['success' => false, 'message' => 'Mã xác thực Google không hợp lệ!'], 400);
     }
 
-    // Xác thực token qua Google API
-    $verifyUrl = "https://oauth2.googleapis.com/tokeninfo?id_token=" . urlencode($credential);
-    $response = @file_get_contents($verifyUrl);
-    
-    // Fallback với cURL nếu allow_url_fopen bị tắt
-    if ($response === false && function_exists('curl_init')) {
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $verifyUrl);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-        $response = curl_exec($ch);
-        curl_close($ch);
-    }
+    $googlePayload = null;
 
-    $googlePayload = $response ? json_decode($response, true) : null;
+    if (!empty($accessToken)) {
+        // Lấy thông tin user bằng Access Token thông qua endpoint UserInfo của Google
+        $userInfoUrl = "https://www.googleapis.com/oauth2/v3/userinfo";
+        if (function_exists('curl_init')) {
+            $ch = curl_init($userInfoUrl);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, ['Authorization: Bearer ' . $accessToken]);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+            $response = curl_exec($ch);
+            curl_close($ch);
+        } else {
+            $opts = [
+                'http' => [
+                    'method' => 'GET',
+                    'header' => "Authorization: Bearer " . $accessToken . "\r\n"
+                ]
+            ];
+            $context = stream_context_create($opts);
+            $response = @file_get_contents($userInfoUrl, false, $context);
+        }
+        $googlePayload = $response ? json_decode($response, true) : null;
+    } elseif (!empty($credential)) {
+        // Xác thực ID Token qua Google API
+        $verifyUrl = "https://oauth2.googleapis.com/tokeninfo?id_token=" . urlencode($credential);
+        $response = @file_get_contents($verifyUrl);
+        
+        // Fallback với cURL nếu allow_url_fopen bị tắt
+        if ($response === false && function_exists('curl_init')) {
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $verifyUrl);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+            $response = curl_exec($ch);
+            curl_close($ch);
+        }
+
+        $googlePayload = $response ? json_decode($response, true) : null;
+
+        // Kiểm tra Client ID nếu đã cấu hình
+        if (defined('GOOGLE_CLIENT_ID') && !empty(GOOGLE_CLIENT_ID)) {
+            if (isset($googlePayload['aud']) && $googlePayload['aud'] !== GOOGLE_CLIENT_ID) {
+                jsonResponse(['success' => false, 'message' => 'Client ID Google không khớp với cấu hình hệ thống!'], 401);
+            }
+        }
+    }
 
     if (empty($googlePayload) || empty($googlePayload['email'])) {
         jsonResponse(['success' => false, 'message' => 'Xác thực Google thất bại hoặc mã token đã hết hạn!'], 401);
-    }
-
-    // Kiểm tra Client ID nếu đã cấu hình
-    if (defined('GOOGLE_CLIENT_ID') && !empty(GOOGLE_CLIENT_ID)) {
-        if (isset($googlePayload['aud']) && $googlePayload['aud'] !== GOOGLE_CLIENT_ID) {
-            jsonResponse(['success' => false, 'message' => 'Client ID Google không khớp với cấu hình hệ thống!'], 401);
-        }
     }
 
     $email = cleanInput($googlePayload['email']);

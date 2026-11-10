@@ -889,9 +889,43 @@ const AliceApp = {
 
         // Nếu là Google và đã cấu hình Google Client ID thật
         if (isGoogle && window.GOOGLE_CLIENT_ID && window.GOOGLE_CLIENT_ID.trim() !== '') {
-            if (window.google && window.google.accounts && window.google.accounts.id) {
+            const clientId = window.GOOGLE_CLIENT_ID.trim();
+
+            // Kiểm tra thư viện Google Identity Services đã sẵn sàng chưa
+            if (!window.google || !window.google.accounts) {
+                this.showToast('Đang kết nối dịch vụ Google, vui lòng thử lại sau 1 giây...', 'info');
+                return;
+            }
+
+            // Cách 1 (Khuyên dùng): Dùng OAuth2 Token Client để mở Popup đăng nhập Google ngay lập tức khi bấm nút
+            if (window.google.accounts.oauth2) {
+                try {
+                    this.showToast('Đang mở cửa sổ đăng nhập Google...', 'info');
+                    const tokenClient = google.accounts.oauth2.initTokenClient({
+                        client_id: clientId,
+                        scope: 'email profile openid',
+                        callback: async (tokenResponse) => {
+                            if (tokenResponse && tokenResponse.access_token) {
+                                await this.handleGoogleTokenResponse(tokenResponse.access_token);
+                            } else if (tokenResponse && tokenResponse.error) {
+                                console.warn('Google OAuth error:', tokenResponse);
+                                if (tokenResponse.error !== 'access_denied') {
+                                    this.showToast('Lỗi xác thực Google: ' + (tokenResponse.error_description || tokenResponse.error), 'warning');
+                                }
+                            }
+                        }
+                    });
+                    tokenClient.requestAccessToken({ prompt: 'select_account' });
+                    return;
+                } catch (err) {
+                    console.warn('OAuth2 Token Client initialization failed:', err);
+                }
+            }
+
+            // Cách 2: Fallback với One Tap
+            if (window.google.accounts.id) {
                 google.accounts.id.initialize({
-                    client_id: window.GOOGLE_CLIENT_ID.trim(),
+                    client_id: clientId,
                     callback: (response) => this.handleGoogleCredentialResponse(response)
                 });
                 google.accounts.id.prompt((notification) => {
@@ -938,6 +972,34 @@ const AliceApp = {
             }
         } catch(e) {
             this.showToast('Lỗi kết nối mạng xã hội!', 'warning');
+        }
+    },
+
+    async handleGoogleTokenResponse(accessToken) {
+        if (!accessToken) {
+            this.showToast('Không nhận được mã xác thực từ Google!', 'warning');
+            return;
+        }
+
+        this.showToast('Đang xác thực thông tin tài khoản Google của bạn...', 'info');
+
+        try {
+            const res = await fetch('api/auth.php?action=google_login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ access_token: accessToken })
+            });
+            const data = await res.json();
+            if (data.success) {
+                this.currentUser = data.user;
+                this.updateAuthUI();
+                this.showToast(data.message, 'success');
+                this.closeModal('modalAuth');
+            } else {
+                this.showToast(data.message || 'Xác thực Google thất bại', 'warning');
+            }
+        } catch(e) {
+            this.showToast('Lỗi kết nối máy chủ xác thực Google', 'warning');
         }
     },
 
