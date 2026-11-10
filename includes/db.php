@@ -131,6 +131,14 @@ function initDatabaseTables(PDO $pdo) {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )");
 
+    // 8. Bảng User Carts (Đồng bộ giỏ hàng cá nhân đa thiết bị)
+    $pdo->exec("CREATE TABLE IF NOT EXISTS user_carts (
+        user_id INTEGER PRIMARY KEY,
+        cart_json TEXT NOT NULL DEFAULT '[]',
+        coupon_json TEXT DEFAULT NULL,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )");
+
     // Tự động thêm tài khoản mẫu nếu chưa có user nào
     $userCount = $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
     if ($userCount == 0) {

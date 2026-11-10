@@ -884,20 +884,39 @@ const AliceApp = {
         }
     },
 
+    async sendOAuthRequest(provider, fullname, email, avatar) {
+        try {
+            const res = await fetch('api/auth.php?action=oauth', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ provider, fullname, email, avatar })
+            });
+            const data = await res.json();
+            if (data.success) {
+                this.currentUser = data.user;
+                this.updateAuthUI();
+                this.showToast(data.message, 'success');
+                this.closeModal('modalAuth');
+            } else {
+                this.showToast(data.message || 'Lỗi đăng nhập mạng xã hội', 'warning');
+            }
+        } catch(e) {
+            this.showToast('Lỗi kết nối mạng xã hội!', 'warning');
+        }
+    },
+
     async loginWithSocial(provider = 'google') {
         const isGoogle = (provider === 'google');
 
-        // Nếu là Google và đã cấu hình Google Client ID thật
+        // 1. NẾU LÀ GOOGLE VÀ ĐÃ CÓ GOOGLE_CLIENT_ID
         if (isGoogle && window.GOOGLE_CLIENT_ID && window.GOOGLE_CLIENT_ID.trim() !== '') {
             const clientId = window.GOOGLE_CLIENT_ID.trim();
 
-            // Kiểm tra thư viện Google Identity Services đã sẵn sàng chưa
             if (!window.google || !window.google.accounts) {
                 this.showToast('Đang kết nối dịch vụ Google, vui lòng thử lại sau 1 giây...', 'info');
                 return;
             }
 
-            // Cách 1 (Khuyên dùng): Dùng OAuth2 Token Client để mở Popup đăng nhập Google ngay lập tức khi bấm nút
             if (window.google.accounts.oauth2) {
                 try {
                     this.showToast('Đang mở cửa sổ đăng nhập Google...', 'info');
@@ -922,7 +941,6 @@ const AliceApp = {
                 }
             }
 
-            // Cách 2: Fallback với One Tap
             if (window.google.accounts.id) {
                 google.accounts.id.initialize({
                     client_id: clientId,
@@ -937,42 +955,56 @@ const AliceApp = {
             }
         }
 
-        // Chế độ Demo / Facebook hoặc khi chưa điền GOOGLE_CLIENT_ID
+        // 2. NẾU LÀ FACEBOOK VÀ ĐÃ CÓ FACEBOOK_APP_ID
+        if (!isGoogle && window.FACEBOOK_APP_ID && window.FACEBOOK_APP_ID.trim() !== '') {
+            if (typeof FB !== 'undefined') {
+                try {
+                    FB.init({
+                        appId: window.FACEBOOK_APP_ID.trim(),
+                        cookie: true,
+                        xfbml: true,
+                        version: 'v19.0'
+                    });
+                } catch(e) {}
+
+                this.showToast('Đang mở cửa sổ đăng nhập Facebook...', 'info');
+                FB.login((response) => {
+                    if (response.authResponse) {
+                        FB.api('/me', { fields: 'name,email,picture.width(150).height(150)' }, async (profile) => {
+                            if (profile && profile.name) {
+                                const fbName = profile.name;
+                                const fbEmail = profile.email || (`fb_${profile.id}@social.alice`);
+                                const fbAvatar = profile.picture?.data?.url || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80';
+                                await this.sendOAuthRequest('facebook', fbName, fbEmail, fbAvatar);
+                            }
+                        });
+                    } else {
+                        this.showToast('Bạn đã đóng hoặc hủy đăng nhập Facebook!', 'info');
+                    }
+                }, { scope: 'public_profile,email' });
+                return;
+            } else {
+                this.showToast('Đang kết nối Facebook SDK, vui lòng thử lại sau 1 giây...', 'info');
+                return;
+            }
+        }
+
+        // 3. CHẾ ĐỘ MẶC ĐỊNH / CHƯA ĐIỀN APP ID
         const defaultName = isGoogle ? 'Thu Trang (Google)' : 'Ngọc Anh (Facebook)';
         const defaultEmail = isGoogle ? 'thutrang.beauty@gmail.com' : 'ngocanh.fb@facebook.com';
         const defaultAvatar = isGoogle 
             ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80'
             : 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=150&q=80';
 
-        if (isGoogle && (!window.GOOGLE_CLIENT_ID || window.GOOGLE_CLIENT_ID.trim() === '')) {
-            this.showToast('Chưa cấu hình GOOGLE_CLIENT_ID trong config.php! Đang đăng nhập tài khoản demo...', 'info');
+        if (!isGoogle && (!window.FACEBOOK_APP_ID || window.FACEBOOK_APP_ID.trim() === '')) {
+            this.showToast('Chưa cấu hình FACEBOOK_APP_ID trong config.php! Đang đăng nhập tài khoản mẫu...', 'info');
+        } else if (isGoogle && (!window.GOOGLE_CLIENT_ID || window.GOOGLE_CLIENT_ID.trim() === '')) {
+            this.showToast('Chưa cấu hình GOOGLE_CLIENT_ID trong config.php! Đang đăng nhập tài khoản mẫu...', 'info');
         } else {
             this.showToast(`Đang kết nối tài khoản ${isGoogle ? 'Google' : 'Facebook'}...`, 'info');
         }
 
-        try {
-            const res = await fetch('api/auth.php?action=oauth', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    provider: provider,
-                    fullname: defaultName,
-                    email: defaultEmail,
-                    avatar: defaultAvatar
-                })
-            });
-            const data = await res.json();
-            if (data.success) {
-                this.currentUser = data.user;
-                this.updateAuthUI();
-                this.showToast(data.message, 'success');
-                this.closeModal('modalAuth');
-            } else {
-                this.showToast(data.message || 'Lỗi đăng nhập mạng xã hội', 'warning');
-            }
-        } catch(e) {
-            this.showToast('Lỗi kết nối mạng xã hội!', 'warning');
-        }
+        await this.sendOAuthRequest(provider, defaultName, defaultEmail, defaultAvatar);
     },
 
     async handleGoogleTokenResponse(accessToken) {
@@ -1090,6 +1122,18 @@ const AliceApp = {
                 }
             });
         }
+    }
+};
+
+// Khởi tạo Facebook SDK khi tải xong
+window.fbAsyncInit = function() {
+    if (window.FACEBOOK_APP_ID && window.FACEBOOK_APP_ID.trim() !== '') {
+        FB.init({
+            appId: window.FACEBOOK_APP_ID.trim(),
+            cookie: true,
+            xfbml: true,
+            version: 'v19.0'
+        });
     }
 };
 

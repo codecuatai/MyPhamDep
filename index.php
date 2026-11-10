@@ -50,7 +50,10 @@ $allProducts = $prodStmt->fetchAll();
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script>
         window.GOOGLE_CLIENT_ID = "<?= htmlspecialchars(defined('GOOGLE_CLIENT_ID') ? GOOGLE_CLIENT_ID : '') ?>";
+        window.FACEBOOK_APP_ID = "<?= htmlspecialchars(defined('FACEBOOK_APP_ID') ? FACEBOOK_APP_ID : '') ?>";
     </script>
+    <!-- Facebook SDK for JavaScript -->
+    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/vi_VN/sdk.js"></script>
 </head>
 <body id="top">
 

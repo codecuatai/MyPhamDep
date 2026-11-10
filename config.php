@@ -12,6 +12,10 @@ define('APP_VERSION', '1.0.0');
 // Nhập Client ID lấy từ https://console.cloud.google.com/apis/credentials
 define('GOOGLE_CLIENT_ID', '960032265898-lph5fv3cefc0g327k62qidrsqnnvon10.apps.googleusercontent.com'); 
 
+// Cấu hình Facebook Login (Meta for Developers)
+// Nhập App ID lấy từ https://developers.facebook.com/apps/
+define('FACEBOOK_APP_ID', '885141314536567'); 
+
 // Cấu hình Database (Mặc định SQLite - Chạy ngay với PHP không cần cài MySQL)
 define('DB_DRIVER', 'sqlite'); 
 define('DB_SQLITE_PATH', __DIR__ . '/database/mypham.sqlite');
