@@ -100,15 +100,27 @@ function truncateSeoDescription($text, $limit = 160) {
     $text = strip_tags((string)$text);
     $text = preg_replace('/\s+/', ' ', $text);
     $text = trim($text);
-    if (mb_strlen($text, 'UTF-8') <= $limit) {
+    
+    $len = function_exists('mb_strlen') ? mb_strlen($text, 'UTF-8') : strlen($text);
+    if ($len <= $limit) {
         return $text;
     }
-    $sub = mb_substr($text, 0, $limit - 3, 'UTF-8');
-    $lastSpace = mb_strrpos($sub, ' ', 0, 'UTF-8');
-    if ($lastSpace !== false) {
-        $sub = mb_substr($sub, 0, $lastSpace, 'UTF-8');
+    
+    if (function_exists('mb_substr') && function_exists('mb_strrpos')) {
+        $sub = mb_substr($text, 0, $limit - 3, 'UTF-8');
+        $lastSpace = mb_strrpos($sub, ' ', 0, 'UTF-8');
+        if ($lastSpace !== false) {
+            $sub = mb_substr($sub, 0, $lastSpace, 'UTF-8');
+        }
+        return $sub . '...';
+    } else {
+        $sub = substr($text, 0, $limit - 3);
+        $lastSpace = strrpos($sub, ' ');
+        if ($lastSpace !== false) {
+            $sub = substr($sub, 0, $lastSpace);
+        }
+        return $sub . '...';
     }
-    return $sub . '...';
 }
 
 /**
