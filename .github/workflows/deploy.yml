@@ -56,11 +56,16 @@ jobs:
         id: deploy
         env:
           SECRET_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+          VAR_API_KEY: ${{ vars.HEROKU_API_KEY }}
           SECRET_APP_NAME: ${{ secrets.HEROKU_APP_NAME }}
           VAR_APP_NAME: ${{ vars.HEROKU_APP_NAME }}
         run: |
-          HEROKU_API_KEY="${SECRET_API_KEY}"
-          HEROKU_APP_NAME="${SECRET_APP_NAME:-$VAR_APP_NAME}"
+          RAW_KEY="${SECRET_API_KEY:-$VAR_API_KEY}"
+          RAW_APP="${SECRET_APP_NAME:-$VAR_APP_NAME}"
+
+          # Tự động loại bỏ dấu ngoặc kép, khoảng trắng thừa hoặc ký tự xuống dòng
+          HEROKU_API_KEY=$(echo -n "$RAW_KEY" | tr -d '\r\n"' | xargs)
+          HEROKU_APP_NAME=$(echo -n "$RAW_APP" | tr -d '\r\n"' | xargs)
 
           if [ -z "$HEROKU_API_KEY" ]; then
             echo "::error title=Thiếu HEROKU_API_KEY::Không tìm thấy HEROKU_API_KEY trong GitHub Secrets!"
@@ -72,8 +77,11 @@ jobs:
             exit 1
           fi
 
-          echo "🔍 Đang xác thực với Heroku API..."
           echo "🎯 Heroku App Name: $HEROKU_APP_NAME"
+          echo "🔑 Độ dài Token nhận được: ${#HEROKU_API_KEY} ký tự"
+          echo "🔑 Tiền tố Token: ${HEROKU_API_KEY:0:5}..."
+
+          echo "🔍 Đang xác thực với Heroku API..."
 
           HTTP_STATUS=$(curl -s -o heroku_api_check.json -w "%{http_code}" \
             -H "Accept: application/vnd.heroku+json; version=3" \
@@ -81,15 +89,13 @@ jobs:
             "https://api.heroku.com/apps/$HEROKU_APP_NAME")
 
           echo "Mã phản hồi từ Heroku API: $HTTP_STATUS"
+          echo "Nội dung phản hồi từ Heroku API:"
+          cat heroku_api_check.json
+          echo ""
 
-          if [ "$HTTP_STATUS" -eq 401 ]; then
-            echo "::error title=Lỗi xác thực (401)::Mã HEROKU_API_KEY không hợp lệ hoặc đã hết hạn!"
-            exit 1
-          elif [ "$HTTP_STATUS" -eq 404 ]; then
-            echo "::error title=Không tìm thấy App (404)::App '$HEROKU_APP_NAME' không tồn tại trên tài khoản Heroku này!"
-            exit 1
-          elif [ "$HTTP_STATUS" -ne 200 ]; then
-            echo "::error title=Lỗi Heroku API ($HTTP_STATUS)::$(cat heroku_api_check.json)"
+          if [ "$HTTP_STATUS" -ne 200 ]; then
+            ERROR_MSG=$(cat heroku_api_check.json)
+            echo "::error title=Lỗi Heroku API ($HTTP_STATUS)::$ERROR_MSG"
             exit 1
           fi
 
