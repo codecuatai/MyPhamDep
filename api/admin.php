@@ -30,6 +30,12 @@ if ($action === 'stats') {
     $totalRevenue = (float)$pdo->query("SELECT COALESCE(SUM(final_amount), 0) FROM orders WHERE payment_status = 'paid'")->fetchColumn();
     $totalProducts = (int)$pdo->query("SELECT COUNT(*) FROM products")->fetchColumn();
     $totalUsers = (int)$pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
+    $totalBanners = (int)$pdo->query("SELECT COUNT(*) FROM banners")->fetchColumn();
+
+    // Thống kê Tồn kho & Cảnh báo sắp hết hàng
+    $lowStockCount = (int)$pdo->query("SELECT COUNT(*) FROM products WHERE stock_quantity > 0 AND stock_quantity <= 10")->fetchColumn();
+    $outOfStockCount = (int)$pdo->query("SELECT COUNT(*) FROM products WHERE stock_quantity <= 0")->fetchColumn();
+    $lowStockProducts = $pdo->query("SELECT id, name, brand, image, price, stock_quantity FROM products WHERE stock_quantity <= 10 ORDER BY stock_quantity ASC LIMIT 10")->fetchAll();
 
     $recentOrdersStmt = $pdo->query("SELECT * FROM orders ORDER BY id DESC LIMIT 5");
     $recentOrders = $recentOrdersStmt->fetchAll();
@@ -42,8 +48,12 @@ if ($action === 'stats') {
             'paid_orders' => $paidOrders,
             'total_revenue' => $totalRevenue,
             'total_products' => $totalProducts,
-            'total_users' => $totalUsers
+            'total_users' => $totalUsers,
+            'total_banners' => $totalBanners,
+            'low_stock_count' => $lowStockCount,
+            'out_of_stock_count' => $outOfStockCount
         ],
+        'low_stock_products' => $lowStockProducts,
         'recent_orders' => $recentOrders
     ]);
 }
@@ -93,6 +103,10 @@ if ($action === 'save_product') {
     $isFlashSale = !empty($input['is_flash_sale']) ? 1 : 0;
     $flashSaleStock = (int)($input['flash_sale_stock'] ?? 50);
     $skinType = cleanInput($input['skin_type'] ?? 'all');
+    $stockQuantity = isset($input['stock_quantity']) ? max(0, (int)$input['stock_quantity']) : 50;
+    $origin = cleanInput($input['origin'] ?? 'Chính hãng nhập khẩu');
+    $capacity = cleanInput($input['capacity'] ?? 'Tiêu chuẩn');
+    $expiry = cleanInput($input['expiry'] ?? '36 tháng kể từ NSX');
 
     if (empty($name) || $price <= 0 || empty($image)) {
         jsonResponse(['success' => false, 'message' => 'Vui lòng điền tên, giá bán và link ảnh sản phẩm!'], 400);
@@ -110,30 +124,42 @@ if ($action === 'save_product') {
         $stmt = $pdo->prepare("UPDATE products SET 
             name = ?, slug = ?, brand = ?, category_id = ?, price = ?, original_price = ?, 
             discount_percent = ?, image = ?, description = ?, ingredients = ?, how_to_use = ?, 
-            is_flash_sale = ?, flash_sale_stock = ?, skin_type = ? 
+            is_flash_sale = ?, flash_sale_stock = ?, skin_type = ?, stock_quantity = ?, origin = ?, capacity = ?, expiry = ? 
             WHERE id = ?");
         $stmt->execute([
             $name, $slug, $brand, $categoryId, $price, $originalPrice,
             $discountPercent, $image, $description, $ingredients, $howToUse,
-            $isFlashSale, $flashSaleStock, $skinType, $id
+            $isFlashSale, $flashSaleStock, $skinType, $stockQuantity, $origin, $capacity, $expiry, $id
         ]);
         // Tự động làm mới sitemap.xml
         @file_get_contents(getBaseUrl() . '/sitemap.php');
-        jsonResponse(['success' => true, 'message' => 'Cập nhật sản phẩm thành công!']);
+        jsonResponse(['success' => true, 'message' => 'Cập nhật thông tin & tồn kho sản phẩm thành công!']);
     } else {
         // Thêm mới sản phẩm
         $stmt = $pdo->prepare("INSERT INTO products 
-            (name, slug, brand, category_id, price, original_price, discount_percent, image, description, ingredients, how_to_use, is_flash_sale, flash_sale_stock, flash_sale_sold, skin_type, rating, review_count, sold_count) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, 5.0, 1, 0)");
+            (name, slug, brand, category_id, price, original_price, discount_percent, image, description, ingredients, how_to_use, is_flash_sale, flash_sale_stock, flash_sale_sold, skin_type, stock_quantity, origin, capacity, expiry, rating, review_count, sold_count) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, 5.0, 1, 0)");
         $stmt->execute([
             $name, $slug, $brand, $categoryId, $price, $originalPrice,
             $discountPercent, $image, $description, $ingredients, $howToUse,
-            $isFlashSale, $flashSaleStock, $skinType
+            $isFlashSale, $flashSaleStock, $skinType, $stockQuantity, $origin, $capacity, $expiry
         ]);
         // Tự động làm mới sitemap.xml
         @file_get_contents(getBaseUrl() . '/sitemap.php');
         jsonResponse(['success' => true, 'message' => 'Thêm mới sản phẩm mỹ phẩm thành công!']);
     }
+}
+
+// Cập nhật tồn kho nhanh trực tiếp từ bảng sản phẩm
+if ($action === 'update_stock') {
+    $input = json_decode(file_get_contents('php://input'), true) ?: $_POST;
+    $id = (int)($input['id'] ?? 0);
+    $stock = max(0, (int)($input['stock_quantity'] ?? 0));
+    if (!$id) {
+        jsonResponse(['success' => false, 'message' => 'Thiếu ID sản phẩm!'], 400);
+    }
+    $pdo->prepare("UPDATE products SET stock_quantity = ? WHERE id = ?")->execute([$stock, $id]);
+    jsonResponse(['success' => true, 'message' => "Đã cập nhật tồn kho sản phẩm #$id thành $stock cái!"]);
 }
 
 if ($action === 'delete_product') {
@@ -205,11 +231,127 @@ if ($action === 'settings') {
     }
 }
 
+// 6. Quản lý Cẩm nang Làm đẹp (Posts API)
+if ($action === 'posts') {
+    $stmt = $pdo->query("SELECT id, title, slug, category, reading_time, author, views, created_at, image FROM posts ORDER BY id DESC");
+    $posts = $stmt->fetchAll();
+    jsonResponse(['success' => true, 'posts' => $posts]);
+}
+
+if ($action === 'post_detail') {
+    $id = (int)($_GET['id'] ?? 0);
+    $stmt = $pdo->prepare("SELECT * FROM posts WHERE id = ?");
+    $stmt->execute([$id]);
+    $post = $stmt->fetch();
+    if (!$post) {
+        jsonResponse(['success' => false, 'message' => 'Không tìm thấy bài viết!'], 404);
+    }
+    jsonResponse(['success' => true, 'post' => $post]);
+}
+
+if ($action === 'save_post') {
+    $input = json_decode(file_get_contents('php://input'), true) ?: $_POST;
+    $id = (int)($input['id'] ?? 0);
+    $title = cleanInput($input['title'] ?? '');
+    $category = cleanInput($input['category'] ?? 'Skincare');
+    $author = cleanInput($input['author'] ?? 'Chuyên Gia Da Liễu ALICE');
+    $readingTime = (int)($input['reading_time'] ?? 5);
+    $image = cleanInput($input['image'] ?? '');
+    $excerpt = cleanInput($input['excerpt'] ?? '');
+    $content = trim($input['content'] ?? '');
+    $relatedProducts = cleanInput($input['related_products'] ?? '[]');
+
+    $customSlug = trim($input['slug'] ?? '');
+    $slug = !empty($customSlug) ? slugify($customSlug) : slugify($title);
+
+    if (empty($title) || empty($content)) {
+        jsonResponse(['success' => false, 'message' => 'Vui lòng nhập tiêu đề và nội dung bài viết!'], 400);
+    }
+
+    if ($id > 0) {
+        $stmt = $pdo->prepare("UPDATE posts SET title = ?, slug = ?, category = ?, author = ?, reading_time = ?, image = ?, excerpt = ?, content = ?, related_products = ? WHERE id = ?");
+        $stmt->execute([$title, $slug, $category, $author, $readingTime, $image, $excerpt, $content, $relatedProducts, $id]);
+        @file_get_contents(getBaseUrl() . '/sitemap.php');
+        jsonResponse(['success' => true, 'message' => 'Cập nhật bài viết cẩm nang thành công!']);
+    } else {
+        $stmt = $pdo->prepare("INSERT INTO posts (title, slug, category, author, reading_time, image, excerpt, content, related_products) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$title, $slug, $category, $author, $readingTime, $image, $excerpt, $content, $relatedProducts]);
+        @file_get_contents(getBaseUrl() . '/sitemap.php');
+        jsonResponse(['success' => true, 'message' => 'Thêm mới bài viết cẩm nang thành công!']);
+    }
+}
+
+if ($action === 'delete_post') {
+    $input = json_decode(file_get_contents('php://input'), true) ?: $_POST;
+    $id = (int)($input['id'] ?? 0);
+    if (!$id) {
+        jsonResponse(['success' => false, 'message' => 'Thiếu ID bài viết!'], 400);
+    }
+    $pdo->prepare("DELETE FROM posts WHERE id = ?")->execute([$id]);
+    @file_get_contents(getBaseUrl() . '/sitemap.php');
+    jsonResponse(['success' => true, 'message' => 'Đã xóa bài viết!']);
+}
+
 // 6. Danh sách thành viên (Users)
 if ($action === 'users') {
     $stmt = $pdo->query("SELECT id, fullname, email, phone, avatar, role, created_at FROM users ORDER BY id DESC");
     $users = $stmt->fetchAll();
     jsonResponse(['success' => true, 'users' => $users]);
+}
+
+// 7. Quản lý Banner quảng cáo (Banners)
+if ($action === 'banners') {
+    $stmt = $pdo->query("SELECT * FROM banners ORDER BY sort_order ASC, id DESC");
+    $banners = $stmt->fetchAll();
+    jsonResponse(['success' => true, 'banners' => $banners]);
+}
+
+if ($action === 'save_banner') {
+    $input = json_decode(file_get_contents('php://input'), true) ?: $_POST;
+    $id = (int)($input['id'] ?? 0);
+    $title = cleanInput($input['title'] ?? '');
+    $subtitle = cleanInput($input['subtitle'] ?? '');
+    $badgeText = cleanInput($input['badge_text'] ?? 'ƯU ĐÃI ĐẶC BIỆT');
+    $imageUrl = trim($input['image_url'] ?? '');
+    $linkUrl = cleanInput($input['link_url'] ?? '#san-pham-section');
+    $buttonText = cleanInput($input['button_text'] ?? 'Khám Phá Ngay');
+    $sortOrder = (int)($input['sort_order'] ?? 0);
+    $isActive = isset($input['is_active']) ? (int)$input['is_active'] : 1;
+
+    if (empty($title) || empty($imageUrl)) {
+        jsonResponse(['success' => false, 'message' => 'Vui lòng nhập tiêu đề và link ảnh banner!'], 400);
+    }
+
+    if ($id > 0) {
+        $stmt = $pdo->prepare("UPDATE banners SET title = ?, subtitle = ?, badge_text = ?, image_url = ?, link_url = ?, button_text = ?, sort_order = ?, is_active = ? WHERE id = ?");
+        $stmt->execute([$title, $subtitle, $badgeText, $imageUrl, $linkUrl, $buttonText, $sortOrder, $isActive, $id]);
+        jsonResponse(['success' => true, 'message' => 'Đã cập nhật banner thành công!']);
+    } else {
+        $stmt = $pdo->prepare("INSERT INTO banners (title, subtitle, badge_text, image_url, link_url, button_text, sort_order, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$title, $subtitle, $badgeText, $imageUrl, $linkUrl, $buttonText, $sortOrder, $isActive]);
+        jsonResponse(['success' => true, 'message' => 'Thêm mới banner thành công!']);
+    }
+}
+
+if ($action === 'toggle_banner') {
+    $input = json_decode(file_get_contents('php://input'), true) ?: $_POST;
+    $id = (int)($input['id'] ?? 0);
+    $status = (int)($input['is_active'] ?? 1);
+    if (!$id) {
+        jsonResponse(['success' => false, 'message' => 'Thiếu ID banner!'], 400);
+    }
+    $pdo->prepare("UPDATE banners SET is_active = ? WHERE id = ?")->execute([$status, $id]);
+    jsonResponse(['success' => true, 'message' => 'Đã cập nhật trạng thái hiển thị banner!']);
+}
+
+if ($action === 'delete_banner') {
+    $input = json_decode(file_get_contents('php://input'), true) ?: $_POST;
+    $id = (int)($input['id'] ?? 0);
+    if (!$id) {
+        jsonResponse(['success' => false, 'message' => 'Thiếu ID banner!'], 400);
+    }
+    $pdo->prepare("DELETE FROM banners WHERE id = ?")->execute([$id]);
+    jsonResponse(['success' => true, 'message' => 'Đã xóa banner thành công!']);
 }
 
 jsonResponse(['success' => false, 'message' => 'Hành động không hợp lệ'], 400);

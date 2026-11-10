@@ -760,7 +760,11 @@ const AliceApp = {
         }
     },
 
+    currentActiveOrder: null,
+    paymentPollingTimer: null,
+
     showVietQRPaymentModal(orderData) {
+        this.currentActiveOrder = orderData;
         const vqr = orderData.vietqr;
         document.getElementById('vqr-order-code').textContent = orderData.order_code;
         document.getElementById('vqr-amount').textContent = vqr.amount_formatted;
@@ -770,12 +774,105 @@ const AliceApp = {
         document.getElementById('vqr-add-info').textContent = vqr.add_info;
         document.getElementById('vqr-image').src = vqr.qr_image_url;
 
+        // Sinh link và mã QR Quét Điện Thoại Tự Động (Cross-Device Pay)
+        const payUrl = window.location.origin + '/pay.php?code=' + encodeURIComponent(orderData.order_code);
+        const mobileQrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=8&data=' + encodeURIComponent(payUrl);
+        const mobileImg = document.getElementById('vqr-mobile-image');
+        if (mobileImg) mobileImg.src = mobileQrUrl;
+
+        // Reset trạng thái hiển thị
+        const statusText = document.getElementById('vqr-status-text');
+        if (statusText) statusText.innerHTML = 'Đang chờ bạn quét mã bằng điện thoại...';
+
+        // Chọn tab mặc định là Quét Điện Thoại
+        const mobileTabBtn = document.getElementById('tab-qr-mobile-btn');
+        if (mobileTabBtn && window.bootstrap) {
+            const tab = bootstrap.Tab.getOrCreateInstance(mobileTabBtn);
+            tab.show();
+        }
+
+        // Bắt đầu lắng nghe tự động (Polling từ điện thoại)
+        this.startPaymentPolling(orderData.order_code);
+
         // Bắt đầu đếm ngược 10 phút thanh toán
         this.startQRCountdown(600);
 
         const modalEl = document.getElementById('modalVietQR');
         const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
         modal.show();
+    },
+
+    startPaymentPolling(orderCode) {
+        if (this.paymentPollingTimer) clearInterval(this.paymentPollingTimer);
+
+        this.paymentPollingTimer = setInterval(async () => {
+            try {
+                const res = await fetch(`api/orders.php?action=check_status&order_code=${encodeURIComponent(orderCode)}`);
+                const data = await res.json();
+                if (data.success && data.is_paid) {
+                    clearInterval(this.paymentPollingTimer);
+                    this.paymentPollingTimer = null;
+
+                    const statusText = document.getElementById('vqr-status-text');
+                    if (statusText) {
+                        statusText.innerHTML = '<i class="fa-solid fa-circle-check text-success me-1"></i>Đã nhận diện thanh toán thành công!';
+                    }
+
+                    setTimeout(() => {
+                        this.onPaymentAutoSuccess(orderCode);
+                    }, 500);
+                }
+            } catch(e) {
+                console.warn('Polling error:', e);
+            }
+        }, 1500);
+    },
+
+    onPaymentAutoSuccess(orderCode) {
+        if (this.vietqrTimer) clearInterval(this.vietqrTimer);
+        if (this.paymentPollingTimer) clearInterval(this.paymentPollingTimer);
+
+        // Đóng modal VietQR
+        const modalVqr = bootstrap.Modal.getInstance(document.getElementById('modalVietQR'));
+        if (modalVqr) modalVqr.hide();
+
+        // Gán thông tin vào modalPaymentSuccess
+        const codeEl = document.getElementById('vqr-success-order-code');
+        const amountEl = document.getElementById('vqr-success-amount');
+        if (codeEl) codeEl.textContent = '#' + orderCode;
+        if (amountEl && this.currentActiveOrder) {
+            amountEl.textContent = this.currentActiveOrder.final_amount_formatted || (this.currentActiveOrder.vietqr ? this.currentActiveOrder.vietqr.amount_formatted : '');
+        }
+
+        // Mở modal Thành Công Rực Rỡ
+        const modalSuccess = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalPaymentSuccess'));
+        modalSuccess.show();
+
+        this.showToast('🎉 Thanh toán thành công! ALICE Cosmetic đang chuẩn bị đóng gói đơn hàng cho bạn.', 'success');
+    },
+
+    async simulatePhoneScan() {
+        if (!this.currentActiveOrder || !this.currentActiveOrder.order_code) {
+            this.showToast('Không tìm thấy thông tin đơn hàng hiện tại!', 'warning');
+            return;
+        }
+
+        const statusText = document.getElementById('vqr-status-text');
+        if (statusText) statusText.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-danger me-1"></i>Đang mô phỏng xác nhận từ điện thoại...';
+
+        try {
+            const res = await fetch(`api/orders.php?action=confirm_payment`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `order_code=${encodeURIComponent(this.currentActiveOrder.order_code)}`
+            });
+            const data = await res.json();
+            if (data.success) {
+                this.onPaymentAutoSuccess(this.currentActiveOrder.order_code);
+            }
+        } catch(e) {
+            this.showToast('Lỗi mô phỏng!', 'warning');
+        }
     },
 
     startQRCountdown(seconds) {
@@ -817,10 +914,7 @@ const AliceApp = {
             });
             const data = await res.json();
             if (data.success) {
-                this.showToast('Xác nhận thanh toán thành công! ALICE Cosmetic sẽ đóng gói gửi bạn ngay.', 'success');
-                const modalEl = document.getElementById('modalVietQR');
-                const modal = bootstrap.Modal.getInstance(modalEl);
-                if (modal) modal.hide();
+                this.onPaymentAutoSuccess(orderCode);
             }
         } catch (e) {
             this.showToast('Lỗi xác nhận!', 'warning');

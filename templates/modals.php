@@ -241,7 +241,7 @@
 </div>
 
 <!-- =========================================================================
-     4. VIETQR PAYMENT MODAL (TỰ ĐỘNG SINH MÃ QR KÈM ĐẾM NGƯỢC)
+     4. VIETQR / CROSS-DEVICE PAYMENT MODAL (TỰ ĐỘNG NHẬN DIỆN TỪ ĐIỆN THOẠI)
      ========================================================================= -->
 <div class="modal fade" id="modalVietQR" tabindex="-1" data-bs-backdrop="static" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -252,74 +252,152 @@
                     <i class="fa-solid fa-qrcode"></i>
                 </div>
                 <h5 class="font-bold mb-1" style="color: var(--primary-dark); font-family: var(--font-heading);">
-                    Thanh Toán VietQR 24/7
+                    Thanh Toán Tự Động 24/7
                 </h5>
-                <p class="small text-muted mb-0">Quét mã bằng bất kỳ App Ngân hàng nào để hoàn tất</p>
+                <p class="small text-muted mb-0">Quét mã bằng Camera/Zalo điện thoại để tự động hoàn tất</p>
             </div>
 
             <div class="modal-body p-4 text-center">
-                <!-- Đồng hồ đếm ngược -->
-                <div class="badge rounded-pill px-3 py-2 mb-2" style="background: #fff0f5; color: var(--primary-dark); font-weight: 700;">
-                    <i class="fa-regular fa-clock me-1"></i>Mã thanh toán giữ hàng trong: <span id="vqr-countdown" class="text-danger">10:00</span>
-                </div>
-
-                <!-- Ảnh QR Code -->
-                <div>
-                    <img id="vqr-image" src="" alt="Mã VietQR" class="qr-code-img">
-                </div>
-
-                <!-- Chi tiết chuyển khoản & Nút Copy -->
-                <div class="text-start mt-3">
-                    <div class="copy-pill-box">
-                        <div>
-                            <span class="small text-muted d-block" style="font-size: 0.72rem;">NGÂN HÀNG THỤ HƯỞNG:</span>
-                            <strong id="vqr-bank-name" class="small">MBBank</strong>
-                        </div>
-                    </div>
-
-                    <div class="copy-pill-box">
-                        <div>
-                            <span class="small text-muted d-block" style="font-size: 0.72rem;">SỐ TÀI KHOẢN:</span>
-                            <strong id="vqr-account-no" class="fs-6 font-bold" style="color: var(--primary-dark);"></strong>
-                        </div>
-                        <button type="button" class="btn-copy-code" onclick="AliceApp.copyText(document.getElementById('vqr-account-no').textContent, 'Số tài khoản')">
-                            <i class="fa-regular fa-copy me-1"></i>Copy
+                <!-- Tabs chuyển đổi chế độ -->
+                <ul class="nav nav-pills nav-fill rounded-pill p-1 border mb-3" role="tablist" style="background: #fff0f5; border-color: var(--primary-border) !important;">
+                    <li class="nav-item">
+                        <button class="nav-link active rounded-pill font-bold py-1 small" id="tab-qr-mobile-btn" data-bs-toggle="pill" data-bs-target="#pane-qr-mobile" type="button">
+                            <i class="fa-solid fa-mobile-screen me-1"></i>Quét Điện Thoại (Demo 0đ)
                         </button>
-                    </div>
-
-                    <div class="copy-pill-box">
-                        <div>
-                            <span class="small text-muted d-block" style="font-size: 0.72rem;">CHỦ TÀI KHOẢN:</span>
-                            <strong id="vqr-account-name" class="small">ALICE COSMETIC</strong>
-                        </div>
-                    </div>
-
-                    <div class="copy-pill-box">
-                        <div>
-                            <span class="small text-muted d-block" style="font-size: 0.72rem;">SỐ TIỀN:</span>
-                            <strong id="vqr-amount" class="fs-6 text-danger font-bold"></strong>
-                        </div>
-                    </div>
-
-                    <div class="copy-pill-box" style="border: 2px dashed var(--primary); background: #fff0f5;">
-                        <div>
-                            <span class="small text-muted d-block" style="font-size: 0.72rem;">NỘI DUNG CHUYỂN KHOẢN (Bắt buộc giữ nguyên):</span>
-                            <strong id="vqr-add-info" class="font-bold text-danger"></strong>
-                        </div>
-                        <button type="button" class="btn-copy-code" onclick="AliceApp.copyText(document.getElementById('vqr-add-info').textContent, 'Nội dung chuyển khoản')">
-                            <i class="fa-regular fa-copy me-1"></i>Copy
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link rounded-pill font-bold py-1 small" id="tab-qr-bank-btn" data-bs-toggle="pill" data-bs-target="#pane-qr-bank" type="button">
+                            <i class="fa-solid fa-building-columns me-1"></i>Chuyển Khoản Ngân Hàng
                         </button>
+                    </li>
+                </ul>
+
+                <!-- TAB 1: QUÉT DI ĐỘNG TỰ ĐỘNG CHUYỂN TRANG -->
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="pane-qr-mobile" role="tabpanel">
+                        <!-- Trạng thái lắng nghe Realtime -->
+                        <div id="vqr-polling-box" class="alert alert-light border small text-muted py-2 px-3 rounded-pill d-inline-flex align-items-center gap-2 mb-2" style="background: #fdf2f8; border-color: #ffd4e3 !important;">
+                            <span class="spinner-grow spinner-grow-sm text-danger" role="status"></span>
+                            <span id="vqr-status-text" class="fw-semibold text-danger">Đang chờ bạn quét mã bằng điện thoại...</span>
+                        </div>
+
+                        <!-- Ảnh QR Quét Điện Thoại -->
+                        <div class="my-2">
+                            <img id="vqr-mobile-image" src="" alt="Mã QR Di Động" class="qr-code-img border shadow-sm rounded-4" style="width: 220px; height: 220px; object-fit: contain;">
+                        </div>
+
+                        <p class="small text-muted mb-2 px-2" style="font-size: 0.8rem;">
+                            <i class="fa-solid fa-camera text-primary me-1"></i> Mở <strong>Camera điện thoại</strong> hoặc <strong>Zalo</strong> quét mã trên -> Bấm xác nhận trên điện thoại -> Màn hình này sẽ <strong>tự động nhảy thành công</strong>!
+                        </p>
+
+                        <!-- Nút mô phỏng nhanh cho người test -->
+                        <div class="mt-3 pt-2 border-top">
+                            <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-3 py-1 font-semibold" onclick="AliceApp.simulatePhoneScan()">
+                                <i class="fa-solid fa-wand-magic-sparkles me-1"></i>Bấm để mô phỏng quét thành công ngay
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- TAB 2: THÔNG TIN TÀI KHOẢN NGÂN HÀNG TRUYỀN THỐNG -->
+                    <div class="tab-pane fade" id="pane-qr-bank" role="tabpanel">
+                        <div class="badge rounded-pill px-3 py-2 mb-2" style="background: #fff0f5; color: var(--primary-dark); font-weight: 700;">
+                            <i class="fa-regular fa-clock me-1"></i>Mã thanh toán giữ hàng: <span id="vqr-countdown" class="text-danger">10:00</span>
+                        </div>
+
+                        <div>
+                            <img id="vqr-image" src="" alt="Mã VietQR" class="qr-code-img">
+                        </div>
+
+                        <div class="text-start mt-3">
+                            <div class="copy-pill-box">
+                                <div>
+                                    <span class="small text-muted d-block" style="font-size: 0.72rem;">NGÂN HÀNG THỤ HƯỞNG:</span>
+                                    <strong id="vqr-bank-name" class="small">MBBank</strong>
+                                </div>
+                            </div>
+
+                            <div class="copy-pill-box">
+                                <div>
+                                    <span class="small text-muted d-block" style="font-size: 0.72rem;">SỐ TÀI KHOẢN:</span>
+                                    <strong id="vqr-account-no" class="fs-6 font-bold" style="color: var(--primary-dark);"></strong>
+                                </div>
+                                <button type="button" class="btn-copy-code" onclick="AliceApp.copyText(document.getElementById('vqr-account-no').textContent, 'Số tài khoản')">
+                                    <i class="fa-regular fa-copy me-1"></i>Copy
+                                </button>
+                            </div>
+
+                            <div class="copy-pill-box">
+                                <div>
+                                    <span class="small text-muted d-block" style="font-size: 0.72rem;">CHỦ TÀI KHOẢN:</span>
+                                    <strong id="vqr-account-name" class="small">ALICE COSMETIC</strong>
+                                </div>
+                            </div>
+
+                            <div class="copy-pill-box">
+                                <div>
+                                    <span class="small text-muted d-block" style="font-size: 0.72rem;">SỐ TIỀN:</span>
+                                    <strong id="vqr-amount" class="fs-6 text-danger font-bold"></strong>
+                                </div>
+                            </div>
+
+                            <div class="copy-pill-box" style="border: 2px dashed var(--primary); background: #fff0f5;">
+                                <div>
+                                    <span class="small text-muted d-block" style="font-size: 0.72rem;">NỘI DUNG CHUYỂN KHOẢN:</span>
+                                    <strong id="vqr-add-info" class="font-bold text-danger"></strong>
+                                </div>
+                                <button type="button" class="btn-copy-code" onclick="AliceApp.copyText(document.getElementById('vqr-add-info').textContent, 'Nội dung chuyển khoản')">
+                                    <i class="fa-regular fa-copy me-1"></i>Copy
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <button type="button" class="btn btn-success w-100 rounded-pill py-2 font-bold mb-2 shadow-sm" onclick="AliceApp.confirmPaymentManual(document.getElementById('vqr-order-code').textContent)">
+                                <i class="fa-solid fa-circle-check me-2"></i>Tôi Đã Chuyển Khoản Xong
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Nút Tôi đã chuyển khoản -->
-                <div class="mt-3">
-                    <button type="button" class="btn btn-success w-100 rounded-pill py-2 font-bold mb-2 shadow-sm" onclick="AliceApp.confirmPaymentManual(document.getElementById('vqr-order-code').textContent)">
-                        <i class="fa-solid fa-circle-check me-2"></i>Tôi Đã Chuyển Khoản Thành Công
-                    </button>
-                    <span class="small text-muted d-block">Mã đơn: <strong id="vqr-order-code"></strong></span>
+                <div class="small text-muted mt-2">Mã đơn hàng: <strong id="vqr-order-code"></strong></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================================
+     4.5. MODAL THANH TOÁN VIETQR / DI ĐỘNG THÀNH CÔNG RỰC RỠ
+     ========================================================================= -->
+<div class="modal fade" id="modalPaymentSuccess" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 p-4 text-center shadow-lg">
+            <div class="mb-3">
+                <div class="d-inline-flex p-3 rounded-circle text-success" style="background: #dcfce7; font-size: 2.5rem;">
+                    <i class="fa-solid fa-circle-check"></i>
                 </div>
             </div>
+            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1 mb-2 fw-bold">
+                ⚡ ĐÃ XÁC NHẬN TỰ ĐỘNG TỪ ĐIỆN THOẠI
+            </span>
+            <h4 class="font-bold mb-1" style="font-family: var(--font-heading); color: var(--text-main);">Thanh Toán Thành Công!</h4>
+            <p class="small text-muted mb-3">Hệ thống đã nhận diện thanh toán tức thì từ điện thoại của bạn. Đơn hàng đang được chuyên viên đóng gói nơ hồng gửi đi ngay.</p>
+            <div class="p-3 rounded-4 mb-3 text-start" style="background: #fff8fa; border: 1px solid var(--primary-pastel);">
+                <div class="d-flex justify-content-between mb-1 small">
+                    <span class="text-muted">Mã đơn hàng:</span>
+                    <strong id="vqr-success-order-code" class="text-danger"></strong>
+                </div>
+                <div class="d-flex justify-content-between mb-1 small">
+                    <span class="text-muted">Tổng thanh toán:</span>
+                    <strong id="vqr-success-amount" class="text-danger fs-6"></strong>
+                </div>
+                <div class="d-flex justify-content-between small">
+                    <span class="text-muted">Trạng thái:</span>
+                    <span class="text-success fw-bold"><i class="fa-solid fa-circle-check me-1"></i>Đã thanh toán (Paid)</span>
+                </div>
+            </div>
+            <button type="button" class="btn btn-pink w-100 rounded-pill py-2 font-bold shadow-sm" data-bs-dismiss="modal" onclick="AliceApp.closeModal(this)">
+                <i class="fa-solid fa-bag-shopping me-2"></i>Tiếp Tục Mua Sắm
+            </button>
         </div>
     </div>
 </div>

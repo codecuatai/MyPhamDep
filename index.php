@@ -48,6 +48,14 @@ $flashSaleProducts = $flashStmt->fetchAll();
 // Lấy toàn bộ sản phẩm
 $prodStmt = $pdo->query("SELECT * FROM products ORDER BY sold_count DESC");
 $allProducts = $prodStmt->fetchAll();
+
+// Lấy danh sách banner quảng cáo & slider trang chủ
+try {
+    $bannerStmt = $pdo->query("SELECT * FROM banners WHERE is_active = 1 ORDER BY sort_order ASC, id ASC");
+    $activeBanners = $bannerStmt->fetchAll();
+} catch (Exception $e) {
+    $activeBanners = [];
+}
 ?>
 <!DOCTYPE html>
 <html lang="vi">

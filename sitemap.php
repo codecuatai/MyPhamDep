@@ -48,6 +48,28 @@ foreach ($products as $prod) {
     $urlNode->addChild('priority', '0.9');
 }
 
+// 4. Trang danh sách Cẩm nang làm đẹp
+$urlNode = $xml->addChild('url');
+$urlNode->addChild('loc', htmlspecialchars($baseUrl . '/cam-nang'));
+$urlNode->addChild('lastmod', date('Y-m-d'));
+$urlNode->addChild('changefreq', 'daily');
+$urlNode->addChild('priority', '0.8');
+
+// 5. Chi tiết từng bài viết cẩm nang làm đẹp
+try {
+    $posts = $pdo->query("SELECT slug, created_at FROM posts ORDER BY id DESC")->fetchAll();
+    foreach ($posts as $post) {
+        if (empty($post['slug'])) continue;
+        $urlNode = $xml->addChild('url');
+        $urlNode->addChild('loc', htmlspecialchars($baseUrl . '/cam-nang/' . $post['slug']));
+        $urlNode->addChild('lastmod', date('Y-m-d', strtotime($post['created_at'] ?? 'now')));
+        $urlNode->addChild('changefreq', 'weekly');
+        $urlNode->addChild('priority', '0.8');
+    }
+} catch (Exception $e) {
+    // Bỏ qua nếu bảng posts chưa sẵn sàng
+}
+
 $output = $xml->asXML();
 
 // Lưu bản sao tĩnh sitemap.xml ở thư mục gốc để tương thích mọi webserver

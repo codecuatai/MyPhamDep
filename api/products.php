@@ -26,6 +26,12 @@ if ($action === 'detail' || (isset($_GET['id']) && !isset($_GET['category']) && 
     $product['variants'] = json_decode($product['variants'] ?: '[]', true);
     $product['add_on_deals'] = json_decode($product['add_on_deals'] ?: '[]', true);
     $product['add_ons'] = $product['add_on_deals'];
+    $product['stock_quantity'] = (int)($product['stock_quantity'] ?? 50);
+    $product['in_stock'] = $product['stock_quantity'] > 0;
+    $product['is_low_stock'] = $product['stock_quantity'] > 0 && $product['stock_quantity'] <= 10;
+    $product['origin'] = $product['origin'] ?: 'Chính hãng nhập khẩu';
+    $product['capacity'] = $product['capacity'] ?: 'Tiêu chuẩn';
+    $product['expiry'] = $product['expiry'] ?: '36 tháng kể từ NSX (12 tháng sau mở nắp)';
 
     // Lấy reviews
     $revStmt = $pdo->prepare("SELECT * FROM reviews WHERE product_id = ? ORDER BY id DESC");
@@ -94,6 +100,12 @@ foreach ($products as &$p) {
     $p['gallery'] = json_decode($p['gallery'] ?: '[]', true);
     $p['variants'] = json_decode($p['variants'] ?: '[]', true);
     $p['add_on_deals'] = json_decode($p['add_on_deals'] ?: '[]', true);
+    $p['stock_quantity'] = (int)($p['stock_quantity'] ?? 50);
+    $p['in_stock'] = $p['stock_quantity'] > 0;
+    $p['is_low_stock'] = $p['stock_quantity'] > 0 && $p['stock_quantity'] <= 10;
+    $p['origin'] = $p['origin'] ?: 'Chính hãng nhập khẩu';
+    $p['capacity'] = $p['capacity'] ?: 'Tiêu chuẩn';
+    $p['expiry'] = $p['expiry'] ?: '36 tháng kể từ NSX';
 }
 
 jsonResponse([

@@ -47,6 +47,27 @@ if (empty($items)) {
     jsonResponse(['success' => false, 'message' => 'Giỏ hàng đang trống! Vui lòng chọn sản phẩm mỹ phẩm yêu thích.'], 400);
 }
 
+// 1. Kiểm tra tồn kho trước khi đặt hàng
+foreach ($items as $it) {
+    $pid = (int)($it['id'] ?? 0);
+    $qty = (int)($it['quantity'] ?? 1);
+    if ($pid > 0) {
+        $pStmt = $pdo->prepare("SELECT name, stock_quantity FROM products WHERE id = ?");
+        $pStmt->execute([$pid]);
+        $prodInfo = $pStmt->fetch();
+        if ($prodInfo && isset($prodInfo['stock_quantity'])) {
+            $avail = (int)$prodInfo['stock_quantity'];
+            if ($avail < $qty) {
+                if ($avail <= 0) {
+                    jsonResponse(['success' => false, 'message' => "Sản phẩm '{$prodInfo['name']}' hiện đã hết hàng trong kho!"], 400);
+                } else {
+                    jsonResponse(['success' => false, 'message' => "Sản phẩm '{$prodInfo['name']}' hiện chỉ còn lại {$avail} sản phẩm trong kho!"], 400);
+                }
+            }
+        }
+    }
+}
+
 $orderCode = generateOrderCode();
 $itemsJson = json_encode($items, JSON_UNESCAPED_UNICODE);
 
@@ -60,6 +81,16 @@ try {
         $paymentMethod, $totalAmount, $discountAmount, $finalAmount,
         $couponCode, $itemsJson
     ]);
+
+    // 2. Tự động trừ tồn kho và tăng số lượng đã bán
+    foreach ($items as $it) {
+        $pid = (int)($it['id'] ?? 0);
+        $qty = (int)($it['quantity'] ?? 1);
+        if ($pid > 0) {
+            $deductStmt = $pdo->prepare("UPDATE products SET stock_quantity = MAX(0, stock_quantity - ?), sold_count = sold_count + ? WHERE id = ?");
+            $deductStmt->execute([$qty, $qty, $pid]);
+        }
+    }
 } catch (Exception $e) {
     jsonResponse(['success' => false, 'message' => 'Lỗi tạo đơn hàng: ' . $e->getMessage()], 500);
 }

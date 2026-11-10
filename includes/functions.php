@@ -205,8 +205,38 @@ function generateProductJsonLd($product, $shopConfig, $baseUrl) {
 }
 
 /**
- * Tạo dữ liệu Breadcrumb Schema
+ * Tạo dữ liệu có cấu trúc Schema JSON-LD cho Bài viết Cẩm nang (Article / BlogPosting)
  */
+function generateArticleJsonLd($post, $shopConfig, $baseUrl) {
+    $imageUrl = (strpos($post['image'], 'http') === 0) ? $post['image'] : ($baseUrl . '/' . ltrim($post['image'], '/'));
+    $postUrl = $baseUrl . '/cam-nang/' . $post['slug'];
+    
+    return [
+        "@context" => "https://schema.org",
+        "@type" => "BlogPosting",
+        "mainEntityOfPage" => [
+            "@type" => "WebPage",
+            "@id" => $postUrl
+        ],
+        "headline" => $post['title'],
+        "image" => [ $imageUrl ],
+        "datePublished" => date('c', strtotime($post['created_at'] ?? 'now')),
+        "dateModified" => date('c', strtotime($post['created_at'] ?? 'now')),
+        "author" => [
+            "@type" => "Person",
+            "name" => !empty($post['author']) ? $post['author'] : 'Chuyên Gia Da Liễu ALICE'
+        ],
+        "publisher" => [
+            "@type" => "Organization",
+            "name" => $shopConfig['shop_name'] ?? 'ALICE Cosmetic',
+            "logo" => [
+                "@type" => "ImageObject",
+                "url" => $baseUrl . "/assets/images/logo.png"
+            ]
+        ],
+        "description" => truncateSeoDescription(!empty($post['excerpt']) ? $post['excerpt'] : strip_tags($post['content']))
+    ];
+}
 function generateBreadcrumbJsonLd($items, $baseUrl) {
     $list = [];
     $pos = 1;

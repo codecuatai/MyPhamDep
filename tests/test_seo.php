@@ -108,6 +108,36 @@ if (strpos($cli404, '404') !== false && strpos($cli404, 'Không Tìm Thấy Sả
     $errors[] = "product.php does not handle non-existent slugs with 404.";
 }
 
+// 6. Check blog_detail.php with valid slug
+$_GET['slug'] = 'routine-4-buoc-giam-mun-phuc-hoi-da';
+ob_start();
+include __DIR__ . '/../blog_detail.php';
+$blogHtml = ob_get_clean();
+
+if (strpos($blogHtml, '<h1') !== false && strpos($blogHtml, 'Routine 4 Bước Giảm Mụn') !== false) {
+    $passes[] = "blog_detail.php renders semantic <h1> with article title.";
+} else {
+    $errors[] = "blog_detail.php missing or invalid <h1> tag.";
+}
+
+if (strpos($blogHtml, '"@type": "BlogPosting"') !== false || strpos($blogHtml, '"@type":"BlogPosting"') !== false) {
+    $passes[] = "blog_detail.php includes Schema.org BlogPosting JSON-LD.";
+} else {
+    $errors[] = "blog_detail.php missing Schema BlogPosting JSON-LD.";
+}
+
+if (strpos($blogHtml, 'property="og:type" content="article"') !== false) {
+    $passes[] = "blog_detail.php includes og:type='article' for social sharing.";
+} else {
+    $errors[] = "blog_detail.php missing og:type='article'.";
+}
+
+if (strpos($blogHtml, 'Sản Phẩm Được Nhắc Đến Trong Bài') !== false) {
+    $passes[] = "blog_detail.php renders recommended products buy-box for high conversion.";
+} else {
+    $errors[] = "blog_detail.php missing recommended products buy-box.";
+}
+
 // Report
 echo "PASSED (" . count($passes) . "):\n";
 foreach ($passes as $p) {

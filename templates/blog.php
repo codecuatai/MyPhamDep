@@ -1,7 +1,16 @@
 <?php
 /**
- * BEAUTY BLOG & ROUTINE TIPS - ALICE COSMETIC
+ * BEAUTY BLOG & ROUTINE TIPS - ALICE COSMETIC (DYNAMIC & CHUẨN SEO)
  */
+$blogPosts = [];
+if (isset($pdo)) {
+    try {
+        $bStmt = $pdo->query("SELECT * FROM posts ORDER BY id ASC LIMIT 3");
+        $blogPosts = $bStmt->fetchAll();
+    } catch (Exception $e) {
+        $blogPosts = [];
+    }
+}
 ?>
 <section class="py-5" style="background: #fffbfd;">
     <div class="container">
@@ -14,56 +23,51 @@
                     Bí Quyết Chăm Sóc Da Cùng Chuyên Gia
                 </h2>
             </div>
-            <a href="javascript:void(0)" class="small font-bold d-none d-md-inline" style="color: var(--primary-dark);">
+            <a href="cam-nang" class="small font-bold d-none d-md-inline" style="color: var(--primary-dark);">
                 Xem tất cả bài viết <i class="fa-solid fa-arrow-right ms-1"></i>
             </a>
         </div>
 
         <div class="row g-3">
-            <div class="col-md-4">
-                <div class="card h-100 border-0 rounded-4 shadow-sm overflow-hidden bg-white">
-                    <img src="https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=80" alt="Routine Da Dầu Mụn" class="card-img-top" style="height: 180px; object-fit: cover;" loading="lazy" decoding="async">
-                    <div class="card-body p-3">
-                        <span class="small text-muted"><i class="fa-regular fa-clock me-1"></i>5 phút đọc • Skincare</span>
-                        <h3 class="card-title font-bold mt-1 mb-2" style="font-size: 0.95rem;">
-                            Routine 4 Bước Giảm Mụn Phục Hồi Hàng Rào Bảo Vệ Da Cho Người Mới
-                        </h3>
-                        <p class="card-text small text-muted">
-                            Làm sạch dịu nhẹ, cân bằng ẩm với B5 và bảo vệ tuyệt đối trước tia UV là chìa khóa...
-                        </p>
+            <?php if (!empty($blogPosts)): ?>
+                <?php foreach ($blogPosts as $bp): ?>
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 rounded-4 shadow-sm overflow-hidden bg-white d-flex flex-column" style="border: 1px solid var(--primary-pastel) !important;">
+                            <a href="cam-nang/<?= htmlspecialchars($bp['slug']) ?>" class="d-block overflow-hidden" style="height: 180px;">
+                                <img src="<?= htmlspecialchars($bp['image']) ?>" 
+                                     alt="<?= htmlspecialchars($bp['title']) ?>" 
+                                     class="w-100 h-100" 
+                                     style="object-fit: cover; transition: transform 0.3s;" 
+                                     loading="lazy" 
+                                     decoding="async"
+                                     onmouseover="this.style.transform='scale(1.05)'" 
+                                     onmouseout="this.style.transform='scale(1)'">
+                            </a>
+                            <div class="card-body p-3 d-flex flex-column">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="small text-muted"><i class="fa-regular fa-clock me-1"></i><?= $bp['reading_time'] ?> phút đọc • <?= htmlspecialchars($bp['category']) ?></span>
+                                </div>
+                                <h3 class="card-title font-bold mt-1 mb-2" style="font-size: 0.95rem; line-height: 1.4;">
+                                    <a href="cam-nang/<?= htmlspecialchars($bp['slug']) ?>" class="text-decoration-none text-dark">
+                                        <?= htmlspecialchars($bp['title']) ?>
+                                    </a>
+                                </h3>
+                                <p class="card-text small text-muted text-truncate-3 mb-3">
+                                    <?= htmlspecialchars($bp['excerpt'] ?: strip_tags($bp['content'])) ?>
+                                </p>
+                                <div class="mt-auto pt-2 border-top text-end">
+                                    <a href="cam-nang/<?= htmlspecialchars($bp['slug']) ?>" class="small font-bold text-decoration-none" style="color: var(--primary-dark);">
+                                        Đọc tiếp <i class="fa-solid fa-angle-right ms-1"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="card h-100 border-0 rounded-4 shadow-sm overflow-hidden bg-white">
-                    <img src="https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=600&q=80" alt="Bôi kem chống nắng" class="card-img-top" style="height: 180px; object-fit: cover;" loading="lazy" decoding="async">
-                    <div class="card-body p-3">
-                        <span class="small text-muted"><i class="fa-regular fa-clock me-1"></i>4 phút đọc • Chống nắng</span>
-                        <h3 class="card-title font-bold mt-1 mb-2" style="font-size: 0.95rem;">
-                            Sai Lầm Khi Dùng Kem Chống Nắng Khiến Da Bị Lên Mụn Ẩn Mà Nhiều Người Mắc
-                        </h3>
-                        <p class="card-text small text-muted">
-                            Không tẩy trang kỹ cuối ngày hoặc bôi lượng kem chưa đủ là nguyên nhân hàng đầu...
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="card h-100 border-0 rounded-4 shadow-sm overflow-hidden bg-white">
-                    <img src="https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=600&q=80" alt="Tone son hot" class="card-img-top" style="height: 180px; object-fit: cover;" loading="lazy" decoding="async">
-                    <div class="card-body p-3">
-                        <span class="small text-muted"><i class="fa-regular fa-clock me-1"></i>3 phút đọc • Trang điểm</span>
-                        <h3 class="card-title font-bold mt-1 mb-2" style="font-size: 0.95rem;">
-                            Top 3 Tone Son MLBB Hồng Đào Tôn Da Sáng Răng Hot Nhất Năm 2026
-                        </h3>
-                        <p class="card-text small text-muted">
-                            Sắc son tự nhiên như màu môi thật nhưng tươi tắn, thích hợp đi học, đi làm hằng ngày...
-                        </p>
-                    </div>
-                </div>
-            </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <!-- Fallback nếu chưa tải bài viết -->
+                <div class="col-12 text-center text-muted py-4">Đang cập nhật bài viết mới...</div>
+            <?php endif; ?>
         </div>
     </div>
 </section>

@@ -22,4 +22,8 @@ Options -Indexes
 
     # 3. Trang danh mục sản phẩm: /danh-muc/chong-nang...
     RewriteRule ^danh-muc/([a-zA-Z0-9_-]+)/?$ index.php?category=$1 [L,QSA]
+
+    # 4. Cẩm nang làm đẹp chuẩn SEO: /cam-nang/routine-4-buoc... & /cam-nang
+    RewriteRule ^cam-nang/([a-zA-Z0-9_-]+)/?$ blog_detail.php?slug=$1 [L,QSA]
+    RewriteRule ^cam-nang/?$ blog.php [L,QSA]
 </IfModule>

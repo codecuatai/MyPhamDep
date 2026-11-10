@@ -223,6 +223,11 @@ $isAdmin = ($currentUser && ($currentUser['role'] ?? '') === 'admin');
                 </button>
             </li>
             <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-posts" type="button" onclick="AdminApp.loadPosts()">
+                    <i class="fa-solid fa-newspaper me-1"></i>Cẩm Nang SEO (<span id="count-posts-badge">3</span>)
+                </button>
+            </li>
+            <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-settings" type="button" onclick="AdminApp.loadSettings()">
                     <i class="fa-solid fa-qrcode me-1"></i>Cài Đặt VietQR & Shop
                 </button>
@@ -500,6 +505,115 @@ $isAdmin = ($currentUser && ($currentUser['role'] ?? '') === 'admin');
                 </div>
             </div>
 
+            <!-- TAB 6: QUẢN LÝ CẨM NANG LÀM ĐẸP CHUẨN SEO -->
+            <div class="tab-pane fade" id="tab-posts" role="tabpanel">
+                <div class="card border-0 shadow-sm rounded-4 p-4">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                        <div>
+                            <h5 class="fw-bold mb-1"><i class="fa-solid fa-newspaper me-2 text-danger"></i>Danh Sách Bài Viết Cẩm Nang Chuẩn SEO</h5>
+                            <p class="text-muted small mb-0">Viết bài chia sẻ bí quyết làm đẹp để kéo hàng nghìn lượt tìm kiếm tự nhiên từ Google</p>
+                        </div>
+                        <button type="button" class="btn btn-pink rounded-pill px-3" onclick="AdminApp.openPostModal()">
+                            <i class="fa-solid fa-plus me-1"></i>Viết Bài Mới
+                        </button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 70px;">Ảnh</th>
+                                    <th>Tiêu Đề & Đường Dẫn SEO</th>
+                                    <th>Chuyên Mục</th>
+                                    <th>Thời Gian Đọc</th>
+                                    <th>Lượt Xem</th>
+                                    <th>Ngày Đăng</th>
+                                    <th class="text-end">Thao Tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="posts-table-body">
+                                <tr>
+                                    <td colspan="7" class="text-center py-4 text-muted">Đang tải danh sách bài viết...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MODAL THÊM / SỬA BÀI VIẾT CẨM NANG -->
+    <div class="modal fade" id="modalAdminPost" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="modalPostTitle">Viết Bài Cẩm Nang Mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formPostDetail" onsubmit="AdminApp.savePost(event)">
+                        <input type="hidden" id="post_id">
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <label class="form-label small fw-semibold">Tiêu Đề Bài Viết *</label>
+                                <input type="text" id="post_title" class="form-control" required placeholder="Ví dụ: Routine 4 Bước Giảm Mụn Phục Hồi Da">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold">Chuyên Mục</label>
+                                <select id="post_category" class="form-select">
+                                    <option value="Skincare">Skincare Routine</option>
+                                    <option value="Chống nắng">Chống Nắng</option>
+                                    <option value="Trang điểm">Trang Điểm</option>
+                                    <option value="Chăm sóc da">Chăm Sóc Da</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-8">
+                                <label class="form-label small fw-semibold">Đường Dẫn SEO (Slug - Để trống hệ thống tự tạo)</label>
+                                <input type="text" id="post_slug" class="form-control" placeholder="routine-4-buoc-giam-mun">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold">Thời Gian Đọc (Phút)</label>
+                                <input type="number" id="post_reading_time" class="form-control" value="5" min="1">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold">Tác Giả</label>
+                                <input type="text" id="post_author" class="form-control" value="Chuyên Gia Da Liễu ALICE">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold">Ảnh Bìa Bài Viết (URL) *</label>
+                                <input type="url" id="post_image" class="form-control" required placeholder="https://images.unsplash.com/...">
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label small fw-semibold">Tóm Tắt Ngắn (Meta Description - 1-2 câu hiển thị trên Google)</label>
+                                <textarea id="post_excerpt" class="form-control" rows="2" placeholder="Tóm tắt ngắn gọn nội dung bài viết để thu hút người đọc bấm vào..."></textarea>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label small fw-semibold">Nội Dung Bài Viết Chi Tiết (Hỗ trợ định dạng HTML: &lt;h2&gt;, &lt;h3&gt;, &lt;p&gt;, &lt;strong&gt;) *</label>
+                                <textarea id="post_content" class="form-control font-monospace" rows="10" required placeholder="Nội dung bài viết..."></textarea>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label small fw-semibold">ID Sản Phẩm Gợi Ý Trong Bài (Cách nhau bởi dấu phẩy, ví dụ: 1, 2, 4)</label>
+                                <input type="text" id="post_related_products" class="form-control" placeholder="1, 4, 11">
+                                <div class="form-text small">Hệ thống sẽ tự động hiển thị nút mua nhanh các sản phẩm này ở cuối bài viết để khách bấm mua ngay.</div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 mt-4 pt-2 border-top">
+                            <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                            <button type="submit" id="btnSavePost" class="btn btn-pink rounded-pill px-4">
+                                <i class="fa-solid fa-cloud-arrow-up me-1"></i>Lưu & Xuất Bản
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1094,6 +1208,161 @@ const AdminApp = {
         } catch(err) {
             btn.disabled = false;
             alert('Lỗi lưu cài đặt!');
+        }
+    },
+
+    async loadPosts() {
+        const tbody = document.getElementById('posts-table-body');
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-pink-500 me-2"></i>Đang tải danh sách bài viết...</td></tr>';
+
+        try {
+            const res = await fetch('api/admin.php?action=posts');
+            const data = await res.json();
+            if (!data.success) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-4">${data.message || 'Lỗi tải bài viết'}</td></tr>`;
+                return;
+            }
+
+            const posts = data.posts || [];
+            document.getElementById('count-posts-badge').innerText = posts.length;
+
+            if (posts.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">Chưa có bài viết cẩm nang nào. Hãy bấm "Viết Bài Mới"!</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = posts.map(p => `
+                <tr>
+                    <td>
+                        <img src="${p.image || 'assets/images/placeholder.jpg'}" alt="${p.title}" style="width: 55px; height: 55px; object-fit: cover; border-radius: 8px;">
+                    </td>
+                    <td>
+                        <div class="fw-bold text-dark">${p.title}</div>
+                        <div class="small text-muted font-monospace"><a href="cam-nang/${p.slug}" target="_blank" class="text-decoration-none text-primary"><i class="fa-solid fa-link me-1"></i>/cam-nang/${p.slug}</a></div>
+                    </td>
+                    <td><span class="badge rounded-pill bg-light text-dark border px-2 py-1">${p.category || 'Skincare'}</span></td>
+                    <td><span class="small text-muted"><i class="fa-regular fa-clock me-1"></i>${p.reading_time || 5} phút</span></td>
+                    <td><span class="small fw-semibold text-danger"><i class="fa-regular fa-eye me-1"></i>${p.views || 0}</span></td>
+                    <td><span class="small text-muted">${(p.created_at || '').substring(0, 10)}</span></td>
+                    <td class="text-end">
+                        <a href="cam-nang/${p.slug}" target="_blank" class="btn btn-sm btn-outline-info rounded-pill px-2 py-1 me-1" title="Xem trên web"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+                        <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-2 py-1 me-1" onclick="AdminApp.editPost(${p.id})" title="Chỉnh sửa"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-1" onclick="AdminApp.deletePost(${p.id}, '${p.title.replace(/'/g, "\\'")}')" title="Xóa bài"><i class="fa-solid fa-trash-can"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        } catch(err) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger py-4">Lỗi kết nối tải bài viết!</td></tr>';
+        }
+    },
+
+    openPostModal(post = null) {
+        document.getElementById('post_id').value = post ? post.id : '';
+        document.getElementById('post_title').value = post ? post.title : '';
+        document.getElementById('post_slug').value = post ? post.slug : '';
+        document.getElementById('post_category').value = post ? post.category : 'Skincare';
+        document.getElementById('post_reading_time').value = post ? post.reading_time : 5;
+        document.getElementById('post_author').value = post ? post.author : 'Chuyên Gia Da Liễu ALICE';
+        document.getElementById('post_image').value = post ? post.image : '';
+        document.getElementById('post_excerpt').value = post ? (post.excerpt || '') : '';
+        document.getElementById('post_content').value = post ? post.content : '';
+        
+        let relatedStr = '';
+        if (post && post.related_products) {
+            try {
+                const arr = JSON.parse(post.related_products);
+                relatedStr = Array.isArray(arr) ? arr.join(', ') : '';
+            } catch(e) { relatedStr = post.related_products; }
+        }
+        document.getElementById('post_related_products').value = relatedStr;
+
+        document.getElementById('modalPostTitle').innerText = post ? 'Chỉnh Sửa Bài Viết Cẩm Nang' : 'Viết Bài Cẩm Nang Mới';
+        new bootstrap.Modal(document.getElementById('modalAdminPost')).show();
+    },
+
+    async editPost(id) {
+        try {
+            const res = await fetch(`api/admin.php?action=post_detail&id=${id}`);
+            const data = await res.json();
+            if (data.success && data.post) {
+                this.openPostModal(data.post);
+            } else {
+                alert(data.message || 'Không thể tải chi tiết bài viết!');
+            }
+        } catch(e) {
+            alert('Lỗi kết nối!');
+        }
+    },
+
+    async savePost(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btnSavePost');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i>Đang lưu...';
+
+        const id = document.getElementById('post_id').value;
+        const relatedRaw = document.getElementById('post_related_products').value.trim();
+        let relatedArr = [];
+        if (relatedRaw) {
+            relatedArr = relatedRaw.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+        }
+
+        const payload = {
+            id: id ? parseInt(id) : 0,
+            title: document.getElementById('post_title').value.trim(),
+            slug: document.getElementById('post_slug').value.trim(),
+            category: document.getElementById('post_category').value,
+            reading_time: parseInt(document.getElementById('post_reading_time').value) || 5,
+            author: document.getElementById('post_author').value.trim(),
+            image: document.getElementById('post_image').value.trim(),
+            excerpt: document.getElementById('post_excerpt').value.trim(),
+            content: document.getElementById('post_content').value.trim(),
+            related_products: JSON.stringify(relatedArr)
+        };
+
+        try {
+            const res = await fetch('api/admin.php?action=save_post', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up me-1"></i>Lưu & Xuất Bản';
+
+            if (data.success) {
+                alert(data.message || 'Đã lưu bài viết!');
+                const modal = bootstrap.Modal.getInstance(document.getElementById('modalAdminPost'));
+                if (modal) modal.hide();
+                this.loadPosts();
+            } else {
+                alert(data.message || 'Lỗi lưu bài viết!');
+            }
+        } catch(err) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up me-1"></i>Lưu & Xuất Bản';
+            alert('Lỗi kết nối máy chủ!');
+        }
+    },
+
+    async deletePost(id, title) {
+        if (!confirm(`Bạn có chắc chắn muốn xóa bài viết "${title}"?`)) return;
+
+        try {
+            const res = await fetch('api/admin.php?action=delete_post', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ id: id })
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert(data.message || 'Đã xóa bài viết!');
+                this.loadPosts();
+            } else {
+                alert(data.message || 'Không thể xóa bài viết!');
+            }
+        } catch(err) {
+            alert('Lỗi kết nối máy chủ!');
         }
     }
 };
