@@ -71,20 +71,30 @@ const AliceApp = {
         } else if (btnOrModalId && btnOrModalId.closest) {
             modalEl = btnOrModalId.closest('.modal');
         }
+        if (!modalEl) {
+            modalEl = document.querySelector('.modal.show');
+        }
         if (modalEl) {
             try {
                 const instance = bootstrap.Modal.getInstance(modalEl) || bootstrap.Modal.getOrCreateInstance(modalEl);
                 if (instance) instance.hide();
             } catch(e) {}
-            // Đảm bảo dọn dẹp backdrop và lớp modal ngay lập tức
-            modalEl.classList.remove('show');
-            modalEl.style.display = 'none';
-            modalEl.setAttribute('aria-hidden', 'true');
-            modalEl.removeAttribute('aria-modal');
-            document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
-            document.body.classList.remove('modal-open');
-            document.body.style.removeProperty('padding-right');
-            document.body.style.removeProperty('overflow');
+
+            // Dọn dẹp DOM ngay và dọn lần nữa sau 180ms để đảm bảo không bao giờ bị kẹt backdrop mờ
+            const cleanup = () => {
+                modalEl.classList.remove('show');
+                modalEl.style.display = 'none';
+                modalEl.setAttribute('aria-hidden', 'true');
+                modalEl.removeAttribute('aria-modal');
+                modalEl.removeAttribute('role');
+                document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+                document.body.classList.remove('modal-open');
+                document.body.style.removeProperty('padding-right');
+                document.body.style.removeProperty('overflow');
+            };
+
+            cleanup();
+            setTimeout(cleanup, 180);
         }
     },
 
@@ -780,8 +790,7 @@ const AliceApp = {
                 this.currentUser = data.user;
                 this.updateAuthUI();
                 this.showToast(data.message, 'success');
-                const modal = bootstrap.Modal.getInstance(document.getElementById('modalAuth'));
-                if (modal) modal.hide();
+                this.closeModal('modalAuth');
                 form.reset();
             } else {
                 this.showToast(data.message || 'Đăng nhập không thành công', 'warning');
@@ -819,8 +828,7 @@ const AliceApp = {
                 this.currentUser = data.user;
                 this.updateAuthUI();
                 this.showToast(data.message, 'success');
-                const modal = bootstrap.Modal.getInstance(document.getElementById('modalAuth'));
-                if (modal) modal.hide();
+                this.closeModal('modalAuth');
                 form.reset();
             } else {
                 this.showToast(data.message || 'Đăng ký không thành công', 'warning');
@@ -871,8 +879,7 @@ const AliceApp = {
                 this.currentUser = data.user;
                 this.updateAuthUI();
                 this.showToast(data.message, 'success');
-                const modal = bootstrap.Modal.getInstance(document.getElementById('modalAuth'));
-                if (modal) modal.hide();
+                this.closeModal('modalAuth');
             } else {
                 this.showToast(data.message || 'Lỗi đăng nhập mạng xã hội', 'warning');
             }
@@ -898,16 +905,16 @@ const AliceApp = {
         document.addEventListener('click', (e) => {
             const closeBtn = e.target.closest('[data-bs-dismiss="modal"], .btn-close');
             if (closeBtn && closeBtn.closest('.modal')) {
-                e.preventDefault();
                 AliceApp.closeModal(closeBtn);
             }
         });
 
-        // Bắt sự kiện phím ESC để thoát modal
+        // Bắt sự kiện phím ESC để thoát modal hoặc đóng drawer
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 const openModal = document.querySelector('.modal.show');
                 if (openModal) AliceApp.closeModal(openModal);
+                AliceApp.closeCartDrawer();
             }
         });
 

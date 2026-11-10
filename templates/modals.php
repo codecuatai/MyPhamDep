@@ -178,7 +178,7 @@
                 <h5 class="modal-title font-bold" style="color: var(--primary-dark); font-family: var(--font-heading);">
                     <i class="fa-solid fa-bag-shopping me-2"></i>Thông Tin Đặt Hàng ALICE
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng" onclick="AliceApp.closeModal(this)"></button>
             </div>
             <div class="modal-body p-4 pt-3">
                 <form id="formCheckout" onsubmit="AliceApp.submitOrder(event)">
@@ -247,7 +247,7 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content rounded-4 border-0 shadow-2xl">
             <div class="modal-header border-0 pb-0 text-center d-block position-relative" style="background: var(--primary-soft);">
-                <button type="button" class="btn-close position-absolute top-0 end-0 m-3" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Đóng" onclick="AliceApp.closeModal(this)"></button>
                 <div class="brand-icon-box mx-auto mb-2" style="width: 44px; height: 44px;">
                     <i class="fa-solid fa-qrcode"></i>
                 </div>
@@ -339,7 +339,7 @@
                 <div class="small">Mã đơn hàng: <strong id="cod-order-code" class="text-danger"></strong></div>
                 <div class="small mt-1">Tổng tiền thu COD: <strong id="cod-final-amount" class="text-danger fs-6"></strong></div>
             </div>
-            <button type="button" class="btn btn-danger rounded-pill px-4 py-2 font-bold" style="background: var(--gradient-pink); border: none;" data-bs-dismiss="modal">
+            <button type="button" class="btn btn-danger rounded-pill px-4 py-2 font-bold" style="background: var(--gradient-pink); border: none;" data-bs-dismiss="modal" onclick="AliceApp.closeModal(this)">
                 Tiếp Tục Mua Sắm
             </button>
         </div>
@@ -356,7 +356,7 @@
                 <h5 class="modal-title font-bold" style="color: var(--primary-dark); font-family: var(--font-heading);">
                     <i class="fa-solid fa-truck-fast me-2"></i>Tra Cứu Đơn Hàng Của Bạn
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng" onclick="AliceApp.closeModal(this)"></button>
             </div>
             <div class="modal-body p-4">
                 <div class="input-group mb-3">
@@ -414,7 +414,7 @@ async function lookupOrders() {
         <div class="modal-content rounded-4 border-0 shadow-2xl overflow-hidden">
             <!-- Modal Header Tone Hồng -->
             <div class="modal-header border-0 pb-2 text-center d-block position-relative" style="background: linear-gradient(135deg, #fff0f5 0%, #ffe4ec 100%);">
-                <button type="button" class="btn-close position-absolute top-0 end-0 m-3" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Đóng" onclick="AliceApp.closeModal(this)"></button>
                 <div class="brand-icon-box mx-auto mb-2" style="width: 48px; height: 48px; font-size: 1.4rem;">
                     <i class="fa-solid fa-spa"></i>
                 </div>

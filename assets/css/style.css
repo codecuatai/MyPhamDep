@@ -1056,13 +1056,15 @@ a {
     position: fixed;
     top: 20px;
     right: 20px;
-    z-index: 1090;
+    z-index: 2100;
     display: flex;
     flex-direction: column;
     gap: 10px;
+    pointer-events: none;
 }
 
 .alice-toast {
+    pointer-events: auto;
     background: #ffffff;
     border-left: 5px solid var(--primary);
     border-radius: 12px;
@@ -1092,24 +1094,41 @@ a {
     animation: flameWiggle 0.6s infinite ease-in-out;
 }
 
-/* Modal Close Button Reliability */
+/* Modal Close Button Reliability & Tone Hồng Styling */
 .modal .btn-close {
-    z-index: 1070 !important;
-    position: relative;
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+    padding: 0 !important;
+    background-size: 13px 13px !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+    border-radius: 50% !important;
+    background-color: #ffffff !important;
+    border: 1px solid rgba(255, 92, 138, 0.25) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
     cursor: pointer !important;
-    opacity: 0.75;
-    padding: 0.6rem !important;
-    transition: all 0.2s ease;
+    opacity: 0.85 !important;
+    z-index: 2000 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 .modal .btn-close:hover {
-    opacity: 1;
-    transform: scale(1.15) rotate(90deg);
+    opacity: 1 !important;
+    background-color: #fff0f5 !important;
+    border-color: var(--primary) !important;
+    transform: scale(1.1) rotate(90deg);
+    box-shadow: 0 4px 12px rgba(255, 92, 138, 0.25) !important;
 }
 
 .modal-header .btn-close.position-absolute {
     position: absolute !important;
     top: 14px !important;
     right: 14px !important;
-    z-index: 1080 !important;
+    margin: 0 !important;
+    z-index: 2000 !important;
 }
