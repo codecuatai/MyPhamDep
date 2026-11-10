@@ -11,9 +11,9 @@
                 <span class="badge rounded-pill px-3 py-1 font-bold" style="background: var(--primary-pastel); color: var(--primary-dark); font-size: 0.78rem;">
                     BỘ SƯU TẬP CHỌN LỌC
                 </span>
-                <h3 class="font-bold mt-1 mb-0" style="font-family: var(--font-heading); font-size: 1.8rem; color: var(--text-main);">
+                <h2 class="font-bold mt-1 mb-0" style="font-family: var(--font-heading); font-size: 1.8rem; color: var(--text-main);">
                     Tất Cả Sản Phẩm Chính Hãng
-                </h3>
+                </h2>
             </div>
 
             <!-- Skin Type Filter Tabs (Đặc thù mỹ phẩm) -->
@@ -35,18 +35,22 @@
                             <?php if ($p['discount_percent'] > 0): ?>
                                 <span class="badge-discount-tag">-<?= $p['discount_percent'] ?>%</span>
                             <?php endif; ?>
-                            <img src="<?= htmlspecialchars($p['image']) ?>" 
-                                 alt="<?= htmlspecialchars($p['name']) ?>" 
-                                 class="product-thumb-img" 
-                                 onclick="AliceApp.openProductDetail(<?= $p['id'] ?>)" 
-                                 style="cursor: pointer;"
-                                 onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=600&q=80';">
+                            <a href="san-pham/<?= htmlspecialchars($p['slug']) ?>" onclick="AliceApp.openProductDetail(<?= $p['id'] ?>); return false;" class="d-block w-100 h-100" title="<?= htmlspecialchars($p['name']) ?>">
+                                <img src="<?= htmlspecialchars($p['image']) ?>" 
+                                     alt="<?= htmlspecialchars($p['name']) ?>" 
+                                     class="product-thumb-img" 
+                                     loading="lazy"
+                                     decoding="async"
+                                     onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=600&q=80';">
+                            </a>
                         </div>
                         <div class="product-info-wrap">
                             <div class="product-brand"><?= htmlspecialchars($p['brand']) ?></div>
-                            <h4 class="product-name" onclick="AliceApp.openProductDetail(<?= $p['id'] ?>)" style="cursor: pointer;" title="<?= htmlspecialchars($p['name']) ?>">
-                                <?= htmlspecialchars($p['name']) ?>
-                            </h4>
+                            <h3 class="product-name" title="<?= htmlspecialchars($p['name']) ?>">
+                                <a href="san-pham/<?= htmlspecialchars($p['slug']) ?>" onclick="AliceApp.openProductDetail(<?= $p['id'] ?>); return false;" class="text-decoration-none text-dark d-block">
+                                    <?= htmlspecialchars($p['name']) ?>
+                                </a>
+                            </h3>
 
                             <div class="product-rating-sold">
                                 <span class="rating-stars">★ <?= $p['rating'] ?></span>

@@ -9,7 +9,7 @@
         <div class="flash-sale-header">
             <div class="flash-sale-title">
                 <span class="flame-icon fs-3">🔥</span>
-                <h3>FLASH SALE GIỜ VÀNG</h3>
+                <h2 class="h3 mb-0 font-bold">FLASH SALE GIỜ VÀNG</h2>
                 <div class="flash-sale-timer ms-md-3">
                     <span class="timer-box" id="fs-hours">02</span>
                     <span class="text-danger font-bold">:</span>
@@ -36,18 +36,22 @@
                         <div class="product-thumb-wrap">
                             <span class="badge-mall-official">MALL CHÍNH HÃNG</span>
                             <span class="badge-discount-tag">-<?= $p['discount_percent'] ?>%</span>
-                            <img src="<?= htmlspecialchars($p['image']) ?>" 
-                                 alt="<?= htmlspecialchars($p['name']) ?>" 
-                                 class="product-thumb-img" 
-                                 onclick="AliceApp.openProductDetail(<?= $p['id'] ?>)" 
-                                 style="cursor: pointer;"
-                                 onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=600&q=80';">
+                            <a href="san-pham/<?= htmlspecialchars($p['slug']) ?>" onclick="AliceApp.openProductDetail(<?= $p['id'] ?>); return false;" class="d-block w-100 h-100" title="<?= htmlspecialchars($p['name']) ?>">
+                                <img src="<?= htmlspecialchars($p['image']) ?>" 
+                                     alt="<?= htmlspecialchars($p['name']) ?>" 
+                                     class="product-thumb-img" 
+                                     loading="lazy"
+                                     decoding="async"
+                                     onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=600&q=80';">
+                            </a>
                         </div>
                         <div class="product-info-wrap">
                             <div class="product-brand"><?= htmlspecialchars($p['brand']) ?></div>
-                            <h4 class="product-name" onclick="AliceApp.openProductDetail(<?= $p['id'] ?>)" style="cursor: pointer;" title="<?= htmlspecialchars($p['name']) ?>">
-                                <?= htmlspecialchars($p['name']) ?>
-                            </h4>
+                            <h3 class="product-name" title="<?= htmlspecialchars($p['name']) ?>">
+                                <a href="san-pham/<?= htmlspecialchars($p['slug']) ?>" onclick="AliceApp.openProductDetail(<?= $p['id'] ?>); return false;" class="text-decoration-none text-dark d-block">
+                                    <?= htmlspecialchars($p['name']) ?>
+                                </a>
+                            </h3>
 
                             <div class="product-rating-sold">
                                 <span class="rating-stars">★ <?= $p['rating'] ?></span>

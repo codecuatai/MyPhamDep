@@ -491,6 +491,11 @@ async function lookupOrders() {
                                     </button>
                                 </div>
                             </div>
+                            <div class="text-center mt-2">
+                                <button type="button" class="btn btn-link btn-sm text-muted p-0 text-decoration-none" style="font-size: 0.75rem;" onclick="AliceApp.loginWithSampleSocial('facebook')">
+                                    <i class="fa-solid fa-bolt text-pink-500 me-1"></i>Đăng nhập nhanh mẫu (Trực tiếp không cần App ID)
+                                </button>
+                            </div>
                         </form>
                     </div>
 
@@ -558,6 +563,11 @@ async function lookupOrders() {
                                         <span>Facebook</span>
                                     </button>
                                 </div>
+                            </div>
+                            <div class="text-center mt-2">
+                                <button type="button" class="btn btn-link btn-sm text-muted p-0 text-decoration-none" style="font-size: 0.75rem;" onclick="AliceApp.loginWithSampleSocial('facebook')">
+                                    <i class="fa-solid fa-bolt text-pink-500 me-1"></i>Đăng nhập nhanh mẫu (Trực tiếp không cần App ID)
+                                </button>
                             </div>
                         </form>
                     </div>

@@ -15,6 +15,27 @@ require_once __DIR__ . '/includes/functions.php';
 
 $pdo = getDbConnection();
 $shopConfig = getShopConfig($pdo);
+$baseUrl = getBaseUrl();
+
+// SEO Meta variables
+$canonicalUrl = $baseUrl . '/';
+$pageTitle = htmlspecialchars($shopConfig['shop_name']) . ' — Thế Giới Mỹ Phẩm & Routine Skincare Chính Hãng';
+$pageDesc = htmlspecialchars($shopConfig['slogan']) . ' - Cam kết 100% chính hãng, Freeship toàn quốc từ ' . formatVND($shopConfig['freeship_min']) . ', tặng hộp quà nơ hồng & thiệp viết tay yêu thương.';
+$ogImage = 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=700&q=80';
+
+// JSON-LD Schemas
+$shopSchema = generateShopJsonLd($shopConfig, $baseUrl);
+$websiteSchema = [
+    "@context" => "https://schema.org",
+    "@type" => "WebSite",
+    "name" => $shopConfig['shop_name'] ?? 'ALICE Cosmetic',
+    "url" => $baseUrl,
+    "potentialAction" => [
+        "@type" => "SearchAction",
+        "target" => $baseUrl . "/?search={search_term_string}",
+        "query-input" => "required name=search_term_string"
+    ]
+];
 
 // Lấy danh mục
 $catStmt = $pdo->query("SELECT * FROM categories ORDER BY count DESC");
@@ -32,9 +53,36 @@ $allProducts = $prodStmt->fetchAll();
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title><?= htmlspecialchars($shopConfig['shop_name']) ?> — Thế Giới Mỹ Phẩm & Routine Skincare Chính Hãng</title>
-    <meta name="description" content="<?= htmlspecialchars($shopConfig['slogan']) ?> - Freeship toàn quốc, tặng hộp quà nơ hồng & thiệp viết tay, thanh toán VietQR tự động 24/7.">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?= $pageTitle ?></title>
+    <meta name="description" content="<?= $pageDesc ?>">
+    <link rel="canonical" href="<?= $canonicalUrl ?>">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <meta name="author" content="<?= htmlspecialchars($shopConfig['shop_name']) ?>">
+
+    <!-- Open Graph / Facebook & Zalo SEO -->
+    <meta property="og:locale" content="vi_VN">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="<?= $pageTitle ?>">
+    <meta property="og:description" content="<?= $pageDesc ?>">
+    <meta property="og:url" content="<?= $canonicalUrl ?>">
+    <meta property="og:site_name" content="<?= htmlspecialchars($shopConfig['shop_name']) ?>">
+    <meta property="og:image" content="<?= $ogImage ?>">
+    <meta property="og:image:width" content="700">
+    <meta property="og:image:height" content="467">
+    <meta property="og:image:alt" content="<?= htmlspecialchars($shopConfig['shop_name']) ?> Mỹ Phẩm Chính Hãng">
+
+    <!-- Twitter Card SEO -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<?= $pageTitle ?>">
+    <meta name="twitter:description" content="<?= $pageDesc ?>">
+    <meta name="twitter:image" content="<?= $ogImage ?>">
+
+    <!-- DNS Prefetch & Resource Hints (Tối ưu tốc độ tải trang Core Web Vitals) -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="dns-prefetch" href="https://images.unsplash.com">
+    <link rel="dns-prefetch" href="https://accounts.google.com">
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>">
@@ -43,8 +91,16 @@ $allProducts = $prodStmt->fetchAll();
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 
-    <!-- Custom Tone Hồng Pastel Stylesheet -->
-    <link href="assets/css/style.css?v=<?= time() ?>" rel="stylesheet">
+    <!-- Custom Tone Hồng Pastel Stylesheet (Cache tối ưu theo Version) -->
+    <link href="assets/css/style.css?v=<?= defined('APP_VERSION') ? APP_VERSION : '1.0.0' ?>" rel="stylesheet">
+
+    <!-- Dữ liệu có cấu trúc Schema.org JSON-LD (Hiển thị thông tin thương hiệu & tìm kiếm Google) -->
+    <script type="application/ld+json">
+    <?= json_encode($shopSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) ?>
+    </script>
+    <script type="application/ld+json">
+    <?= json_encode($websiteSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) ?>
+    </script>
 
     <!-- Google Identity Services (Sign in with Google) -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -57,6 +113,7 @@ $allProducts = $prodStmt->fetchAll();
                     appId: window.FACEBOOK_APP_ID.trim(),
                     cookie: true,
                     xfbml: false,
+                    fedCM: false,
                     version: 'v19.0'
                 });
             }

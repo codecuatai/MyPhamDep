@@ -1220,6 +1220,17 @@ const AliceApp = {
         await this.sendOAuthRequest(provider, defaultName, defaultEmail, defaultAvatar);
     },
 
+    async loginWithSampleSocial(provider = 'facebook') {
+        const isGoogle = (provider === 'google');
+        const defaultName = isGoogle ? 'Thu Trang (Google Demo)' : 'Ngọc Anh (Facebook Demo)';
+        const defaultEmail = isGoogle ? 'thutrang.beauty@gmail.com' : 'ngocanh.fb@facebook.com';
+        const defaultAvatar = isGoogle 
+            ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80'
+            : 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=150&q=80';
+        this.showToast(`Đang đăng nhập nhanh tài khoản ${isGoogle ? 'Google' : 'Facebook'} mẫu...`, 'info');
+        await this.sendOAuthRequest(provider, defaultName, defaultEmail, defaultAvatar);
+    },
+
     async handleGoogleTokenResponse(accessToken) {
         if (!accessToken) {
             this.showToast('Không nhận được mã xác thực từ Google!', 'warning');
@@ -1340,6 +1351,7 @@ if (!window.fbAsyncInit) {
                 appId: window.FACEBOOK_APP_ID.trim(),
                 cookie: true,
                 xfbml: false,
+                fedCM: false,
                 version: 'v19.0'
             });
         }

@@ -98,7 +98,11 @@ if ($action === 'save_product') {
         jsonResponse(['success' => false, 'message' => 'Vui lòng điền tên, giá bán và link ảnh sản phẩm!'], 400);
     }
 
-    $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $name)));
+    $customSlug = trim($input['slug'] ?? '');
+    $slug = !empty($customSlug) ? slugify($customSlug) : slugify($name);
+    if (empty($slug)) {
+        $slug = 'san-pham-' . time();
+    }
     $discountPercent = ($originalPrice > $price) ? round((($originalPrice - $price) / $originalPrice) * 100) : 0;
 
     if ($id) {
@@ -113,6 +117,8 @@ if ($action === 'save_product') {
             $discountPercent, $image, $description, $ingredients, $howToUse,
             $isFlashSale, $flashSaleStock, $skinType, $id
         ]);
+        // Tự động làm mới sitemap.xml
+        @file_get_contents(getBaseUrl() . '/sitemap.php');
         jsonResponse(['success' => true, 'message' => 'Cập nhật sản phẩm thành công!']);
     } else {
         // Thêm mới sản phẩm
@@ -124,6 +130,8 @@ if ($action === 'save_product') {
             $discountPercent, $image, $description, $ingredients, $howToUse,
             $isFlashSale, $flashSaleStock, $skinType
         ]);
+        // Tự động làm mới sitemap.xml
+        @file_get_contents(getBaseUrl() . '/sitemap.php');
         jsonResponse(['success' => true, 'message' => 'Thêm mới sản phẩm mỹ phẩm thành công!']);
     }
 }

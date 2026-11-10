@@ -1,0 +1,21 @@
+# Robots.txt for ALICE Cosmetic (Mỹ Phẩm & Skincare Chuẩn Hàn)
+User-agent: *
+Allow: /
+Allow: /san-pham/
+Allow: /danh-muc/
+Allow: /cam-nang/
+Allow: /assets/
+
+# Block administrative and internal endpoints
+Disallow: /admin.php
+Disallow: /api/
+Disallow: /database/
+Disallow: /tests/
+Disallow: /templates/
+Disallow: /includes/
+Disallow: /composer.json
+Disallow: /composer.lock
+Disallow: /Procfile
+
+# Dynamic Sitemap location
+Sitemap: /sitemap.xml
