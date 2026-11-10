@@ -1,0 +1,23 @@
+# Composer
+/vendor/
+
+# Temporary files & Logs
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+
+# Database lock files / journals (keep mypham.sqlite as seed)
+database/*.sqlite-journal
+database/*.sqlite-shm
+database/*.sqlite-wal
+
+# IDE / Editor
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Agent configurations
+.agents/
+skills-lock.json

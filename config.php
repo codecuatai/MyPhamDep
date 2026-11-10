@@ -32,7 +32,8 @@ define('SHOP_CONFIG', [
     // Mạng xã hội & Kênh liên hệ
     'facebook_url'  => 'https://facebook.com',
     'messenger_url' => 'https://m.me/alicecosmetic',
-    'zalo_url'      => 'https://zalo.me/0869571734',
+    'zalo_url'      => 'https://zaloapp.com/qr/p/12waxvomw9fms?src=qr',
+    'zalo_qr_image' => 'assets/images/zalo-qr.png',
     'tiktok_url'    => 'https://tiktok.com/@alicecosmetic',
     'instagram_url' => 'https://instagram.com/alicecosmetic',
 

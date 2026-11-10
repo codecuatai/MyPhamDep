@@ -1,0 +1,11 @@
+# Protect database and sensitive files
+<FilesMatch "\.(sqlite|sqlite3|db|log|env)$">
+    Order deny,allow
+    Deny from all
+</FilesMatch>
+
+# Enable directory index
+DirectoryIndex index.php index.html
+
+# Prevent directory listing
+Options -Indexes

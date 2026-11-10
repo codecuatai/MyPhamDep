@@ -1,0 +1,84 @@
+name: CI/CD Pipeline - Test & Deploy to Heroku
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  # ========================================================
+  # JOB 1: CONTINUOUS INTEGRATION (CI)
+  # ========================================================
+  ci:
+    name: 🧪 CI - Lint & Smoke Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup PHP Environment
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo, pdo_sqlite, json, curl
+          coverage: none
+
+      - name: 📋 Validate composer.json
+        run: composer validate --strict
+
+      - name: 🔍 PHP Syntax Check (Linting)
+        run: |
+          echo "Kiểm tra lỗi cú pháp PHP..."
+          find . -type f -name "*.php" ! -path "*/vendor/*" -exec php -l {} +
+
+      - name: 🗄️ Run Smoke Test Suite
+        run: php tests/smoke_test.php
+
+  # ========================================================
+  # JOB 2: CONTINUOUS DEPLOYMENT (CD)
+  # ========================================================
+  cd:
+    name: 🚀 CD - Deploy to Heroku
+    needs: ci
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout full git history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🚀 Deploy to Heroku
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+          HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME }}
+        run: |
+          if [ -z "$HEROKU_API_KEY" ] || [ -z "$HEROKU_APP_NAME" ]; then
+            echo "::error::HEROKU_API_KEY hoặc HEROKU_APP_NAME chưa được cấu hình trong GitHub Secrets!"
+            exit 1
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Add Heroku Git Remote và Push
+          git remote add heroku https://heroku:${HEROKU_API_KEY}@git.heroku.com/${HEROKU_APP_NAME}.git
+          git push heroku HEAD:main --force
+
+      - name: 🩺 Smoke Test / Health Check Live Site
+        env:
+          HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME }}
+        run: |
+          echo "Đang đợi Heroku Dyno khởi động..."
+          sleep 10
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://${HEROKU_APP_NAME}.herokuapp.com/")
+          echo "Health Check Response Code: $HTTP_STATUS"
+          if [ "$HTTP_STATUS" -eq 200 ] || [ "$HTTP_STATUS" -eq 301 ] || [ "$HTTP_STATUS" -eq 302 ]; then
+            echo "🎉 Website ALICE Cosmetic đã online và hoạt động bình thường!"
+          else
+            echo "⚠️ Cảnh báo: Phản hồi HTTP $HTTP_STATUS, kiểm tra heroku logs nếu cần."
+          fi

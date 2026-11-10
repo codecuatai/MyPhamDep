@@ -7,7 +7,14 @@
 
 ## 🌸 1. ĐẶC ĐIỂM NỔI BẬT (LAI GHÉP SHOPEE x MỘC MIÊN BOOKS)
 
-1. **Từ Mộc Miên Books (Thẩm mỹ & Cảm xúc):**
+1. **Hệ Thống Đăng Nhập & Đăng Ký Thành Viên (Mới):**
+   - **Nút Đăng nhập / Tài khoản trên Header**: Tự động hiển thị Tên, Avatar và menu cá nhân khi đăng nhập.
+   - **Modal Tone Hồng ngọt ngào**: 2 Tab **Đăng Nhập** & **Đăng Ký**, có tính năng hiển thị mật khẩu, đăng nhập Google 1-chạm.
+   - **Tài khoản mẫu**: `ngoclinh@gmail.com` / Mật khẩu: `123456`.
+   - **Tự động điền thông tin khi Đặt hàng**: Khi thành viên đăng nhập, form Đặt hàng & thanh toán VietQR sẽ tự động điền sẵn Họ tên và Số điện thoại.
+   - **Đăng xuất an toàn**: Xóa phiên làm việc tức thì.
+
+2. **Từ Mộc Miên Books (Thẩm mỹ & Cảm xúc):**
    - **Tone Hồng Pastel ngọt ngào**: Dịu mắt, thanh lịch, tạo cảm giác an tâm về chất lượng và độ lành tính.
    - **Danh mục tròn Bubble Style**: Bong bóng tròn dễ thương, có đếm số lượng sản phẩm.
    - **Set Quà Routine Pink Box Luxury**: Tặng kèm nến thơm tinh dầu hoa hồng, đóng hộp nơ hồng và viết thiệp tay yêu thương.

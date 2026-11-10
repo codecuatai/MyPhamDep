@@ -35,53 +35,46 @@
                 </a>
             </div>
 
-            <!-- Cột 2: Thanh tìm kiếm Shopee-style Tone Hồng -->
-            <div class="col-lg-6 col-md-5 col">
+            <!-- Cột 2: Thanh tìm kiếm Shopee-style Tone Hồng (Nhỏ gọn & Thanh thoát) -->
+            <div class="col-lg-5 col-md-5 col">
                 <div class="search-container">
                     <div class="search-input-group">
-                        <i class="fa-solid fa-magnifying-glass text-muted me-2"></i>
-                        <input type="text" id="header-search-input" placeholder="Tìm serum B5, kem chống nắng Anessa, son Rom&nd...">
+                        <i class="fa-solid fa-magnifying-glass text-muted me-2" style="font-size: 0.8rem;"></i>
+                        <input type="text" id="header-search-input" placeholder="Tìm serum B5, kem chống nắng, son Rom&nd...">
                         <button type="button" class="btn-search-pink" onclick="document.getElementById('san-pham-section').scrollIntoView({behavior: 'smooth'})">
                             <span>Tìm kiếm</span>
-                            <i class="fa-solid fa-arrow-right"></i>
+                            <i class="fa-solid fa-arrow-right" style="font-size: 0.75rem;"></i>
                         </button>
                     </div>
                     <div class="search-quick-tags d-none d-md-flex">
                         <span>Gợi ý hot:</span>
-                        <a href="javascript:void(0)" onclick="AliceApp.filterProducts('all', 'serum-tinh-chat')">Serum phục hồi B5</a>
-                        <a href="javascript:void(0)" onclick="AliceApp.filterProducts('all', 'chong-nang')">Kem chống nắng Anessa</a>
-                        <a href="javascript:void(0)" onclick="AliceApp.filterProducts('all', 'makeup-son')">Son hồng đào</a>
-                        <a href="javascript:void(0)" onclick="AliceApp.filterProducts('all', 'combo-routine')">Set quà Pink Box</a>
+                        <a href="javascript:void(0)" onclick="AliceApp.filterProducts('all', 'serum-tinh-chat')">Serum B5</a>
+                        <a href="javascript:void(0)" onclick="AliceApp.filterProducts('all', 'chong-nang')">Kem chống nắng</a>
+                        <a href="javascript:void(0)" onclick="AliceApp.filterProducts('all', 'makeup-son')">Son môi</a>
+                        <a href="javascript:void(0)" onclick="AliceApp.filterProducts('all', 'combo-routine')">Set quà</a>
                     </div>
                 </div>
             </div>
 
             <!-- Cột 3: Nút Hành động & Giỏ hàng -->
-            <div class="col-lg-3 col-md-3 col-auto">
+            <div class="col-lg-4 col-md-4 col-auto">
                 <div class="header-actions justify-content-end align-items-center">
                     <!-- Nút Tra cứu đơn hàng -->
                     <button class="btn-header-icon" title="Tra cứu đơn hàng" data-bs-toggle="modal" data-bs-target="#modalOrderLookup">
                         <i class="fa-solid fa-truck-ramp-box"></i>
                     </button>
 
-                    <!-- Khung Đăng Nhập / Tài Khoản Khách Hàng -->
+                    <!-- Khung Đăng Nhập / Tài Khoản Khách Hàng (Dạng nút tròn đồng bộ) -->
                     <div id="auth-header-container" class="d-flex align-items-center">
-                        <!-- Nút Đăng nhập (khi chưa đăng nhập) -->
-                        <button class="btn btn-sm rounded-pill px-3 py-2 font-bold d-flex align-items-center gap-1 shadow-sm" 
-                                style="background: var(--primary-soft); color: var(--primary-dark); border: 1px solid var(--primary-border); font-size: 0.8rem;" 
-                                data-bs-toggle="modal" data-bs-target="#modalAuth" id="btn-header-login">
-                            <i class="fa-solid fa-circle-user fs-6" style="color: var(--primary);"></i>
-                            <span class="d-none d-sm-inline">Đăng nhập</span>
+                        <!-- Nút Đăng nhập hình tròn đồng bộ (xóa chữ) -->
+                        <button class="btn-header-icon" title="Đăng nhập / Tài khoản" data-bs-toggle="modal" data-bs-target="#modalAuth" id="btn-header-login">
+                            <i class="fa-solid fa-circle-user"></i>
                         </button>
 
-                        <!-- Menu User Dropdown (khi đã đăng nhập) -->
+                        <!-- Menu User Dropdown khi đã đăng nhập (hình tròn chứa avatar) -->
                         <div class="dropdown" id="dropdown-user-logged" style="display: none;">
-                            <button class="btn btn-sm rounded-pill px-2 py-1 font-bold d-flex align-items-center gap-2 border shadow-sm" 
-                                    data-bs-toggle="dropdown" 
-                                    style="background: #ffffff; border-color: var(--primary-border) !important;">
-                                <img id="header-user-avatar" src="" class="rounded-circle border border-danger" style="width: 26px; height: 26px; object-fit: cover;">
-                                <span id="header-user-name" class="small text-truncate d-none d-sm-inline font-bold" style="max-width: 100px; color: var(--primary-dark);"></span>
-                                <i class="fa-solid fa-angle-down text-muted" style="font-size: 0.7rem;"></i>
+                            <button class="btn-header-icon p-0 border overflow-hidden" data-bs-toggle="dropdown" title="Tài khoản cá nhân" style="border-color: var(--primary) !important;">
+                                <img id="header-user-avatar" src="" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-4 p-2 mt-2" style="min-width: 220px; border: 1px solid var(--primary-pastel) !important;">
                                 <li>
