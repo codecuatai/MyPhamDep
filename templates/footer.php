@@ -63,7 +63,7 @@
                     <a href="<?= htmlspecialchars($shopConfig['facebook_url']) ?>" target="_blank" class="btn btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background: #1877f2; color: #fff;"><i class="fa-brands fa-facebook-f"></i></a>
                     <a href="<?= htmlspecialchars($shopConfig['tiktok_url']) ?>" target="_blank" class="btn btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background: #000; color: #fff;"><i class="fa-brands fa-tiktok"></i></a>
                     <a href="<?= htmlspecialchars($shopConfig['instagram_url']) ?>" target="_blank" class="btn btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background: #e1306c; color: #fff;"><i class="fa-brands fa-instagram"></i></a>
-                    <a href="<?= htmlspecialchars($shopConfig['zalo_url']) ?>" target="_blank" class="btn btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background: #0068ff; color: #fff;"><i class="fa-solid fa-comment-dots"></i></a>
+                    <a href="<?= htmlspecialchars($shopConfig['zalo_url']) ?>" target="_blank" class="btn btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background: #0068ff; color: #fff;" title="Chat Zalo"><img src="assets/images/zalo-chat.svg" alt="Zalo" style="width: 22px; height: 22px; object-fit: contain;"></a>
                 </div>
             </div>
         </div>

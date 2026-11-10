@@ -17,7 +17,7 @@
             </a>
 
             <a href="<?= htmlspecialchars($shopConfig['zalo_url']) ?>" target="_blank" class="mobile-nav-item text-decoration-none" style="color: #0068ff;">
-                <i class="fa-solid fa-comments mobile-nav-icon"></i>
+                <img src="assets/images/zalo-icon.svg" alt="Zalo" style="width: 20px; height: 20px; border-radius: 5px; margin-bottom: 2px;">
                 <span>Tư Vấn Da</span>
             </a>
 
