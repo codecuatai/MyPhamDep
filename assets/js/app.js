@@ -204,6 +204,10 @@ const AliceApp = {
             modalEl = document.querySelector('.modal.show');
         }
         if (modalEl) {
+            if (modalEl.id === 'modalVietQR') {
+                if (this.paymentPollingTimer) clearInterval(this.paymentPollingTimer);
+                if (this.vietqrTimer) clearInterval(this.vietqrTimer);
+            }
             try {
                 const instance = bootstrap.Modal.getInstance(modalEl) || bootstrap.Modal.getOrCreateInstance(modalEl);
                 if (instance) instance.hide();
