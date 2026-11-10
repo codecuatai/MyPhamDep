@@ -53,7 +53,7 @@ define('SHOP_CONFIG', [
     'qr_template'   => 'compact2',
 
     // Đồng bộ đơn hàng về Google Sheets (qua Google Apps Script WebApp)
-    'google_sheet_webhook' => 'https://script.google.com/macros/s/AKfycbwwnmNJvhW77HaXTrzTjiOmWjtzbJNPxrVJkiuMXppd96TgJ-tGpSGB5HsC39ESOsJs/exec'
+    'google_sheet_webhook' => 'https://script.google.com/macros/s/AKfycbx4yXl8viaogZ-tzrm247NSQyfcIIzQKr0zqlxkSghHuctyleDjWRG2fMPKDZxX8uVD_g/exec'
 ]);
 
 // Danh sách ngân hàng VietQR hỗ trợ
