@@ -8,6 +8,10 @@
 define('APP_NAME', 'ALICE Cosmetic');
 define('APP_VERSION', '1.0.0');
 
+// Cấu hình Google OAuth 2.0 (Google Identity Services)
+// Nhập Client ID lấy từ https://console.cloud.google.com/apis/credentials
+define('GOOGLE_CLIENT_ID', ''); 
+
 // Cấu hình Database (Mặc định SQLite - Chạy ngay với PHP không cần cài MySQL)
 define('DB_DRIVER', 'sqlite'); 
 define('DB_SQLITE_PATH', __DIR__ . '/database/mypham.sqlite');

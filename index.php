@@ -45,6 +45,12 @@ $allProducts = $prodStmt->fetchAll();
 
     <!-- Custom Tone Hồng Pastel Stylesheet -->
     <link href="assets/css/style.css?v=<?= time() ?>" rel="stylesheet">
+
+    <!-- Google Identity Services (Sign in with Google) -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script>
+        window.GOOGLE_CLIENT_ID = "<?= htmlspecialchars(defined('GOOGLE_CLIENT_ID') ? GOOGLE_CLIENT_ID : '') ?>";
+    </script>
 </head>
 <body id="top">
 

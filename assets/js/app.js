@@ -886,13 +886,35 @@ const AliceApp = {
 
     async loginWithSocial(provider = 'google') {
         const isGoogle = (provider === 'google');
+
+        // Nếu là Google và đã cấu hình Google Client ID thật
+        if (isGoogle && window.GOOGLE_CLIENT_ID && window.GOOGLE_CLIENT_ID.trim() !== '') {
+            if (window.google && window.google.accounts && window.google.accounts.id) {
+                google.accounts.id.initialize({
+                    client_id: window.GOOGLE_CLIENT_ID.trim(),
+                    callback: (response) => this.handleGoogleCredentialResponse(response)
+                });
+                google.accounts.id.prompt((notification) => {
+                    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+                        console.log('Google Prompt suppressed:', notification.getNotDisplayedReason());
+                    }
+                });
+                return;
+            }
+        }
+
+        // Chế độ Demo / Facebook hoặc khi chưa điền GOOGLE_CLIENT_ID
         const defaultName = isGoogle ? 'Thu Trang (Google)' : 'Ngọc Anh (Facebook)';
         const defaultEmail = isGoogle ? 'thutrang.beauty@gmail.com' : 'ngocanh.fb@facebook.com';
         const defaultAvatar = isGoogle 
             ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80'
             : 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=150&q=80';
 
-        this.showToast(`Đang kết nối tài khoản ${isGoogle ? 'Google' : 'Facebook'}...`, 'info');
+        if (isGoogle && (!window.GOOGLE_CLIENT_ID || window.GOOGLE_CLIENT_ID.trim() === '')) {
+            this.showToast('Chưa cấu hình GOOGLE_CLIENT_ID trong config.php! Đang đăng nhập tài khoản demo...', 'info');
+        } else {
+            this.showToast(`Đang kết nối tài khoản ${isGoogle ? 'Google' : 'Facebook'}...`, 'info');
+        }
 
         try {
             const res = await fetch('api/auth.php?action=oauth', {
@@ -916,6 +938,34 @@ const AliceApp = {
             }
         } catch(e) {
             this.showToast('Lỗi kết nối mạng xã hội!', 'warning');
+        }
+    },
+
+    async handleGoogleCredentialResponse(response) {
+        if (!response || !response.credential) {
+            this.showToast('Không nhận được mã xác thực từ Google!', 'warning');
+            return;
+        }
+
+        this.showToast('Đang xác thực tài khoản Google của bạn...', 'info');
+
+        try {
+            const res = await fetch('api/auth.php?action=google_login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ credential: response.credential })
+            });
+            const data = await res.json();
+            if (data.success) {
+                this.currentUser = data.user;
+                this.updateAuthUI();
+                this.showToast(data.message, 'success');
+                this.closeModal('modalAuth');
+            } else {
+                this.showToast(data.message || 'Xác thực Google thất bại', 'warning');
+            }
+        } catch(e) {
+            this.showToast('Lỗi kết nối máy chủ xác thực Google', 'warning');
         }
     },
 
