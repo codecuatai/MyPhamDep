@@ -849,6 +849,9 @@ const AliceApp = {
 
     currentActiveOrder: null,
     paymentPollingTimer: null,
+    currentBankQrUrl: null,
+    currentSmartQrUrl: null,
+    currentQRMode: 'bank',
 
     showVietQRPaymentModal(orderData) {
         this.currentActiveOrder = orderData;
@@ -865,7 +868,7 @@ const AliceApp = {
         if (elCardBank) elCardBank.textContent = vqr.bank_id || 'MB';
 
         const elCardAccName = document.getElementById('vqr-card-accname');
-        if (elCardAccName) elCardAccName.textContent = vqr.account_name || 'ALICE COSMETIC';
+        if (elCardAccName) elCardAccName.textContent = vqr.account_name || 'TIEM SACH MOC MIEN';
 
         const elCardAccNo = document.getElementById('vqr-card-accno');
         if (elCardAccNo) elCardAccNo.textContent = vqr.account_no || '0869571734';
@@ -873,13 +876,24 @@ const AliceApp = {
         const elCardAmountVal = document.getElementById('vqr-card-amount-val');
         if (elCardAmountVal) elCardAmountVal.textContent = vqr.amount_formatted || (new Intl.NumberFormat('vi-VN').format(orderData.final_amount) + ' VND');
 
-        // Sinh link xác nhận thanh toán quét bằng Camera / Zalo điện thoại
+        // 1. QR chuẩn App Ngân Hàng (Napas 247 EMVCo - Tự động điền đầy đủ STK & Số tiền trên mọi App Ngân Hàng)
+        const bankId = vqr.bank_id || 'MB';
+        const accNo = vqr.account_no || '0869571734';
+        const accName = vqr.account_name || 'TIEM SACH MOC MIEN';
+        this.currentBankQrUrl = vqr.qr_image_url || `https://api.vietqr.io/image/${bankId}-${accNo}-qr_only.jpg?amount=${orderData.final_amount}&addInfo=${encodeURIComponent(vqr.add_info)}&accountName=${encodeURIComponent(accName)}`;
+
+        // 2. QR link Web dành cho Camera Zalo / iPhone mở web xác nhận tự động
         const payUrl = window.location.origin + '/pay.php?code=' + encodeURIComponent(orderData.order_code);
-        const smartQrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=8&data=' + encodeURIComponent(payUrl);
-        const vqrImg = document.getElementById('vqr-image');
-        if (vqrImg) {
-            vqrImg.src = smartQrUrl;
+        this.currentSmartQrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=8&data=' + encodeURIComponent(payUrl);
+
+        // Nút mở App Ngân Hàng di động
+        const deepBankBtn = document.getElementById('vqr-btn-deep-bank');
+        if (deepBankBtn) {
+            deepBankBtn.href = payUrl;
         }
+
+        // Mặc định hiển thị chế độ App Ngân Hàng (Chuẩn VietQR tài chính)
+        this.switchQRMode('bank');
 
         // Reset trạng thái hiển thị
         const statusText = document.getElementById('vqr-status-text');
@@ -894,6 +908,49 @@ const AliceApp = {
         const modalEl = document.getElementById('modalVietQR');
         const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
         modal.show();
+    },
+
+    switchQRMode(mode = 'bank') {
+        this.currentQRMode = mode;
+        const btnBank = document.getElementById('btn-qr-mode-bank');
+        const btnCamera = document.getElementById('btn-qr-mode-camera');
+        const vqrImg = document.getElementById('vqr-image');
+        const descEl = document.getElementById('vqr-mode-desc');
+        const watermark = document.getElementById('vqr-center-watermark');
+
+        if (mode === 'bank') {
+            if (vqrImg && this.currentBankQrUrl) vqrImg.src = this.currentBankQrUrl;
+            if (btnBank) {
+                btnBank.style.background = '#2563eb';
+                btnBank.style.color = '#ffffff';
+                btnBank.classList.add('shadow-sm', 'fw-bold');
+            }
+            if (btnCamera) {
+                btnCamera.style.background = 'transparent';
+                btnCamera.style.color = '#475569';
+                btnCamera.classList.remove('shadow-sm', 'fw-bold');
+            }
+            if (descEl) {
+                descEl.innerHTML = '<i class="fa-solid fa-circle-check text-success me-1"></i>Mở <strong>App Ngân Hàng bất kỳ</strong> quét mã để tự động điền STK & Số tiền';
+            }
+            if (watermark) watermark.style.display = 'flex';
+        } else {
+            if (vqrImg && this.currentSmartQrUrl) vqrImg.src = this.currentSmartQrUrl;
+            if (btnCamera) {
+                btnCamera.style.background = '#2563eb';
+                btnCamera.style.color = '#ffffff';
+                btnCamera.classList.add('shadow-sm', 'fw-bold');
+            }
+            if (btnBank) {
+                btnBank.style.background = 'transparent';
+                btnBank.style.color = '#475569';
+                btnBank.classList.remove('shadow-sm', 'fw-bold');
+            }
+            if (descEl) {
+                descEl.innerHTML = '<i class="fa-solid fa-mobile-screen-button text-primary me-1"></i>Dùng <strong>Zalo hoặc Camera điện thoại</strong> quét để mở link thanh toán';
+            }
+            if (watermark) watermark.style.display = 'none';
+        }
     },
 
     startPaymentPolling(orderCode) {

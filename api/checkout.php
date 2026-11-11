@@ -99,15 +99,18 @@ try {
 $vietqrData = null;
 if ($paymentMethod === 'vietqr') {
     $bankId = $config['bank_id'] ?? 'MB';
-    $accountNo = $config['account_no'] ?? '5550372005777';
-    $accountName = $config['account_name'] ?? 'ALICE COSMETIC';
-    $template = $config['qr_template'] ?? 'compact2';
+    $accountNo = $config['account_no'] ?? '0869571734';
+    $accountName = $config['account_name'] ?? 'TIEM SACH MOC MIEN';
+    $template = $config['qr_template'] ?? 'qr_only';
 
     // Nội dung chuyển khoản chuẩn: Mã đơn hàng
     $addInfo = urlencode($orderCode);
     $accNameEncoded = urlencode($accountName);
     
-    $qrUrl = "https://api.vietqr.io/image/{$bankId}-{$accountNo}-{$template}.jpg?amount={$finalAmount}&addInfo={$addInfo}&accountName={$accNameEncoded}";
+    // QR chuẩn Ngân Hàng Napas 247 (chỉ lấy mã QR để vừa khung thẻ)
+    $bankQrUrl = "https://api.vietqr.io/image/{$bankId}-{$accountNo}-qr_only.jpg?amount={$finalAmount}&addInfo={$addInfo}&accountName={$accNameEncoded}";
+    // QR dạng compact2 kèm sẵn logo
+    $fullQrUrl = "https://api.vietqr.io/image/{$bankId}-{$accountNo}-compact2.jpg?amount={$finalAmount}&addInfo={$addInfo}&accountName={$accNameEncoded}";
 
     $vietqrData = [
         'bank_id' => $bankId,
@@ -117,7 +120,8 @@ if ($paymentMethod === 'vietqr') {
         'amount' => $finalAmount,
         'amount_formatted' => formatVND($finalAmount),
         'add_info' => $orderCode,
-        'qr_image_url' => $qrUrl
+        'qr_image_url' => $bankQrUrl,
+        'full_qr_url' => $fullQrUrl
     ];
 }
 

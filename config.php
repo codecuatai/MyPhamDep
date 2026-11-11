@@ -48,9 +48,9 @@ define('SHOP_CONFIG', [
     // Cấu hình VietQR mặc định (Có thể thay đổi trong modal Admin Cài Đặt)
     'bank_id'       => 'MB',
     'bank_name'     => 'MBBank - Ngân hàng TMCP Quân Đội',
-    'account_no'    => '5550372005777',
-    'account_name'  => 'ALICE COSMETIC',
-    'qr_template'   => 'compact2',
+    'account_no'    => '0869571734',
+    'account_name'  => 'TIEM SACH MOC MIEN',
+    'qr_template'   => 'qr_only',
 
     // Đồng bộ đơn hàng về Google Sheets (qua Google Apps Script WebApp)
     'google_sheet_webhook' => 'https://script.google.com/macros/s/AKfycbx4yXl8viaogZ-tzrm247NSQyfcIIzQKr0zqlxkSghHuctyleDjWRG2fMPKDZxX8uVD_g/exec'
