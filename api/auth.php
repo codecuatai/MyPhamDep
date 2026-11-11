@@ -3,7 +3,7 @@
  * API AUTHENTICATION (ĐĂNG KÝ, ĐĂNG NHẬP, ĐĂNG XUẤT) - ALICE COSMETIC
  */
 
-if (session_status() === PHP_SESSION_NONE) {
+if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
     session_start();
 }
 
@@ -156,30 +156,34 @@ if ($action === 'oauth') {
             'user' => $user
         ]);
     } else {
-        // Tạo tài khoản mới cho user mạng xã hội
-        $randomPwd = password_hash(bin2hex(random_bytes(10)), PASSWORD_DEFAULT);
-        $newId = dbInsertReturningId(
-            $pdo,
-            "INSERT INTO users (fullname, email, phone, password, avatar) VALUES (?, ?, '', ?, ?)",
-            [$fullname, $email, $randomPwd, $avatar]
-        );
+        try {
+            // Tạo tài khoản mới cho user mạng xã hội
+            $randomPwd = password_hash(bin2hex(random_bytes(10)), PASSWORD_DEFAULT);
+            $newId = dbInsertReturningId(
+                $pdo,
+                "INSERT INTO users (fullname, email, phone, password, avatar) VALUES (?, ?, '', ?, ?)",
+                [$fullname, $email, $randomPwd, $avatar]
+            );
 
-        $newUser = [
-            'id' => $newId,
-            'fullname' => $fullname,
-            'email' => $email,
-            'phone' => '',
-            'avatar' => $avatar,
-            'role' => 'customer',
-            'created_at' => date('Y-m-d H:i:s')
-        ];
+            $newUser = [
+                'id' => $newId,
+                'fullname' => $fullname,
+                'email' => $email,
+                'phone' => '',
+                'avatar' => $avatar,
+                'role' => 'customer',
+                'created_at' => date('Y-m-d H:i:s')
+            ];
 
-        $_SESSION['user'] = $newUser;
-        jsonResponse([
-            'success' => true,
-            'message' => 'Đăng nhập thành công với ' . ucfirst($provider) . '! Chào mừng ' . $fullname,
-            'user' => $newUser
-        ]);
+            $_SESSION['user'] = $newUser;
+            jsonResponse([
+                'success' => true,
+                'message' => 'Đăng nhập thành công với ' . ucfirst($provider) . '! Chào mừng ' . $fullname,
+                'user' => $newUser
+            ]);
+        } catch (Exception $e) {
+            jsonResponse(['success' => false, 'message' => 'Lỗi tạo tài khoản mạng xã hội: ' . $e->getMessage()], 500);
+        }
     }
 }
 
@@ -194,6 +198,7 @@ if ($action === 'google_login') {
     }
 
     $googlePayload = null;
+    $googleHttpCode = 0;
 
     if (!empty($accessToken)) {
         // Lấy thông tin user bằng Access Token thông qua endpoint UserInfo của Google
@@ -205,12 +210,17 @@ if ($action === 'google_login') {
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             curl_setopt($ch, CURLOPT_TIMEOUT, 10);
             $response = curl_exec($ch);
-            curl_close($ch);
+            $googleHttpCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            if (PHP_VERSION_ID < 80000) {
+                curl_close($ch);
+            }
         } else {
             $opts = [
                 'http' => [
                     'method' => 'GET',
-                    'header' => "Authorization: Bearer " . $accessToken . "\r\n"
+                    'header' => "Authorization: Bearer " . $accessToken . "\r\n",
+                    'timeout' => 10,
+                    'ignore_errors' => true
                 ]
             ];
             $context = stream_context_create($opts);
@@ -220,17 +230,18 @@ if ($action === 'google_login') {
     } elseif (!empty($credential)) {
         // Xác thực ID Token qua Google API
         $verifyUrl = "https://oauth2.googleapis.com/tokeninfo?id_token=" . urlencode($credential);
-        $response = @file_get_contents($verifyUrl);
-        
-        // Fallback với cURL nếu allow_url_fopen bị tắt
-        if ($response === false && function_exists('curl_init')) {
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $verifyUrl);
+        if (function_exists('curl_init')) {
+            $ch = curl_init($verifyUrl);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             curl_setopt($ch, CURLOPT_TIMEOUT, 10);
             $response = curl_exec($ch);
-            curl_close($ch);
+            $googleHttpCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            if (PHP_VERSION_ID < 80000) {
+                curl_close($ch);
+            }
+        } else {
+            $response = @file_get_contents($verifyUrl);
         }
 
         $googlePayload = $response ? json_decode($response, true) : null;
@@ -243,57 +254,68 @@ if ($action === 'google_login') {
         }
     }
 
-    if (empty($googlePayload) || empty($googlePayload['email'])) {
+    if ($googleHttpCode >= 400 || !empty($googlePayload['error']) || empty($googlePayload) || empty($googlePayload['email'])) {
         jsonResponse(['success' => false, 'message' => 'Xác thực Google thất bại hoặc mã token đã hết hạn!'], 401);
     }
 
+    if (isset($googlePayload['email_verified']) && ($googlePayload['email_verified'] === false || $googlePayload['email_verified'] === 'false')) {
+        jsonResponse(['success' => false, 'message' => 'Tài khoản Google chưa xác minh địa chỉ email!'], 401);
+    }
+
     $email = cleanText($googlePayload['email']);
-    $fullname = cleanText($googlePayload['name'] ?? 'Khách Hàng Google');
-    $avatar = trim($googlePayload['picture'] ?? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80');
+    $fallbackName = strstr($email, '@', true) ?: 'Khách Hàng Google';
+    $fullname = cleanText($googlePayload['name'] ?? '') ?: $fallbackName;
+    $googlePicture = trim((string)($googlePayload['picture'] ?? ''));
+    $defaultGoogleAvatar = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80';
+    $avatar = $googlePicture !== '' ? $googlePicture : $defaultGoogleAvatar;
 
-    // Kiểm tra xem email đã tồn tại trong DB chưa
-    $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ? LIMIT 1");
-    $stmt->execute([$email]);
-    $user = $stmt->fetch();
+    try {
+        // Kiểm tra xem email đã tồn tại trong DB chưa
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ? LIMIT 1");
+        $stmt->execute([$email]);
+        $user = $stmt->fetch();
 
-    if ($user) {
-        if (!empty($avatar)) {
-            $pdo->prepare("UPDATE users SET avatar = ? WHERE id = ?")->execute([$avatar, $user['id']]);
-            $user['avatar'] = $avatar;
+        if ($user) {
+            if ($googlePicture !== '') {
+                $pdo->prepare("UPDATE users SET avatar = ? WHERE id = ?")->execute([$googlePicture, $user['id']]);
+                $user['avatar'] = $googlePicture;
+            }
+            unset($user['password']);
+            $_SESSION['user'] = $user;
+
+            jsonResponse([
+                'success' => true,
+                'message' => 'Đăng nhập Google thành công! Chào mừng ' . $user['fullname'],
+                'user' => $user
+            ]);
+        } else {
+            $randomPwd = password_hash(bin2hex(random_bytes(16)), PASSWORD_DEFAULT);
+            $newId = dbInsertReturningId(
+                $pdo,
+                "INSERT INTO users (fullname, email, phone, password, avatar) VALUES (?, ?, '', ?, ?)",
+                [$fullname, $email, $randomPwd, $avatar]
+            );
+
+            $newUser = [
+                'id' => $newId,
+                'fullname' => $fullname,
+                'email' => $email,
+                'phone' => '',
+                'avatar' => $avatar,
+                'role' => 'customer',
+                'created_at' => date('Y-m-d H:i:s')
+            ];
+
+            $_SESSION['user'] = $newUser;
+
+            jsonResponse([
+                'success' => true,
+                'message' => 'Đăng nhập và tạo tài khoản Google thành công! Chào mừng ' . $fullname,
+                'user' => $newUser
+            ]);
         }
-        unset($user['password']);
-        $_SESSION['user'] = $user;
-
-        jsonResponse([
-            'success' => true,
-            'message' => 'Đăng nhập Google thành công! Chào mừng ' . $user['fullname'],
-            'user' => $user
-        ]);
-    } else {
-        $randomPwd = password_hash(bin2hex(random_bytes(16)), PASSWORD_DEFAULT);
-        $newId = dbInsertReturningId(
-            $pdo,
-            "INSERT INTO users (fullname, email, phone, password, avatar) VALUES (?, ?, '', ?, ?)",
-            [$fullname, $email, $randomPwd, $avatar]
-        );
-
-        $newUser = [
-            'id' => $newId,
-            'fullname' => $fullname,
-            'email' => $email,
-            'phone' => '',
-            'avatar' => $avatar,
-            'role' => 'customer',
-            'created_at' => date('Y-m-d H:i:s')
-        ];
-
-        $_SESSION['user'] = $newUser;
-
-        jsonResponse([
-            'success' => true,
-            'message' => 'Đăng nhập và tạo tài khoản Google thành công! Chào mừng ' . $fullname,
-            'user' => $newUser
-        ]);
+    } catch (Exception $e) {
+        jsonResponse(['success' => false, 'message' => 'Lỗi lưu tài khoản Google: ' . $e->getMessage()], 500);
     }
 }
 

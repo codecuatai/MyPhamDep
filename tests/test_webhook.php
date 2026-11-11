@@ -24,7 +24,9 @@ curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 $res = curl_exec($ch);
 $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 $err = curl_error($ch);
-curl_close($ch);
+if (PHP_VERSION_ID < 80000) {
+    curl_close($ch);
+}
 
 echo "HTTP Code: $httpCode\n";
 echo "Response: $res\n";

@@ -1399,6 +1399,39 @@ const AliceApp = {
         }
     },
 
+    async parseJsonResponse(res) {
+        const text = await res.text();
+        try {
+            return JSON.parse(text);
+        } catch (err) {
+            return {
+                success: false,
+                message: `Máy chủ trả về phản hồi không hợp lệ (HTTP ${res.status}).`
+            };
+        }
+    },
+
+    ensureGoogleGsiScript() {
+        const existing = document.querySelector('script[src*="accounts.google.com/gsi/client"]');
+        if (existing) {
+            if (!window.__ALICE_GSI_LOAD_ERROR) return;
+            existing.remove();
+        }
+        window.__ALICE_GSI_LOAD_ERROR = false;
+        const script = document.createElement('script');
+        script.src = 'https://accounts.google.com/gsi/client';
+        script.async = true;
+        script.defer = true;
+        script.setAttribute('data-alice-gsi', '1');
+        script.onload = () => {
+            window.__ALICE_GSI_LOAD_ERROR = false;
+        };
+        script.onerror = () => {
+            window.__ALICE_GSI_LOAD_ERROR = true;
+        };
+        document.head.appendChild(script);
+    },
+
     async sendOAuthRequest(provider, fullname, email, avatar) {
         try {
             const res = await fetch(this.apiUrl('api/auth.php?action=oauth'), {
@@ -1406,7 +1439,7 @@ const AliceApp = {
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ provider, fullname, email, avatar })
             });
-            const data = await res.json();
+            const data = await this.parseJsonResponse(res);
             if (data.success) {
                 await this.onLoginSuccess(data.user, data.message);
             } else {
@@ -1461,7 +1494,13 @@ const AliceApp = {
             const clientId = window.GOOGLE_CLIENT_ID.trim();
 
             if (!window.google || !window.google.accounts) {
-                this.showToast('Đang kết nối dịch vụ Google, vui lòng thử lại sau 1 giây...', 'info');
+                const hadLoadError = !!window.__ALICE_GSI_LOAD_ERROR;
+                this.ensureGoogleGsiScript();
+                if (hadLoadError) {
+                    this.showToast('Không thể tải Google Sign-In! Có thể do mạng yếu hoặc AdBlock / Brave Shields đang chặn. Vui lòng tắt chặn trang này rồi bấm lại.', 'warning');
+                } else {
+                    this.showToast('Đang kết nối dịch vụ Google, vui lòng bấm lại nút Google sau 1–2 giây...', 'info');
+                }
                 return;
             }
 
@@ -1478,7 +1517,20 @@ const AliceApp = {
                                 console.warn('Google OAuth error:', tokenResponse);
                                 if (tokenResponse.error !== 'access_denied') {
                                     this.showToast('Lỗi xác thực Google: ' + (tokenResponse.error_description || tokenResponse.error), 'warning');
+                                } else {
+                                    this.showToast('Bạn đã hủy cấp quyền đăng nhập Google.', 'info');
                                 }
+                            }
+                        },
+                        error_callback: (err) => {
+                            console.warn('Google OAuth popup error:', err);
+                            const errType = err && err.type ? err.type : '';
+                            if (errType === 'popup_failed_to_open') {
+                                this.showToast('Trình duyệt đang chặn cửa sổ bật lên (popup) Google! Hãy cho phép popup hoặc tắt AdBlock / Brave Shields rồi thử lại.', 'warning');
+                            } else if (errType === 'popup_closed') {
+                                this.showToast('Bạn đã đóng cửa sổ đăng nhập Google trước khi hoàn tất.', 'info');
+                            } else {
+                                this.showToast('Không thể mở đăng nhập Google' + (err && err.message ? ': ' + err.message : '. Vui lòng thử lại!'), 'warning');
                             }
                         }
                     });
@@ -1496,11 +1548,18 @@ const AliceApp = {
                 });
                 google.accounts.id.prompt((notification) => {
                     if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-                        console.log('Google Prompt suppressed:', notification.getNotDisplayedReason());
+                        const reason = notification.isNotDisplayed()
+                            ? notification.getNotDisplayedReason()
+                            : notification.getSkippedReason();
+                        console.log('Google Prompt suppressed:', reason);
+                        this.showToast('Không thể mở khung đăng nhập Google (' + reason + '). Hãy cho phép popup hoặc tắt trình chặn theo dõi rồi thử lại!', 'warning');
                     }
                 });
                 return;
             }
+
+            this.showToast('Trình duyệt chưa sẵn sàng đăng nhập Google. Vui lòng tải lại trang hoặc cho phép popup!', 'warning');
+            return;
         }
 
         // 2. NẾU LÀ FACEBOOK VÀ ĐÃ CÓ FACEBOOK_APP_ID
@@ -1600,7 +1659,7 @@ const AliceApp = {
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ access_token: accessToken })
             });
-            const data = await res.json();
+            const data = await this.parseJsonResponse(res);
             if (data.success) {
                 await this.onLoginSuccess(data.user, data.message);
             } else {
@@ -1625,7 +1684,7 @@ const AliceApp = {
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ credential: response.credential })
             });
-            const data = await res.json();
+            const data = await this.parseJsonResponse(res);
             if (data.success) {
                 await this.onLoginSuccess(data.user, data.message);
             } else {

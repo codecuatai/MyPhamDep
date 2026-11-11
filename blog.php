@@ -83,6 +83,7 @@ $breadcrumbSchema = generateBreadcrumbJsonLd([
     <script type="application/ld+json">
     <?= json_encode($breadcrumbSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) ?>
     </script>
+    <?php include __DIR__ . '/templates/social_auth_head.php'; ?>
 </head>
 <body id="top" style="background: #fffbfd;">
 

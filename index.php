@@ -90,7 +90,6 @@ try {
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <link rel="dns-prefetch" href="https://images.unsplash.com">
-    <link rel="dns-prefetch" href="https://accounts.google.com">
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>">
@@ -110,25 +109,7 @@ try {
     <?= json_encode($websiteSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) ?>
     </script>
 
-    <!-- Google Identity Services (Sign in with Google) -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script>
-        window.GOOGLE_CLIENT_ID = "<?= htmlspecialchars(defined('GOOGLE_CLIENT_ID') ? GOOGLE_CLIENT_ID : '') ?>";
-        window.FACEBOOK_APP_ID = "<?= htmlspecialchars(defined('FACEBOOK_APP_ID') ? FACEBOOK_APP_ID : '') ?>";
-        window.fbAsyncInit = function() {
-            if (window.FACEBOOK_APP_ID && window.FACEBOOK_APP_ID.trim() !== '') {
-                FB.init({
-                    appId: window.FACEBOOK_APP_ID.trim(),
-                    cookie: true,
-                    xfbml: false,
-                    fedCM: false,
-                    version: 'v19.0'
-                });
-            }
-        };
-    </script>
-    <!-- Facebook SDK for JavaScript -->
-    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/vi_VN/sdk.js"></script>
+    <?php include __DIR__ . '/templates/social_auth_head.php'; ?>
 </head>
 <body id="top">
 

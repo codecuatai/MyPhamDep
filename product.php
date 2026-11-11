@@ -48,6 +48,7 @@ if (!$product) {
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
         <link href="<?= $baseUrl ?>/assets/css/style.css?v=<?= defined('APP_VERSION') ? APP_VERSION : '1.0.0' ?>" rel="stylesheet">
+        <?php include __DIR__ . '/templates/social_auth_head.php'; ?>
     </head>
     <body id="top" style="background: var(--bg-soft);">
         <div id="alice-toast-container" class="alice-toast-container"></div>
@@ -161,6 +162,7 @@ $breadcrumbSchema = generateBreadcrumbJsonLd([
     <script type="application/ld+json">
     <?= json_encode($breadcrumbSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) ?>
     </script>
+    <?php include __DIR__ . '/templates/social_auth_head.php'; ?>
 </head>
 <body id="top" style="background: #fffbfd;">
 
