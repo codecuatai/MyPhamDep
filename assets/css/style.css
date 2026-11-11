@@ -1338,3 +1338,23 @@ a {
     margin: 0 !important;
     z-index: 2000 !important;
 }
+
+/* VietQR Payment Card Frame (Chuẩn mẫu Ngân hàng VietQR Napas 247) */
+.vietqr-outer-frame {
+    border: 2.5px solid #2563eb !important;
+    border-radius: 22px !important;
+    background: #ffffff !important;
+    box-shadow: 0 10px 30px rgba(37, 99, 235, 0.12) !important;
+    transition: all 0.3s ease;
+}
+
+.vietqr-inner-card {
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 16px !important;
+    background: #ffffff !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04) !important;
+}
+
+.vietqr-outer-frame:hover {
+    box-shadow: 0 12px 36px rgba(37, 99, 235, 0.18) !important;
+}

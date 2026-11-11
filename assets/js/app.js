@@ -860,6 +860,19 @@ const AliceApp = {
         document.getElementById('vqr-account-name').textContent = vqr.account_name;
         document.getElementById('vqr-add-info').textContent = vqr.add_info;
 
+        // Cập nhật thông tin trên khung VietQR chuẩn mẫu
+        const elCardBank = document.getElementById('vqr-card-bank');
+        if (elCardBank) elCardBank.textContent = vqr.bank_id || 'MB';
+
+        const elCardAccName = document.getElementById('vqr-card-accname');
+        if (elCardAccName) elCardAccName.textContent = vqr.account_name || 'ALICE COSMETIC';
+
+        const elCardAccNo = document.getElementById('vqr-card-accno');
+        if (elCardAccNo) elCardAccNo.textContent = vqr.account_no || '0869571734';
+
+        const elCardAmountVal = document.getElementById('vqr-card-amount-val');
+        if (elCardAmountVal) elCardAmountVal.textContent = vqr.amount_formatted || (new Intl.NumberFormat('vi-VN').format(orderData.final_amount) + ' VND');
+
         // Sinh link xác nhận thanh toán quét bằng Camera / Zalo điện thoại
         const payUrl = window.location.origin + '/pay.php?code=' + encodeURIComponent(orderData.order_code);
         const smartQrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=8&data=' + encodeURIComponent(payUrl);
