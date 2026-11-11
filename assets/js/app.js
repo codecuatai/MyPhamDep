@@ -4,19 +4,39 @@
  */
 
 const AliceApp = {
-    baseUrl: (typeof window.ALICE_BASE_URL === 'string' && window.ALICE_BASE_URL)
-        ? window.ALICE_BASE_URL.replace(/\/+$/, '')
-        : (() => {
-            const scripts = document.getElementsByTagName('script');
-            for (let i = scripts.length - 1; i >= 0; i--) {
-                const src = scripts[i].src || '';
-                const idx = src.indexOf('/assets/js/app.js');
-                if (idx !== -1) {
-                    return src.substring(0, idx);
+    baseUrl: (() => {
+        const origin = (window.location.origin && window.location.origin !== 'null')
+            ? window.location.origin.replace(/\/+$/, '')
+            : '';
+        if (typeof window.ALICE_BASE_URL === 'string' && window.ALICE_BASE_URL) {
+            try {
+                const parsed = new URL(window.ALICE_BASE_URL, origin || window.location.href);
+                const path = parsed.pathname.replace(/\/+$/, '');
+                if (origin && parsed.host === window.location.host) {
+                    return origin + path;
                 }
+                if (window.location.protocol === 'https:' && parsed.protocol === 'http:') {
+                    parsed.protocol = 'https:';
+                }
+                return parsed.origin + path;
+            } catch (e) {
+                const trimmed = window.ALICE_BASE_URL.replace(/\/+$/, '');
+                if (window.location.protocol === 'https:' && trimmed.startsWith('http://')) {
+                    return 'https://' + trimmed.slice(7);
+                }
+                return trimmed;
             }
-            return window.location.origin;
-        })(),
+        }
+        const scripts = document.getElementsByTagName('script');
+        for (let i = scripts.length - 1; i >= 0; i--) {
+            const src = scripts[i].src || '';
+            const idx = src.indexOf('/assets/js/app.js');
+            if (idx !== -1) {
+                return src.substring(0, idx);
+            }
+        }
+        return origin;
+    })(),
 
     apiUrl(path) {
         const cleanPath = String(path || '').replace(/^\/+/, '');
