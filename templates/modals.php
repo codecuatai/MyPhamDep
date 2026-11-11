@@ -295,7 +295,7 @@
                 <!-- KHUNG THANH TOÁN VIETQR CHUẨN MẪU (KHUNG XANH VIỀN BO TRÒN) -->
                 <div class="vietqr-outer-frame mx-auto mb-3" style="border: 2.5px solid #2563eb; border-radius: 22px; padding: 16px 14px 18px 14px; background: #ffffff; box-shadow: 0 8px 30px rgba(37, 99, 235, 0.12);">
                     <!-- Top Bar: Badge & Countdown Timer -->
-                    <div class="d-flex align-items-center justify-content-between mb-2 px-1">
+                    <div class="d-flex align-items-center justify-content-between mb-3 px-1">
                         <span class="badge rounded-pill d-inline-flex align-items-center gap-1 shadow-sm" style="background: #d32f2f; color: #ffffff; font-weight: 700; padding: 6px 14px; font-size: 0.82rem; letter-spacing: 0.3px;">
                             <i class="fa-solid fa-bolt"></i> VietQR Napas 247
                         </span>
@@ -303,21 +303,6 @@
                             <i class="fa-regular fa-clock" style="color: #6b7280;"></i> Hết hạn sau: <span id="vqr-countdown" class="fw-bold" style="color: #dc2626; font-size: 0.95rem;">10:00</span>
                         </span>
                     </div>
-
-                    <!-- CHUYỂN ĐỔI CHẾ ĐỘ QUÉT: APP NGÂN HÀNG vs ZALO / CAMERA -->
-                    <div class="d-flex p-1 rounded-pill mb-2 border mx-auto" style="max-width: 310px; background-color: #f1f5f9;">
-                        <button type="button" id="btn-qr-mode-bank" class="btn btn-sm flex-fill rounded-pill py-1 fw-bold shadow-sm" onclick="AliceApp.switchQRMode('bank')" style="font-size: 0.78rem; transition: all 0.25s; background: #2563eb; color: #ffffff; border: none;">
-                            <i class="fa-solid fa-building-columns me-1"></i>App Ngân Hàng
-                        </button>
-                        <button type="button" id="btn-qr-mode-camera" class="btn btn-sm flex-fill rounded-pill py-1 fw-semibold text-secondary" onclick="AliceApp.switchQRMode('camera')" style="font-size: 0.78rem; transition: all 0.25s; background: transparent; color: #475569; border: none;">
-                            <i class="fa-solid fa-camera me-1 text-danger"></i>Zalo / Camera Web
-                        </button>
-                    </div>
-
-                    <!-- Gợi ý hướng dẫn quét tương ứng chế độ -->
-                    <p class="small text-muted mb-2 px-1" id="vqr-mode-desc" style="font-size: 0.78rem; min-height: 20px;">
-                        <i class="fa-solid fa-circle-check text-success me-1"></i>Mở <strong>App Ngân Hàng bất kỳ</strong> quét mã để tự động điền STK & Số tiền
-                    </p>
 
                     <!-- Inner White Card (Card hiển thị QR và Logo) -->
                     <div class="vietqr-inner-card p-3 rounded-4 border text-center position-relative" style="background: #ffffff; border-color: #e5e7eb !important; box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04); max-width: 320px; margin: 0 auto;">
@@ -331,9 +316,9 @@
                         <!-- QR Code Container -->
                         <div class="position-relative d-inline-block mx-auto mb-2 p-1 bg-white rounded-3">
                             <img id="vqr-image" src="" alt="Mã QR Chuyển Khoản" class="img-fluid rounded-2" style="width: 220px; height: 220px; object-fit: contain;">
-                            <!-- VietQR center logo watermark (chỉ hiện khi cần) -->
-                            <div id="vqr-center-watermark" class="position-absolute top-50 start-50 translate-middle p-1 bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 30px; height: 30px; border: 1.5px solid #f1f5f9; pointer-events: none;">
-                                <span style="color: #d32f2f; font-weight: 900; font-size: 0.95rem; line-height: 1;">V</span>
+                            <!-- VietQR center logo watermark -->
+                            <div class="position-absolute top-50 start-50 translate-middle p-1 bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; border: 1.5px solid #f1f5f9; pointer-events: none;">
+                                <span style="color: #d32f2f; font-weight: 900; font-size: 1rem; line-height: 1;">V</span>
                             </div>
                         </div>
 
@@ -364,13 +349,6 @@
 
                         <!-- Subtle bottom glow bar -->
                         <div style="height: 3px; width: 80%; margin: 8px auto 0 auto; background: linear-gradient(90deg, transparent, #38bdf8, #60a5fa, transparent); border-radius: 99px;"></div>
-                    </div>
-
-                    <!-- Nút Mở Thẳng App Ngân Hàng Trên Điện Thoại (Deep Link) -->
-                    <div class="mt-2 text-center" id="vqr-open-bank-container">
-                        <a id="vqr-btn-deep-bank" href="https://dl.vietqr.io/pay?app=mb" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 fw-semibold" style="font-size: 0.78rem;">
-                            <i class="fa-solid fa-mobile-screen-button me-1"></i>Mở App MBBank trên điện thoại
-                        </a>
                     </div>
                 </div>
 
