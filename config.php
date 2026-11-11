@@ -6,7 +6,7 @@
  */
 
 define('APP_NAME', 'ALICE Cosmetic');
-define('APP_VERSION', '2.6.3');
+define('APP_VERSION', '2.6.4');
 date_default_timezone_set('Asia/Ho_Chi_Minh');
 
 // Cấu hình Google OAuth 2.0 (Google Identity Services)

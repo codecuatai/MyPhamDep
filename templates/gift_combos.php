@@ -39,7 +39,7 @@
                 <div class="row g-3">
                     <div class="col-sm-6">
                         <div class="card border-0 rounded-4 shadow-sm overflow-hidden h-100 p-3 bg-white">
-                            <img src="https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=600&q=80" alt="Pink Box Luxury" class="img-fluid rounded-3 mb-3" style="height: 200px; width: 100%; object-fit: cover;">
+                            <img src="https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=600&q=80" alt="Pink Box Luxury" class="img-fluid rounded-3 mb-3" style="height: 200px; width: 100%; object-fit: cover;" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=700&q=80';">
                             <div class="badge bg-danger rounded-pill align-self-start mb-2">TIẾT KIỆM 291K</div>
                             <h5 class="font-bold mb-1" style="font-size: 1.05rem;">Set Routine Skincare Cấp Ẩm Phục Hồi</h5>
                             <p class="small text-muted mb-3">Tẩy trang Bioderma + Serum B5 Torriden + Kem dưỡng B5+ La Roche-Posay.</p>
@@ -57,7 +57,7 @@
 
                     <div class="col-sm-6">
                         <div class="card border-0 rounded-4 shadow-sm overflow-hidden h-100 p-3 bg-white">
-                            <img src="https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=600&q=80" alt="Set Son & Makeup" class="img-fluid rounded-3 mb-3" style="height: 200px; width: 100%; object-fit: cover;">
+                            <img src="https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=600&q=80" alt="Set Son & Makeup" class="img-fluid rounded-3 mb-3" style="height: 200px; width: 100%; object-fit: cover;" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=600&q=80';">
                             <div class="badge bg-danger rounded-pill align-self-start mb-2">HOT TREND TIKTOK</div>
                             <h5 class="font-bold mb-1" style="font-size: 1.05rem;">Combo Đôi Môi Căng Mọng Ngọt Ngào</h5>
                             <p class="small text-muted mb-3">Son kem Rom&nd #02 Joyful + Son dưỡng hồng môi thiên nhiên + Gương mini hồng.</p>

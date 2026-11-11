@@ -213,6 +213,15 @@ const AliceApp = {
         return new Intl.NumberFormat('vi-VN').format(num) + '₫';
     },
 
+    escHtml(str) {
+        return String(str ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    },
+
     showToast(message, type = 'success') {
         const container = document.getElementById('alice-toast-container');
         if (!container) return;
@@ -221,7 +230,7 @@ const AliceApp = {
         toast.className = 'alice-toast';
         toast.innerHTML = `
             <i class="fa-solid ${type === 'success' ? 'fa-circle-check text-pink-500' : 'fa-circle-exclamation text-amber-500'}" style="color: var(--primary); font-size: 1.2rem;"></i>
-            <div>${message}</div>
+            <div>${this.escHtml(message)}</div>
         `;
         container.appendChild(toast);
 
@@ -508,9 +517,9 @@ const AliceApp = {
             row.style.border = '1px solid var(--primary-border)';
             row.innerHTML = `
                 <div class="form-check d-flex align-items-center gap-2 mb-0">
-                    <input class="form-check-input" type="checkbox" id="addon-${deal.id}" ${isChecked ? 'checked' : ''}>
-                    <label class="form-check-label small font-semibold mb-0" for="addon-${deal.id}" style="cursor: pointer;">
-                        ${deal.name}
+                    <input class="form-check-input" type="checkbox" id="addon-${Number(deal.id)}" ${isChecked ? 'checked' : ''}>
+                    <label class="form-check-label small font-semibold mb-0" for="addon-${Number(deal.id)}" style="cursor: pointer;">
+                        ${this.escHtml(deal.name)}
                     </label>
                 </div>
                 <div class="text-end">
@@ -546,15 +555,15 @@ const AliceApp = {
             card.style.border = '1px solid var(--primary-pastel)';
             card.innerHTML = `
                 <div class="d-flex justify-content-between align-items-center mb-1">
-                    <strong class="small" style="color: var(--text-main);"><i class="fa-solid fa-circle-user me-1 text-pink-500" style="color: var(--primary);"></i>${r.author_name}</strong>
-                    <span class="small text-warning font-bold">★ ${r.rating}.0</span>
+                    <strong class="small" style="color: var(--text-main);"><i class="fa-solid fa-circle-user me-1 text-pink-500" style="color: var(--primary);"></i>${this.escHtml(r.author_name)}</strong>
+                    <span class="small text-warning font-bold">★ ${Number(r.rating) || 5}.0</span>
                 </div>
                 <div class="mb-1">
                     <span class="badge" style="background: var(--primary-pastel); color: var(--primary-dark); font-size: 0.7rem;">
-                        <i class="fa-solid fa-sparkles me-1"></i>Loại da: ${r.skin_type || 'Tất cả loại da'}
+                        <i class="fa-solid fa-sparkles me-1"></i>Loại da: ${this.escHtml(r.skin_type || 'Tất cả loại da')}
                     </span>
                 </div>
-                <p class="small text-muted mb-0" style="font-size: 0.82rem; line-height: 1.4;">${r.comment}</p>
+                <p class="small text-muted mb-0" style="font-size: 0.82rem; line-height: 1.4;">${this.escHtml(r.comment)}</p>
             `;
             container.appendChild(card);
         });
@@ -690,18 +699,18 @@ const AliceApp = {
             const row = document.createElement('div');
             row.className = 'cart-item-row';
             row.innerHTML = `
-                <img src="${it.image}" class="cart-item-img" alt="${it.name}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=600&q=80';">
+                <img src="${this.escHtml(it.image)}" class="cart-item-img" alt="${this.escHtml(it.name)}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=600&q=80';">
                 <div class="cart-item-details">
                     <div class="d-flex justify-content-between">
-                        <div class="cart-item-title text-truncate" style="max-width: 220px;">${it.name}</div>
+                        <div class="cart-item-title text-truncate" style="max-width: 220px;">${this.escHtml(it.name)}</div>
                         <button class="btn btn-sm text-danger p-0 border-0" onclick="AliceApp.removeItem(${idx})"><i class="fa-solid fa-trash-can"></i></button>
                     </div>
-                    ${it.variant_name ? `<span class="cart-item-variant">${it.variant_name}</span>` : ''}
+                    ${it.variant_name ? `<span class="cart-item-variant">${this.escHtml(it.variant_name)}</span>` : ''}
                     <div class="cart-item-price-qty mt-2">
                         <span class="font-bold" style="color: var(--primary-dark); font-size: 0.88rem;">${this.formatVND(it.price)}</span>
                         <div class="qty-control-group">
                             <button class="qty-btn" onclick="AliceApp.updateItemQty(${idx}, -1)">-</button>
-                            <span class="qty-input">${it.quantity || 1}</span>
+                            <span class="qty-input">${Number(it.quantity) || 1}</span>
                             <button class="qty-btn" onclick="AliceApp.updateItemQty(${idx}, 1)">+</button>
                         </div>
                     </div>
@@ -794,7 +803,7 @@ const AliceApp = {
 
         document.getElementById('checkout-items-summary').innerHTML = this.cart.map(it => `
             <div class="d-flex justify-content-between small mb-1">
-                <span class="text-truncate" style="max-width: 240px;">${it.name} ${it.variant_name ? '(' + it.variant_name + ')' : ''} x${it.quantity}</span>
+                <span class="text-truncate" style="max-width: 240px;">${this.escHtml(it.name)} ${it.variant_name ? '(' + this.escHtml(it.variant_name) + ')' : ''} x${Number(it.quantity) || 1}</span>
                 <span class="font-bold">${this.formatVND(it.price * it.quantity)}</span>
             </div>
         `).join('');
@@ -860,12 +869,23 @@ const AliceApp = {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
-            const data = await res.json();
+            const rawText = await res.text();
+            let data = null;
+            try {
+                data = rawText ? JSON.parse(rawText) : null;
+            } catch (parseErr) {
+                console.error('Checkout non-JSON response:', res.status, rawText.slice(0, 300));
+            }
 
             btnSubmit.disabled = false;
             btnSubmit.innerHTML = `<i class="fa-solid fa-bag-shopping me-2"></i>Xác Nhận Đặt Hàng`;
 
-            if (data.success) {
+            if (!data) {
+                this.showToast(`Lỗi máy chủ đặt hàng (HTTP ${res.status})!`, 'warning');
+                return;
+            }
+
+            if (res.ok && data.success) {
                 // Xóa giỏ hàng
                 this.cart = [];
                 this.appliedCoupon = null;
@@ -929,6 +949,12 @@ const AliceApp = {
         const smartQrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=8&data=' + encodeURIComponent(payUrl);
         const vqrImg = document.getElementById('vqr-image');
         if (vqrImg) {
+            vqrImg.onerror = () => {
+                vqrImg.onerror = null;
+                if (vqr && vqr.qr_image_url) {
+                    vqrImg.src = vqr.qr_image_url;
+                }
+            };
             vqrImg.src = smartQrUrl;
         }
 
@@ -1665,7 +1691,7 @@ const AliceApp = {
     goToCategory(catId) {
         const section = document.getElementById('san-pham-section');
         if (section) {
-            const catItem = document.querySelector(`.bubble-category-item[data-cat-id="${catId}"]`);
+            const catItem = Array.from(document.querySelectorAll('.bubble-category-item')).find(el => el.getAttribute('data-cat-id') === catId);
             if (catItem) {
                 catItem.click();
             } else {

@@ -11,7 +11,7 @@ require_once __DIR__ . '/includes/functions.php';
 $pdo = getDbConnection();
 $shopConfig = getShopConfig($pdo);
 
-$orderCode = cleanInput($_GET['code'] ?? ($_GET['order_code'] ?? ''));
+$orderCode = cleanText($_GET['code'] ?? ($_GET['order_code'] ?? ''));
 
 $order = null;
 if (!empty($orderCode)) {
@@ -198,7 +198,7 @@ if (!empty($orderCode)) {
                 </div>
 
                 <!-- Nút Xác Nhận Thanh Toán Di Động -->
-                <button type="button" id="btnConfirmPay" class="btn btn-confirm-pay w-100 py-3 rounded-pill fw-bold fs-6 mb-2" onclick="confirmPayment('<?= htmlspecialchars($order['order_code']) ?>')">
+                <button type="button" id="btnConfirmPay" class="btn btn-confirm-pay w-100 py-3 rounded-pill fw-bold fs-6 mb-2" onclick="confirmPayment(<?= htmlspecialchars(json_encode($order['order_code']), ENT_QUOTES, 'UTF-8') ?>)">
                     <i class="fa-solid fa-circle-check me-2"></i>XÁC NHẬN THANH TOÁN
                 </button>
             </div>

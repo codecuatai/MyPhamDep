@@ -20,24 +20,24 @@ if (!$input) {
 $pdo = getDbConnection();
 $config = getShopConfig($pdo);
 
-$customerName   = cleanInput($input['customer_name'] ?? '');
-$phone          = cleanInput($input['phone'] ?? '');
-$address        = cleanInput($input['address'] ?? '');
-$note           = cleanInput($input['note'] ?? '');
-$paymentMethod  = cleanInput($input['payment_method'] ?? 'vietqr');
-$couponCode     = cleanInput($input['coupon_code'] ?? '');
+$customerName   = cleanText($input['customer_name'] ?? '');
+$phone          = cleanText($input['phone'] ?? '');
+$address        = cleanText($input['address'] ?? '');
+$note           = cleanText($input['note'] ?? '');
+$paymentMethod  = cleanText($input['payment_method'] ?? 'vietqr') ?: 'vietqr';
+$couponCode     = cleanText($input['coupon_code'] ?? '');
 $items          = $input['items'] ?? ($input['cart'] ?? []);
-$totalAmount    = (float)($input['total_amount'] ?? 0);
-$discountAmount = (float)($input['discount_amount'] ?? 0);
+$totalAmount    = max(0, (float)($input['total_amount'] ?? 0));
+$discountAmount = max(0, (float)($input['discount_amount'] ?? 0));
 
 if ($totalAmount <= 0 && !empty($items)) {
     foreach ($items as $it) {
-        $price = (float)($it['price'] ?? 0);
-        $qty = (int)($it['quantity'] ?? 1);
+        $price = max(0, (float)($it['price'] ?? 0));
+        $qty = max(1, (int)($it['quantity'] ?? 1));
         $totalAmount += $price * $qty;
     }
 }
-$finalAmount    = (float)($input['final_amount'] ?? max(0, $totalAmount - $discountAmount));
+$finalAmount    = max(0, (float)($input['final_amount'] ?? max(0, $totalAmount - $discountAmount)));
 
 if (empty($customerName) || empty($phone) || empty($address)) {
     jsonResponse(['success' => false, 'message' => 'Vui lòng điền đầy đủ Họ tên, Số điện thoại và Địa chỉ nhận hàng!'], 400);
@@ -50,7 +50,7 @@ if (empty($items)) {
 // 1. Kiểm tra tồn kho trước khi đặt hàng
 foreach ($items as $it) {
     $pid = (int)($it['id'] ?? 0);
-    $qty = (int)($it['quantity'] ?? 1);
+    $qty = max(1, (int)($it['quantity'] ?? 1));
     if ($pid > 0) {
         $pStmt = $pdo->prepare("SELECT name, stock_quantity FROM products WHERE id = ?");
         $pStmt->execute([$pid]);
@@ -86,7 +86,7 @@ try {
     // 2. Tự động trừ tồn kho và tăng số lượng đã bán
     foreach ($items as $it) {
         $pid = (int)($it['id'] ?? 0);
-        $qty = (int)($it['quantity'] ?? 1);
+        $qty = max(1, (int)($it['quantity'] ?? 1));
         if ($pid > 0) {
             $deductStmt = $pdo->prepare("UPDATE products SET stock_quantity = CASE WHEN stock_quantity > ? THEN stock_quantity - ? ELSE 0 END, sold_count = sold_count + ? WHERE id = ?");
             $deductStmt->execute([$qty, $qty, $qty, $pid]);

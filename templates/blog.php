@@ -41,7 +41,8 @@ if (isset($pdo)) {
                                      loading="lazy" 
                                      decoding="async"
                                      onmouseover="this.style.transform='scale(1.05)'" 
-                                     onmouseout="this.style.transform='scale(1)'">
+                                     onmouseout="this.style.transform='scale(1)'"
+                                     onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=800&q=80';">
                             </a>
                             <div class="card-body p-3 d-flex flex-column">
                                 <div class="d-flex justify-content-between align-items-center mb-1">

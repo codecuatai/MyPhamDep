@@ -16,7 +16,7 @@ $pdo = getDbConnection();
 $shopConfig = getShopConfig($pdo);
 $baseUrl = getBaseUrl();
 
-$slug = cleanInput($_GET['slug'] ?? '');
+$slug = cleanText($_GET['slug'] ?? '');
 $id = (int)($_GET['id'] ?? 0);
 
 $product = null;
@@ -79,10 +79,13 @@ if (!$product) {
 
 // Giải mã dữ liệu JSON bổ sung
 $gallery = json_decode($product['gallery'] ?: '[]', true);
-if (empty($gallery)) {
+if (!is_array($gallery) || empty($gallery)) {
     $gallery = [$product['image']];
 }
 $variants = json_decode($product['variants'] ?: '[]', true);
+if (!is_array($variants)) {
+    $variants = [];
+}
 
 // Lấy thông tin danh mục
 $catStmt = $pdo->prepare("SELECT * FROM categories WHERE id = ?");
@@ -195,13 +198,13 @@ $breadcrumbSchema = generateBreadcrumbJsonLd([
                         <?php endif; ?>
                         
                         <div class="main-image-box text-center p-2 rounded-4 overflow-hidden mb-3 border" style="background: #fff; max-height: 420px;">
-                            <img id="detail-main-img" src="<?= htmlspecialchars($product['image']) ?>" alt="<?= htmlspecialchars($product['name']) ?>" class="img-fluid rounded-3" style="max-height: 400px; width: 100%; object-fit: contain;">
+                            <img id="detail-main-img" src="<?= htmlspecialchars($product['image']) ?>" alt="<?= htmlspecialchars($product['name']) ?>" class="img-fluid rounded-3" style="max-height: 400px; width: 100%; object-fit: contain;" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=600&q=80';">
                         </div>
 
                         <?php if (count($gallery) > 1): ?>
                             <div class="d-flex gap-2 overflow-auto pb-2">
                                 <?php foreach ($gallery as $idx => $gImg): ?>
-                                    <img src="<?= htmlspecialchars($gImg) ?>" alt="<?= htmlspecialchars($product['name']) ?> ảnh <?= $idx + 1 ?>" class="rounded-3 border thumbnail-click <?= $idx === 0 ? 'border-danger' : '' ?>" style="width: 72px; height: 72px; object-fit: cover; cursor: pointer;" onclick="document.getElementById('detail-main-img').src = this.src; document.querySelectorAll('.thumbnail-click').forEach(el => el.classList.remove('border-danger')); this.classList.add('border-danger');">
+                                    <img src="<?= htmlspecialchars($gImg) ?>" alt="<?= htmlspecialchars($product['name']) ?> ảnh <?= $idx + 1 ?>" class="rounded-3 border thumbnail-click <?= $idx === 0 ? 'border-danger' : '' ?>" style="width: 72px; height: 72px; object-fit: cover; cursor: pointer;" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=600&q=80';" onclick="document.getElementById('detail-main-img').src = this.src; document.querySelectorAll('.thumbnail-click').forEach(el => el.classList.remove('border-danger')); this.classList.add('border-danger');">
                                 <?php endforeach; ?>
                             </div>
                         <?php endif; ?>
@@ -458,7 +461,7 @@ $breadcrumbSchema = generateBreadcrumbJsonLd([
                         <?php foreach ($relatedProducts as $rp): ?>
                             <div class="d-flex gap-2 align-items-center">
                                 <a href="<?= $baseUrl ?>/san-pham/<?= htmlspecialchars($rp['slug']) ?>" class="flex-shrink-0" style="width: 70px; height: 70px;">
-                                    <img src="<?= htmlspecialchars($rp['image']) ?>" alt="<?= htmlspecialchars($rp['name']) ?>" class="w-100 h-100 rounded-3 border" style="object-fit: cover;" loading="lazy">
+                                    <img src="<?= htmlspecialchars($rp['image']) ?>" alt="<?= htmlspecialchars($rp['name']) ?>" class="w-100 h-100 rounded-3 border" style="object-fit: cover;" loading="lazy" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=600&q=80';">
                                 </a>
                                 <div class="small">
                                     <a href="<?= $baseUrl ?>/san-pham/<?= htmlspecialchars($rp['slug']) ?>" class="text-decoration-none text-dark font-semibold d-block text-truncate-2" style="font-size: 0.85rem;">

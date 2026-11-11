@@ -101,7 +101,20 @@ if (strpos($prodHtml, 'property="og:type" content="product"') !== false) {
 }
 
 // 5. Check product.php 404 handling via CLI subprocess
-$cli404 = shell_exec('php -r "$_GET[\'slug\'] = \'khong-ton-tai\'; include \'product.php\';"');
+$cli404 = '';
+$procSpec = [
+    0 => ['pipe', 'r'],
+    1 => ['pipe', 'w'],
+    2 => ['pipe', 'w']
+];
+$proc = proc_open([PHP_BINARY, '-r', '$_GET["slug"] = "khong-ton-tai"; include "product.php";'], $procSpec, $pipes, dirname(__DIR__));
+if (is_resource($proc)) {
+    fclose($pipes[0]);
+    $cli404 = stream_get_contents($pipes[1]);
+    fclose($pipes[1]);
+    fclose($pipes[2]);
+    proc_close($proc);
+}
 if (strpos($cli404, '404') !== false && strpos($cli404, 'Không Tìm Thấy Sản Phẩm') !== false) {
     $passes[] = "product.php handles non-existent slugs with 404 page.";
 } else {

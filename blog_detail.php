@@ -16,7 +16,7 @@ $pdo = getDbConnection();
 $shopConfig = getShopConfig($pdo);
 $baseUrl = getBaseUrl();
 
-$slug = cleanInput($_GET['slug'] ?? '');
+$slug = cleanText($_GET['slug'] ?? '');
 $post = null;
 
 if (!empty($slug)) {
@@ -74,7 +74,10 @@ if (!$post) {
 $pdo->prepare("UPDATE posts SET views = views + 1 WHERE id = ?")->execute([$post['id']]);
 
 // Lấy danh sách sản phẩm được gợi ý trong bài viết
-$relatedProductIds = json_decode($post['related_products'] ?: '[]', true);
+$decodedRelated = json_decode($post['related_products'] ?: '[]', true);
+$relatedProductIds = is_array($decodedRelated)
+    ? array_values(array_filter(array_map('intval', $decodedRelated), fn($rid) => $rid > 0))
+    : [];
 $recommendedProducts = [];
 if (!empty($relatedProductIds)) {
     $placeholders = str_repeat('?,', count($relatedProductIds) - 1) . '?';
@@ -239,7 +242,7 @@ $breadcrumbSchema = generateBreadcrumbJsonLd([
 
                     <!-- Featured Image -->
                     <div class="mb-4 text-center rounded-4 overflow-hidden border">
-                        <img src="<?= htmlspecialchars($post['image']) ?>" alt="<?= htmlspecialchars($post['title']) ?>" class="img-fluid w-100" style="max-height: 420px; object-fit: cover;">
+                        <img src="<?= htmlspecialchars($post['image']) ?>" alt="<?= htmlspecialchars($post['title']) ?>" class="img-fluid w-100" style="max-height: 420px; object-fit: cover;" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=800&q=80';">
                     </div>
 
                     <!-- Article Body Content -->
@@ -261,7 +264,7 @@ $breadcrumbSchema = generateBreadcrumbJsonLd([
                                     <div class="col">
                                         <div class="bg-white rounded-3 p-3 h-100 shadow-sm d-flex flex-column text-center">
                                             <a href="<?= $baseUrl ?>/san-pham/<?= htmlspecialchars($rp['slug']) ?>" class="d-block mb-2 text-decoration-none">
-                                                <img src="<?= htmlspecialchars($rp['image']) ?>" alt="<?= htmlspecialchars($rp['name']) ?>" class="rounded-3" style="width: 100%; height: 130px; object-fit: contain;" loading="lazy">
+                                                <img src="<?= htmlspecialchars($rp['image']) ?>" alt="<?= htmlspecialchars($rp['name']) ?>" class="rounded-3" style="width: 100%; height: 130px; object-fit: contain;" loading="lazy" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=600&q=80';">
                                             </a>
                                             <div class="small font-bold text-truncate-2 mb-2" style="font-size: 0.85rem;">
                                                 <a href="<?= $baseUrl ?>/san-pham/<?= htmlspecialchars($rp['slug']) ?>" class="text-decoration-none text-dark">
@@ -285,7 +288,7 @@ $breadcrumbSchema = generateBreadcrumbJsonLd([
                         <div class="d-flex gap-2">
                             <a href="https://www.facebook.com/sharer/sharer.php?u=<?= urlencode($canonicalUrl) ?>" target="_blank" class="btn btn-sm rounded-pill px-3 text-white" style="background: #1877f2;"><i class="fa-brands fa-facebook-f me-1"></i>Facebook</a>
                             <a href="https://zalo.me/share?url=<?= urlencode($canonicalUrl) ?>" target="_blank" class="btn btn-sm rounded-pill px-3 text-white" style="background: #0068ff;"><i class="fa-solid fa-share-nodes me-1"></i>Zalo</a>
-                            <button type="button" class="btn btn-sm rounded-pill px-3 btn-outline-secondary" onclick="navigator.clipboard.writeText('<?= $canonicalUrl ?>'); AliceApp.showToast('Đã sao chép liên kết bài viết!', 'success');"><i class="fa-solid fa-link me-1"></i>Copy Link</button>
+                            <button type="button" class="btn btn-sm rounded-pill px-3 btn-outline-secondary" onclick="navigator.clipboard.writeText(<?= htmlspecialchars(json_encode($canonicalUrl), ENT_QUOTES, 'UTF-8') ?>); AliceApp.showToast('Đã sao chép liên kết bài viết!', 'success');"><i class="fa-solid fa-link me-1"></i>Copy Link</button>
                         </div>
                     </div>
                 </article>
@@ -314,7 +317,7 @@ $breadcrumbSchema = generateBreadcrumbJsonLd([
                         <?php foreach ($otherPosts as $op): ?>
                             <div class="d-flex gap-2 align-items-center">
                                 <a href="<?= $baseUrl ?>/cam-nang/<?= htmlspecialchars($op['slug']) ?>" class="flex-shrink-0" style="width: 75px; height: 75px;">
-                                    <img src="<?= htmlspecialchars($op['image']) ?>" alt="<?= htmlspecialchars($op['title']) ?>" class="w-100 h-100 rounded-3 border" style="object-fit: cover;" loading="lazy">
+                                    <img src="<?= htmlspecialchars($op['image']) ?>" alt="<?= htmlspecialchars($op['title']) ?>" class="w-100 h-100 rounded-3 border" style="object-fit: cover;" loading="lazy" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=800&q=80';">
                                 </a>
                                 <div class="small">
                                     <a href="<?= $baseUrl ?>/cam-nang/<?= htmlspecialchars($op['slug']) ?>" class="text-decoration-none text-dark font-semibold d-block text-truncate-2" style="font-size: 0.85rem; line-height: 1.4;">

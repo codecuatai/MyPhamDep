@@ -42,6 +42,13 @@ function cleanInput($data) {
     return htmlspecialchars(trim((string)$data), ENT_QUOTES, 'UTF-8');
 }
 
+function cleanText($data) {
+    if (is_array($data)) {
+        return array_map('cleanText', $data);
+    }
+    return trim(strip_tags((string)$data));
+}
+
 /**
  * ====================================================
  * CÁC HÀM HỖ TRỢ CHUẨN SEO (SEO HELPER FUNCTIONS)
@@ -148,7 +155,7 @@ function generateShopJsonLd($shopConfig, $baseUrl) {
         "name" => $shopConfig['shop_name'] ?? 'ALICE Cosmetic',
         "legalName" => $shopConfig['legal_name'] ?? ($shopConfig['shop_name'] ?? 'ALICE Cosmetic'),
         "url" => $baseUrl,
-        "logo" => $baseUrl . "/assets/images/logo.png",
+        "logo" => "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=700&q=80",
         "image" => "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=700&q=80",
         "description" => $shopConfig['slogan'] ?? 'Mỹ Phẩm & Skincare Chuẩn Hàn',
         "telephone" => $shopConfig['hotline'] ?? '',
@@ -246,7 +253,7 @@ function generateArticleJsonLd($post, $shopConfig, $baseUrl) {
             "name" => $shopConfig['shop_name'] ?? 'ALICE Cosmetic',
             "logo" => [
                 "@type" => "ImageObject",
-                "url" => $baseUrl . "/assets/images/logo.png"
+                "url" => "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=700&q=80"
             ]
         ],
         "description" => truncateSeoDescription(!empty($post['excerpt']) ? $post['excerpt'] : strip_tags($post['content']))

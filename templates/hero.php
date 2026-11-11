@@ -292,7 +292,8 @@ $banners = !empty($activeBanners) ? $activeBanners : [];
                                                     <img src="<?= htmlspecialchars($b['image_url']) ?>" 
                                                          alt="<?= htmlspecialchars($b['title']) ?>" 
                                                          class="hero-img-showcase" 
-                                                         loading="<?= $idx === 0 ? 'eager' : 'lazy' ?>">
+                                                         loading="<?= $idx === 0 ? 'eager' : 'lazy' ?>"
+                                                         onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=1200&q=80';">
                                                 </div>
 
                                                 <!-- Floating Glassmorphism Tag -->

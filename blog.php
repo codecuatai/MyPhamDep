@@ -16,8 +16,8 @@ $pdo = getDbConnection();
 $shopConfig = getShopConfig($pdo);
 $baseUrl = getBaseUrl();
 
-$selectedCategory = cleanInput($_GET['category'] ?? 'all');
-$search = cleanInput($_GET['search'] ?? '');
+$selectedCategory = cleanText($_GET['category'] ?? 'all');
+$search = cleanText($_GET['search'] ?? '');
 
 $sql = "SELECT * FROM posts WHERE 1=1";
 $params = [];
@@ -133,7 +133,7 @@ $breadcrumbSchema = generateBreadcrumbJsonLd([
                     <div class="col">
                         <div class="card h-100 border-0 rounded-4 shadow-sm overflow-hidden bg-white d-flex flex-column" style="border: 1px solid var(--primary-pastel) !important;">
                             <a href="<?= $baseUrl ?>/cam-nang/<?= htmlspecialchars($p['slug']) ?>" class="d-block overflow-hidden" style="height: 200px;">
-                                <img src="<?= htmlspecialchars($p['image']) ?>" alt="<?= htmlspecialchars($p['title']) ?>" class="w-100 h-100" style="object-fit: cover; transition: transform 0.3s;" loading="lazy" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                                <img src="<?= htmlspecialchars($p['image']) ?>" alt="<?= htmlspecialchars($p['title']) ?>" class="w-100 h-100" style="object-fit: cover; transition: transform 0.3s;" loading="lazy" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=800&q=80';">
                             </a>
                             <div class="card-body p-3 d-flex flex-column">
                                 <div class="d-flex justify-content-between align-items-center mb-2">

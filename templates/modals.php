@@ -492,7 +492,7 @@
             </div>
             <div class="modal-body p-4">
                 <div class="input-group mb-3">
-                    <input type="text" id="order-lookup-query" class="form-control rounded-start-pill" placeholder="Nhập Số điện thoại hoặc Mã đơn hàng...">
+                    <input type="text" id="order-lookup-query" class="form-control rounded-start-pill" placeholder="Nhập Số điện thoại hoặc Mã đơn hàng..." onkeydown="if (event.key === 'Enter') { event.preventDefault(); lookupOrders(); }">
                     <button class="btn btn-danger rounded-end-pill px-3 font-bold" style="background: var(--gradient-pink); border: none;" onclick="lookupOrders()">
                         Tra Cứu
                     </button>
@@ -506,6 +506,15 @@
 </div>
 
 <script>
+function escapeOrderHtml(str) {
+    return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 async function lookupOrders() {
     const q = document.getElementById('order-lookup-query').value.trim();
     const resBox = document.getElementById('order-lookup-results');
@@ -525,14 +534,14 @@ async function lookupOrders() {
         resBox.innerHTML = data.orders.map(o => `
             <div class="p-3 mb-2 rounded-3" style="background: #fff8fa; border: 1px solid var(--primary-pastel);">
                 <div class="d-flex justify-content-between align-items-center mb-1">
-                    <strong class="small text-danger">${o.order_code}</strong>
+                    <strong class="small text-danger">${escapeOrderHtml(o.order_code)}</strong>
                     <span class="badge ${o.payment_status === 'paid' ? 'bg-success' : 'bg-warning text-dark'} rounded-pill" style="font-size: 0.7rem;">
                         ${o.payment_status === 'paid' ? 'Đã thanh toán' : 'Chờ thanh toán'}
                     </span>
                 </div>
-                <div class="small text-muted">Khách hàng: <strong>${o.customer_name}</strong> - SĐT: ${o.phone}</div>
-                <div class="small text-muted">Tổng tiền: <strong class="text-danger">${o.final_amount_formatted}</strong> (${o.payment_method === 'vietqr' ? 'VietQR' : 'COD'})</div>
-                <div class="small text-muted" style="font-size: 0.72rem;">Ngày đặt: ${o.created_at}</div>
+                <div class="small text-muted">Khách hàng: <strong>${escapeOrderHtml(o.customer_name)}</strong> - SĐT: ${escapeOrderHtml(o.phone)}</div>
+                <div class="small text-muted">Tổng tiền: <strong class="text-danger">${escapeOrderHtml(o.final_amount_formatted)}</strong> (${o.payment_method === 'vietqr' ? 'VietQR' : 'COD'})</div>
+                <div class="small text-muted" style="font-size: 0.72rem;">Ngày đặt: ${escapeOrderHtml(o.created_at)}</div>
             </div>
         `).join('');
     } catch(e) {

@@ -186,7 +186,7 @@ try {
         <?php if (!empty($_GET['category'])): ?>
         const catSlug = <?= json_encode($_GET['category']) ?>;
         setTimeout(() => {
-            const catItem = document.querySelector(`.bubble-category-item[data-cat-id="${catSlug}"]`);
+            const catItem = Array.from(document.querySelectorAll('.bubble-category-item')).find(el => el.getAttribute('data-cat-id') === catSlug);
             if (catItem) {
                 catItem.click();
             } else {

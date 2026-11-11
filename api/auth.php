@@ -63,9 +63,9 @@ if ($action === 'login') {
 // 4. Đăng ký
 if ($action === 'register') {
     $input = json_decode(file_get_contents('php://input'), true) ?: $_POST;
-    $fullname = cleanInput($input['fullname'] ?? '');
-    $email = cleanInput($input['email'] ?? '');
-    $phone = cleanInput($input['phone'] ?? '');
+    $fullname = cleanText($input['fullname'] ?? '');
+    $email = cleanText($input['email'] ?? '');
+    $phone = cleanText($input['phone'] ?? '');
     $password = trim($input['password'] ?? '');
     $confirmPassword = trim($input['confirm_password'] ?? '');
 
@@ -127,10 +127,10 @@ if ($action === 'register') {
 // 5. Đăng nhập qua mạng xã hội (Google, Facebook)
 if ($action === 'oauth') {
     $input = json_decode(file_get_contents('php://input'), true) ?: $_POST;
-    $provider = strtolower(cleanInput($input['provider'] ?? 'google'));
-    $fullname = cleanInput($input['fullname'] ?? ($provider === 'google' ? 'Khách Hàng Google' : 'Khách Hàng Facebook'));
-    $email = cleanInput($input['email'] ?? '');
-    $avatar = cleanInput($input['avatar'] ?? '');
+    $provider = strtolower(cleanText($input['provider'] ?? 'google'));
+    $fullname = cleanText($input['fullname'] ?? ($provider === 'google' ? 'Khách Hàng Google' : 'Khách Hàng Facebook'));
+    $email = cleanText($input['email'] ?? '');
+    $avatar = trim($input['avatar'] ?? '');
 
     if (empty($email)) {
         $email = $provider . '_' . substr(md5(uniqid()), 0, 8) . '@social.alice';
@@ -247,9 +247,9 @@ if ($action === 'google_login') {
         jsonResponse(['success' => false, 'message' => 'Xác thực Google thất bại hoặc mã token đã hết hạn!'], 401);
     }
 
-    $email = cleanInput($googlePayload['email']);
-    $fullname = cleanInput($googlePayload['name'] ?? 'Khách Hàng Google');
-    $avatar = cleanInput($googlePayload['picture'] ?? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80');
+    $email = cleanText($googlePayload['email']);
+    $fullname = cleanText($googlePayload['name'] ?? 'Khách Hàng Google');
+    $avatar = trim($googlePayload['picture'] ?? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80');
 
     // Kiểm tra xem email đã tồn tại trong DB chưa
     $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ? LIMIT 1");

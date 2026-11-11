@@ -228,7 +228,7 @@ $isAdmin = ($currentUser && ($currentUser['role'] ?? '') === 'admin');
             </li>
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-categories" type="button" onclick="AdminApp.loadCategories()">
-                    <i class="fa-solid fa-shapes me-1"></i>Danh Mục (6)
+                    <i class="fa-solid fa-shapes me-1"></i>Danh Mục (<span id="count-categories-badge">6</span>)
                 </button>
             </li>
             <li class="nav-item">
@@ -1021,9 +1021,32 @@ $isAdmin = ($currentUser && ($currentUser['role'] ?? '') === 'admin');
 const AdminApp = {
     allOrders: [],
     banks: [],
+    cachedLowStock: [],
+    cachedProducts: [],
+    cachedBanners: [],
+    cachedCategories: [],
+    cachedCoupons: [],
+    cachedPosts: [],
 
     formatVND(num) {
         return new Intl.NumberFormat('vi-VN').format(num) + '₫';
+    },
+
+    escHtml(str) {
+        return String(str ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    },
+
+    decodeEntities(str) {
+        const raw = String(str ?? '');
+        if (!raw || !raw.includes('&')) return raw;
+        const ta = document.createElement('textarea');
+        ta.innerHTML = raw;
+        return ta.value;
     },
 
     async handleLogin(e) {
@@ -1106,27 +1129,34 @@ const AdminApp = {
                 document.getElementById('count-products-badge').textContent = s.total_products;
                 const badgeBanners = document.getElementById('count-banners-badge');
                 if (badgeBanners) badgeBanners.textContent = s.total_banners || 0;
+                const badgeCategories = document.getElementById('count-categories-badge');
+                if (badgeCategories && typeof s.total_categories !== 'undefined') badgeCategories.textContent = s.total_categories;
+                const badgePosts = document.getElementById('count-posts-badge');
+                if (badgePosts && typeof s.total_posts !== 'undefined') badgePosts.textContent = s.total_posts;
 
                 // Render danh sách cảnh báo tồn kho sắp hết (< 10)
+                this.cachedLowStock = data.low_stock_products || [];
                 const tbodyLowStock = document.getElementById('tbody-low-stock');
                 if (tbodyLowStock) {
-                    if (data.low_stock_products && data.low_stock_products.length > 0) {
-                        tbodyLowStock.innerHTML = data.low_stock_products.map(p => {
+                    if (this.cachedLowStock.length > 0) {
+                        tbodyLowStock.innerHTML = this.cachedLowStock.map(p => {
                             const isZero = (p.stock_quantity <= 0);
+                            const prodImg = this.escHtml(p.image || 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=600&q=80');
+                            const prodName = this.escHtml(this.decodeEntities(p.name));
                             return `
                                 <tr>
-                                    <td><img src="${p.image}" width="42" height="42" class="rounded-3 object-fit-cover border" alt="${p.name}"></td>
+                                    <td><img src="${prodImg}" width="42" height="42" class="rounded-3 object-fit-cover border" alt="${prodName}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=600&q=80';"></td>
                                     <td>
-                                        <div class="fw-semibold text-dark" style="max-width: 250px;">${p.name}</div>
-                                        <div class="small text-muted font-monospace">SKU: ALICE-${p.id}</div>
+                                        <div class="fw-semibold text-dark" style="max-width: 250px;">${prodName}</div>
+                                        <div class="small text-muted font-monospace">SKU: ALICE-${Number(p.id)}</div>
                                     </td>
                                     <td>
-                                        <span class="badge bg-light text-secondary border">${p.brand || 'ALICE'}</span>
-                                        <span class="small text-muted ms-1">${p.origin || 'Hàn Quốc'}</span>
+                                        <span class="badge bg-light text-secondary border">${this.escHtml(this.decodeEntities(p.brand || 'ALICE'))}</span>
+                                        <span class="small text-muted ms-1">${this.escHtml(this.decodeEntities(p.origin || 'Hàn Quốc'))}</span>
                                     </td>
                                     <td class="fw-bold text-danger">${this.formatVND(p.price)}</td>
                                     <td>
-                                        <span class="fw-bold fs-6 ${isZero ? 'text-danger' : 'text-warning-emphasis'}">${p.stock_quantity} sp</span>
+                                        <span class="fw-bold fs-6 ${isZero ? 'text-danger' : 'text-warning-emphasis'}">${Number(p.stock_quantity)} sp</span>
                                     </td>
                                     <td>
                                         ${isZero 
@@ -1134,7 +1164,7 @@ const AdminApp = {
                                             : '<span class="badge bg-warning text-dark"><i class="fa-solid fa-triangle-exclamation me-1"></i>Sắp Hết</span>'}
                                     </td>
                                     <td class="text-end">
-                                        <button class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 font-semibold" onclick="AdminApp.quickEditStock(${p.id}, '${p.name.replace(/'/g, "\\'")}', ${p.stock_quantity})">
+                                        <button class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 font-semibold" onclick="AdminApp.quickEditStock(${Number(p.id)})">
                                             <i class="fa-solid fa-plus me-1"></i>Nhập Hàng
                                         </button>
                                     </td>
@@ -1151,9 +1181,9 @@ const AdminApp = {
                 if (data.recent_orders && data.recent_orders.length > 0) {
                     tbody.innerHTML = data.recent_orders.map(o => `
                         <tr>
-                            <td class="fw-bold text-dark">#${o.order_code}</td>
-                            <td>${o.customer_name}</td>
-                            <td>${o.phone}</td>
+                            <td class="fw-bold text-dark">#${this.escHtml(o.order_code)}</td>
+                            <td>${this.escHtml(this.decodeEntities(o.customer_name))}</td>
+                            <td>${this.escHtml(o.phone)}</td>
                             <td class="fw-bold text-danger">${this.formatVND(o.final_amount)}</td>
                             <td><span class="badge bg-light text-dark border">${o.payment_method === 'vietqr' ? '⚡ VietQR' : '💵 COD'}</span></td>
                             <td>
@@ -1161,7 +1191,7 @@ const AdminApp = {
                                     ${o.payment_status === 'paid' ? 'Đã Thanh Toán' : 'Chờ Thanh Toán'}
                                 </span>
                             </td>
-                            <td class="small text-muted">${o.created_at || 'Mới đây'}</td>
+                            <td class="small text-muted">${this.escHtml(o.created_at || 'Mới đây')}</td>
                         </tr>
                     `).join('');
                 } else {
@@ -1203,21 +1233,23 @@ const AdminApp = {
         tbody.innerHTML = list.map(o => {
             let items = [];
             try { items = JSON.parse(o.items_json); } catch(e) {}
-            const itemsSummary = items.map(it => `<div>• ${it.name} (x${it.quantity})</div>`).join('');
+            const itemsSummary = Array.isArray(items)
+                ? items.map(it => `<div>• ${this.escHtml(this.decodeEntities(it.name))} (x${Number(it.quantity) || 1})</div>`).join('')
+                : '';
 
             return `
                 <tr>
-                    <td class="fw-bold text-dark">#${o.order_code}</td>
-                    <td class="fw-semibold">${o.customer_name}</td>
+                    <td class="fw-bold text-dark">#${this.escHtml(o.order_code)}</td>
+                    <td class="fw-semibold">${this.escHtml(this.decodeEntities(o.customer_name))}</td>
                     <td>
-                        <div class="small fw-semibold text-dark">${o.phone}</div>
-                        <div class="small text-muted text-truncate" style="max-width: 200px;">${o.address}</div>
+                        <div class="small fw-semibold text-dark">${this.escHtml(o.phone)}</div>
+                        <div class="small text-muted text-truncate" style="max-width: 200px;">${this.escHtml(this.decodeEntities(o.address))}</div>
                     </td>
                     <td class="small text-muted" style="max-width: 250px;">${itemsSummary || 'Mỹ phẩm'}</td>
                     <td class="fw-bold text-danger">${this.formatVND(o.final_amount)}</td>
                     <td><span class="badge bg-light text-dark border">${o.payment_method === 'vietqr' ? '⚡ VietQR' : '💵 COD'}</span></td>
                     <td>
-                        <select class="form-select form-select-sm rounded-pill fw-semibold ${o.payment_status === 'paid' ? 'text-success border-success' : 'text-warning border-warning'}" onchange="AdminApp.updateOrderStatus(${o.id}, this.value)">
+                        <select class="form-select form-select-sm rounded-pill fw-semibold ${o.payment_status === 'paid' ? 'text-success border-success' : 'text-warning border-warning'}" onchange="AdminApp.updateOrderStatus(${Number(o.id)}, this.value)">
                             <option value="pending" ${o.payment_status === 'pending' ? 'selected' : ''}>⏳ Chờ TT</option>
                             <option value="paid" ${o.payment_status === 'paid' ? 'selected' : ''}>✅ Đã Thanh Toán</option>
                             <option value="shipping" ${o.payment_status === 'shipping' ? 'selected' : ''}>🚚 Đang Giao</option>
@@ -1225,7 +1257,7 @@ const AdminApp = {
                         </select>
                     </td>
                     <td class="text-end">
-                        <button class="btn btn-outline-danger btn-sm rounded-pill" onclick="AdminApp.quickConfirmPaid(${o.id})" title="Đánh dấu đã thanh toán">
+                        <button class="btn btn-outline-danger btn-sm rounded-pill" onclick="AdminApp.quickConfirmPaid(${Number(o.id)})" title="Đánh dấu đã thanh toán">
                             <i class="fa-solid fa-check"></i>
                         </button>
                     </td>
@@ -1300,44 +1332,51 @@ const AdminApp = {
                 stockBadge = `<span class="badge bg-danger text-white px-2 py-1"><i class="fa-solid fa-circle-xmark me-1"></i>Hết hàng (0)</span>`;
             }
 
+            const prodImg = this.escHtml(p.image || 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=600&q=80');
+            const prodName = this.escHtml(this.decodeEntities(p.name));
+
             return `
                 <tr>
-                    <td><img src="${p.image}" width="48" height="48" class="rounded-3 object-fit-cover border" alt="${p.name}"></td>
+                    <td><img src="${prodImg}" width="48" height="48" class="rounded-3 object-fit-cover border" alt="${prodName}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=600&q=80';"></td>
                     <td>
-                        <div class="fw-semibold text-dark" style="max-width: 230px;">${p.name}</div>
-                        <div class="small text-muted font-monospace">SKU: ALICE-${p.id}</div>
+                        <div class="fw-semibold text-dark" style="max-width: 230px;">${prodName}</div>
+                        <div class="small text-muted font-monospace">SKU: ALICE-${Number(p.id)}</div>
                     </td>
                     <td>
-                        <span class="badge bg-light text-secondary border">${p.brand || 'ALICE'}</span>
-                        <div class="small text-muted mt-1"><i class="fa-solid fa-earth-americas me-1 text-danger"></i>${p.origin || 'Hàn Quốc'}</div>
+                        <span class="badge bg-light text-secondary border">${this.escHtml(this.decodeEntities(p.brand || 'ALICE'))}</span>
+                        <div class="small text-muted mt-1"><i class="fa-solid fa-earth-americas me-1 text-danger"></i>${this.escHtml(this.decodeEntities(p.origin || 'Hàn Quốc'))}</div>
                     </td>
                     <td>
-                        <div class="small text-dark fw-semibold">${p.category_id}</div>
-                        <div class="small text-muted">${p.capacity || 'Tiêu chuẩn'}</div>
+                        <div class="small text-dark fw-semibold">${this.escHtml(p.category_id)}</div>
+                        <div class="small text-muted">${this.escHtml(this.decodeEntities(p.capacity || 'Tiêu chuẩn'))}</div>
                     </td>
                     <td class="fw-bold text-danger">${this.formatVND(p.price)}</td>
                     <td class="text-muted text-decoration-line-through small">${this.formatVND(p.original_price)}</td>
                     <td>
                         <div class="d-flex align-items-center gap-1">
                             ${stockBadge}
-                            <button class="btn btn-sm btn-outline-secondary rounded-pill px-2 py-0" style="font-size: 0.72rem;" onclick="AdminApp.quickEditStock(${p.id}, '${p.name.replace(/'/g, "\\'")}', ${stock})" title="Sửa nhanh số lượng kho">
+                            <button class="btn btn-sm btn-outline-secondary rounded-pill px-2 py-0" style="font-size: 0.72rem;" onclick="AdminApp.quickEditStock(${Number(p.id)})" title="Sửa nhanh số lượng kho">
                                 <i class="fa-solid fa-pen"></i>
                             </button>
                         </div>
                     </td>
                     <td>
-                        ${p.is_flash_sale ? '<span class="badge bg-danger rounded-pill">⚡ Bật (' + (p.flash_sale_stock || 0) + ')</span>' : '<span class="badge bg-light text-muted border">Tắt</span>'}
+                        ${p.is_flash_sale ? '<span class="badge bg-danger rounded-pill">⚡ Bật (' + (Number(p.flash_sale_stock) || 0) + ')</span>' : '<span class="badge bg-light text-muted border">Tắt</span>'}
                     </td>
                     <td class="text-end">
-                        <button class="btn btn-outline-primary btn-sm rounded-circle me-1" onclick="AdminApp.editProduct(${p.id})" title="Chỉnh sửa chi tiết"><i class="fa-solid fa-pen"></i></button>
-                        <button class="btn btn-outline-danger btn-sm rounded-circle" onclick="AdminApp.deleteProduct(${p.id}, '${p.name.replace(/'/g, "\\'")}')" title="Xóa"><i class="fa-solid fa-trash"></i></button>
+                        <button class="btn btn-outline-primary btn-sm rounded-circle me-1" onclick="AdminApp.editProduct(${Number(p.id)})" title="Chỉnh sửa chi tiết"><i class="fa-solid fa-pen"></i></button>
+                        <button class="btn btn-outline-danger btn-sm rounded-circle" onclick="AdminApp.deleteProduct(${Number(p.id)})" title="Xóa"><i class="fa-solid fa-trash"></i></button>
                     </td>
                 </tr>
             `;
         }).join('');
     },
 
-    async quickEditStock(id, name, currentStock) {
+    async quickEditStock(id, nameArg = null, stockArg = null) {
+        const cached = (this.cachedProducts || []).find(it => it.id == id) || (this.cachedLowStock || []).find(it => it.id == id);
+        const name = this.decodeEntities(nameArg !== null ? nameArg : (cached ? cached.name : `#${id}`));
+        const currentStock = stockArg !== null ? stockArg : (cached && typeof cached.stock_quantity !== 'undefined' ? cached.stock_quantity : 0);
+
         const input = prompt(`Nhập số lượng tồn kho mới cho sản phẩm:\n"${name}"`, currentStock);
         if (input === null) return;
         const newStock = parseInt(input.trim());
@@ -1382,26 +1421,27 @@ const AdminApp = {
         const p = (this.cachedProducts || []).find(it => it.id == id);
         if (!p) return;
 
-        document.getElementById('modalProductTitle').textContent = 'Sửa Sản Phẩm: ' + p.name;
+        const cleanName = this.decodeEntities(p.name);
+        document.getElementById('modalProductTitle').textContent = 'Sửa Sản Phẩm: ' + cleanName;
         document.getElementById('prod_id').value = p.id;
-        document.getElementById('prod_name').value = p.name;
-        document.getElementById('prod_brand').value = p.brand;
+        document.getElementById('prod_name').value = cleanName;
+        document.getElementById('prod_brand').value = this.decodeEntities(p.brand);
         document.getElementById('prod_category_id').value = p.category_id;
         document.getElementById('prod_price').value = p.price;
         document.getElementById('prod_original_price').value = p.original_price;
         document.getElementById('prod_image').value = p.image;
-        document.getElementById('prod_description').value = p.description || '';
+        document.getElementById('prod_description').value = this.decodeEntities(p.description || '');
         document.getElementById('prod_is_flash_sale').checked = (p.is_flash_sale == 1);
         document.getElementById('prod_flash_sale_stock').value = p.flash_sale_stock || 50;
 
         // Các thông số mới & tồn kho
         document.getElementById('prod_stock_quantity').value = (typeof p.stock_quantity !== 'undefined') ? p.stock_quantity : 50;
-        document.getElementById('prod_origin').value = p.origin || 'Hàn Quốc';
-        document.getElementById('prod_capacity').value = p.capacity || 'Tiêu chuẩn';
-        document.getElementById('prod_expiry').value = p.expiry || '36 tháng kể từ NSX (12 tháng mở nắp)';
+        document.getElementById('prod_origin').value = this.decodeEntities(p.origin || 'Hàn Quốc');
+        document.getElementById('prod_capacity').value = this.decodeEntities(p.capacity || 'Tiêu chuẩn');
+        document.getElementById('prod_expiry').value = this.decodeEntities(p.expiry || '36 tháng kể từ NSX (12 tháng mở nắp)');
         document.getElementById('prod_skin_type').value = p.skin_type || 'all';
-        document.getElementById('prod_ingredients').value = p.ingredients || '';
-        document.getElementById('prod_how_to_use').value = p.how_to_use || '';
+        document.getElementById('prod_ingredients').value = this.decodeEntities(p.ingredients || '');
+        document.getElementById('prod_how_to_use').value = this.decodeEntities(p.how_to_use || '');
 
         new bootstrap.Modal(document.getElementById('modalAdminProduct')).show();
     },
@@ -1453,7 +1493,9 @@ const AdminApp = {
         }
     },
 
-    async deleteProduct(id, name) {
+    async deleteProduct(id, nameArg = null) {
+        const cached = (this.cachedProducts || []).find(it => it.id == id);
+        const name = this.decodeEntities(nameArg !== null ? nameArg : (cached ? cached.name : `#${id}`));
         if (!confirm(`Bạn có chắc muốn xóa vĩnh viễn sản phẩm: "${name}"?`)) return;
         try {
             const res = await fetch('api/admin.php?action=delete_product', {
@@ -1495,39 +1537,43 @@ const AdminApp = {
                     return;
                 }
 
-                tbody.innerHTML = this.cachedBanners.map(b => `
+                tbody.innerHTML = this.cachedBanners.map(b => {
+                    const bImg = this.escHtml(b.image_url || 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=1200&q=80');
+                    const bTitle = this.escHtml(this.decodeEntities(b.title));
+                    return `
                     <tr>
                         <td>
-                            <img src="${b.image_url}" width="130" height="60" class="rounded-3 object-fit-cover border shadow-sm" alt="${b.title}">
+                            <img src="${bImg}" width="130" height="60" class="rounded-3 object-fit-cover border shadow-sm" alt="${bTitle}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=1200&q=80';">
                         </td>
                         <td>
-                            <div class="fw-bold text-dark">${b.title}</div>
-                            <div class="small text-muted text-truncate" style="max-width: 250px;">${b.subtitle || ''}</div>
+                            <div class="fw-bold text-dark">${bTitle}</div>
+                            <div class="small text-muted text-truncate" style="max-width: 250px;">${this.escHtml(this.decodeEntities(b.subtitle || ''))}</div>
                         </td>
                         <td>
-                            ${b.badge_text ? '<span class="badge bg-pink text-white rounded-pill px-2 py-1">' + b.badge_text + '</span>' : '<span class="text-muted small">—</span>'}
+                            ${b.badge_text ? '<span class="badge bg-pink text-white rounded-pill px-2 py-1">' + this.escHtml(this.decodeEntities(b.badge_text)) + '</span>' : '<span class="text-muted small">—</span>'}
                         </td>
                         <td>
-                            <span class="small font-monospace text-primary text-truncate d-inline-block" style="max-width: 140px;">${b.link_url || '#'}</span>
+                            <span class="small font-monospace text-primary text-truncate d-inline-block" style="max-width: 140px;">${this.escHtml(this.decodeEntities(b.link_url || '#'))}</span>
                         </td>
                         <td>
-                            <span class="small fw-semibold text-dark">${b.button_text || 'Xem Ngay'}</span>
+                            <span class="small fw-semibold text-dark">${this.escHtml(this.decodeEntities(b.button_text || 'Xem Ngay'))}</span>
                         </td>
                         <td>
-                            <span class="badge bg-light text-dark border px-2 py-1">${b.sort_order || 0}</span>
+                            <span class="badge bg-light text-dark border px-2 py-1">${Number(b.sort_order) || 0}</span>
                         </td>
                         <td>
                             <div class="form-check form-switch m-0">
-                                <input class="form-check-input" type="checkbox" role="switch" ${b.is_active == 1 ? 'checked' : ''} onchange="AdminApp.toggleBanner(${b.id}, this.checked ? 1 : 0)">
+                                <input class="form-check-input" type="checkbox" role="switch" ${b.is_active == 1 ? 'checked' : ''} onchange="AdminApp.toggleBanner(${Number(b.id)}, this.checked ? 1 : 0)">
                                 <label class="form-check-label small ${b.is_active == 1 ? 'text-success fw-bold' : 'text-muted'}">${b.is_active == 1 ? 'Bật' : 'Tắt'}</label>
                             </div>
                         </td>
                         <td class="text-end">
-                            <button class="btn btn-outline-primary btn-sm rounded-circle me-1" onclick="AdminApp.editBanner(${b.id})" title="Chỉnh sửa"><i class="fa-solid fa-pen"></i></button>
-                            <button class="btn btn-outline-danger btn-sm rounded-circle" onclick="AdminApp.deleteBanner(${b.id}, '${b.title.replace(/'/g, "\\'")}')" title="Xóa"><i class="fa-solid fa-trash"></i></button>
+                            <button class="btn btn-outline-primary btn-sm rounded-circle me-1" onclick="AdminApp.editBanner(${Number(b.id)})" title="Chỉnh sửa"><i class="fa-solid fa-pen"></i></button>
+                            <button class="btn btn-outline-danger btn-sm rounded-circle" onclick="AdminApp.deleteBanner(${Number(b.id)})" title="Xóa"><i class="fa-solid fa-trash"></i></button>
                         </td>
                     </tr>
-                `).join('');
+                `;
+                }).join('');
             }
         } catch(e) {
             tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-danger">Lỗi kết nối tải banner!</td></tr>';
@@ -1561,14 +1607,15 @@ const AdminApp = {
         const b = (this.cachedBanners || []).find(it => it.id == id);
         if (!b) return;
 
-        document.getElementById('modalBannerTitle').textContent = 'Sửa Banner: ' + b.title;
+        const cleanTitle = this.decodeEntities(b.title);
+        document.getElementById('modalBannerTitle').textContent = 'Sửa Banner: ' + cleanTitle;
         document.getElementById('banner_id').value = b.id;
-        document.getElementById('banner_title').value = b.title;
-        document.getElementById('banner_subtitle').value = b.subtitle || '';
-        document.getElementById('banner_badge_text').value = b.badge_text || '';
+        document.getElementById('banner_title').value = cleanTitle;
+        document.getElementById('banner_subtitle').value = this.decodeEntities(b.subtitle || '');
+        document.getElementById('banner_badge_text').value = this.decodeEntities(b.badge_text || '');
         document.getElementById('banner_image_url').value = b.image_url;
-        document.getElementById('banner_link_url').value = b.link_url || '';
-        document.getElementById('banner_button_text').value = b.button_text || 'Khám Phá Ngay';
+        document.getElementById('banner_link_url').value = this.decodeEntities(b.link_url || '');
+        document.getElementById('banner_button_text').value = this.decodeEntities(b.button_text || 'Khám Phá Ngay');
         document.getElementById('banner_sort_order').value = b.sort_order || 0;
         document.getElementById('banner_is_active').checked = (b.is_active == 1);
 
@@ -1638,7 +1685,9 @@ const AdminApp = {
         }
     },
 
-    async deleteBanner(id, title) {
+    async deleteBanner(id, titleArg = null) {
+        const cached = (this.cachedBanners || []).find(it => it.id == id);
+        const title = this.decodeEntities(titleArg !== null ? titleArg : (cached ? cached.title : `#${id}`));
         if (!confirm(`Bạn có chắc chắn muốn xóa vĩnh viễn banner "${title}"?`)) return;
         try {
             const res = await fetch('api/admin.php?action=delete_banner', {
@@ -1669,39 +1718,47 @@ const AdminApp = {
             const data = await res.json();
             if (data.success) {
                 this.cachedCategories = data.categories || [];
+                const badgeCategories = document.getElementById('count-categories-badge');
+                if (badgeCategories) badgeCategories.textContent = this.cachedCategories.length;
                 if (this.cachedCategories.length === 0) {
                     tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">Chưa có danh mục nào.</td></tr>`;
                     return;
                 }
 
-                tbody.innerHTML = this.cachedCategories.map(c => `
+                tbody.innerHTML = this.cachedCategories.map(c => {
+                    const catImg = this.escHtml(c.image || 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=500&q=80');
+                    const catName = this.escHtml(this.decodeEntities(c.name));
+                    const catDesc = this.escHtml(this.decodeEntities(c.description || ''));
+                    const catId = this.escHtml(c.id);
+                    return `
                     <tr>
                         <td>
                             <div class="d-inline-block p-1 rounded-circle border border-danger-subtle bg-white shadow-sm">
-                                <img src="${c.image}" width="50" height="50" class="rounded-circle object-fit-cover" alt="${c.name}" onerror="this.src='https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=500&q=80'">
+                                <img src="${catImg}" width="50" height="50" class="rounded-circle object-fit-cover" alt="${catName}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=500&q=80'">
                             </div>
                         </td>
                         <td>
-                            <div class="fw-bold text-dark fs-6">${c.name}</div>
+                            <div class="fw-bold text-dark fs-6">${catName}</div>
                         </td>
                         <td>
-                            <span class="badge bg-light text-dark font-monospace border px-2 py-1">${c.id}</span>
+                            <span class="badge bg-light text-dark font-monospace border px-2 py-1">${catId}</span>
                         </td>
                         <td>
                             <span class="badge bg-pink text-white rounded-pill px-3 py-1">
-                                <i class="fa-solid fa-tag me-1"></i>${c.actual_product_count || 0} sản phẩm
+                                <i class="fa-solid fa-tag me-1"></i>${Number(c.actual_product_count) || 0} sản phẩm
                             </span>
                         </td>
                         <td>
-                            <div class="small text-muted text-truncate" style="max-width: 280px;" title="${c.description || ''}">${c.description || '—'}</div>
+                            <div class="small text-muted text-truncate" style="max-width: 280px;" title="${catDesc}">${catDesc || '—'}</div>
                         </td>
                         <td class="text-end">
-                            <button class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="AdminApp.editCategory('${c.id}')">
+                            <button class="btn btn-outline-primary btn-sm rounded-pill px-3" data-cat-id="${catId}" onclick="AdminApp.editCategory(this.dataset.catId)">
                                 <i class="fa-solid fa-pen me-1"></i>Sửa
                             </button>
                         </td>
                     </tr>
-                `).join('');
+                `;
+                }).join('');
             }
         } catch(e) {
             tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-danger">Lỗi tải danh mục!</td></tr>';
@@ -1711,12 +1768,13 @@ const AdminApp = {
     editCategory(id) {
         const cat = (this.cachedCategories || []).find(c => c.id === id);
         if (!cat) return;
+        const cleanName = this.decodeEntities(cat.name);
         document.getElementById('cat_id').value = cat.id;
-        document.getElementById('cat_name').value = cat.name;
+        document.getElementById('cat_name').value = cleanName;
         document.getElementById('cat_image').value = cat.image;
         document.getElementById('cat_image_preview').src = cat.image;
-        document.getElementById('cat_description').value = cat.description || '';
-        document.getElementById('modalCategoryTitle').textContent = `Chỉnh Sửa Danh Mục: ${cat.name}`;
+        document.getElementById('cat_description').value = this.decodeEntities(cat.description || '');
+        document.getElementById('modalCategoryTitle').textContent = `Chỉnh Sửa Danh Mục: ${cleanName}`;
         new bootstrap.Modal(document.getElementById('modalEditCategory')).show();
     },
 
@@ -1764,25 +1822,29 @@ const AdminApp = {
             const data = await res.json();
             if (data.success) {
                 const coupons = data.coupons || [];
+                this.cachedCoupons = coupons;
                 const tbody = document.getElementById('tbody-coupons');
                 if (coupons.length === 0) {
                     tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-muted">Chưa có mã voucher nào</td></tr>`;
                     return;
                 }
 
-                tbody.innerHTML = coupons.map(c => `
+                tbody.innerHTML = coupons.map(c => {
+                    const codeEsc = this.escHtml(this.decodeEntities(c.code));
+                    return `
                     <tr>
-                        <td class="fw-bold text-dark"><span class="badge bg-pink text-white rounded-pill px-3 py-1">${c.code}</span></td>
+                        <td class="fw-bold text-dark"><span class="badge bg-pink text-white rounded-pill px-3 py-1">${codeEsc}</span></td>
                         <td>${c.discount_type === 'percent' ? 'Giảm %' : 'Số tiền cố định'}</td>
-                        <td class="fw-bold text-danger">${c.discount_type === 'percent' ? c.discount_value + '%' : this.formatVND(c.discount_value)}</td>
+                        <td class="fw-bold text-danger">${c.discount_type === 'percent' ? Number(c.discount_value) + '%' : this.formatVND(c.discount_value)}</td>
                         <td>${this.formatVND(c.min_order)}</td>
                         <td>${c.max_discount > 0 ? this.formatVND(c.max_discount) : 'Không giới hạn'}</td>
-                        <td class="small text-muted">${c.description || ''}</td>
+                        <td class="small text-muted">${this.escHtml(this.decodeEntities(c.description || ''))}</td>
                         <td class="text-end">
-                            <button class="btn btn-outline-danger btn-sm rounded-circle" onclick="AdminApp.deleteCoupon('${c.code}')" title="Xóa"><i class="fa-solid fa-trash"></i></button>
+                            <button class="btn btn-outline-danger btn-sm rounded-circle" data-code="${codeEsc}" onclick="AdminApp.deleteCoupon(this.dataset.code)" title="Xóa"><i class="fa-solid fa-trash"></i></button>
                         </td>
                     </tr>
-                `).join('');
+                `;
+                }).join('');
             }
         } catch(e) {
             console.error(e);
@@ -1880,9 +1942,9 @@ const AdminApp = {
         const accountNo = document.getElementById('cfg_account_no').value.trim() || '5550372005777';
         const accountName = document.getElementById('cfg_account_name').value.trim() || 'ALICE COSMETIC';
 
-        const qrUrl = `https://img.vietqr.io/image/${bankId}-${accountNo}-compact2.png?accountName=${encodeURIComponent(accountName)}`;
+        const qrUrl = `https://img.vietqr.io/image/${encodeURIComponent(bankId)}-${encodeURIComponent(accountNo)}-compact2.png?accountName=${encodeURIComponent(accountName)}`;
         document.getElementById('preview-vietqr-img').src = qrUrl;
-        document.getElementById('preview-qr-info').innerHTML = `<strong>${bankId}</strong>: ${accountNo} (${accountName})`;
+        document.getElementById('preview-qr-info').innerHTML = `<strong>${this.escHtml(bankId)}</strong>: ${this.escHtml(accountNo)} (${this.escHtml(accountName)})`;
     },
 
     async saveSettings(e) {
@@ -1928,11 +1990,12 @@ const AdminApp = {
             const res = await fetch('api/admin.php?action=posts');
             const data = await res.json();
             if (!data.success) {
-                tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-4">${data.message || 'Lỗi tải bài viết'}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-4">${this.escHtml(data.message || 'Lỗi tải bài viết')}</td></tr>`;
                 return;
             }
 
             const posts = data.posts || [];
+            this.cachedPosts = posts;
             document.getElementById('count-posts-badge').innerText = posts.length;
 
             if (posts.length === 0) {
@@ -1940,26 +2003,32 @@ const AdminApp = {
                 return;
             }
 
-            tbody.innerHTML = posts.map(p => `
+            const defaultPostImg = 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=800&q=80';
+            tbody.innerHTML = posts.map(p => {
+                const postImg = this.escHtml(p.image || defaultPostImg);
+                const postTitle = this.escHtml(this.decodeEntities(p.title));
+                const postSlug = this.escHtml(p.slug || '');
+                return `
                 <tr>
                     <td>
-                        <img src="${p.image || 'assets/images/placeholder.jpg'}" alt="${p.title}" style="width: 55px; height: 55px; object-fit: cover; border-radius: 8px;">
+                        <img src="${postImg}" alt="${postTitle}" style="width: 55px; height: 55px; object-fit: cover; border-radius: 8px;" onerror="this.onerror=null; this.src='${defaultPostImg}';">
                     </td>
                     <td>
-                        <div class="fw-bold text-dark">${p.title}</div>
-                        <div class="small text-muted font-monospace"><a href="cam-nang/${p.slug}" target="_blank" class="text-decoration-none text-primary"><i class="fa-solid fa-link me-1"></i>/cam-nang/${p.slug}</a></div>
+                        <div class="fw-bold text-dark">${postTitle}</div>
+                        <div class="small text-muted font-monospace"><a href="cam-nang/${postSlug}" target="_blank" class="text-decoration-none text-primary"><i class="fa-solid fa-link me-1"></i>/cam-nang/${postSlug}</a></div>
                     </td>
-                    <td><span class="badge rounded-pill bg-light text-dark border px-2 py-1">${p.category || 'Skincare'}</span></td>
-                    <td><span class="small text-muted"><i class="fa-regular fa-clock me-1"></i>${p.reading_time || 5} phút</span></td>
-                    <td><span class="small fw-semibold text-danger"><i class="fa-regular fa-eye me-1"></i>${p.views || 0}</span></td>
-                    <td><span class="small text-muted">${(p.created_at || '').substring(0, 10)}</span></td>
+                    <td><span class="badge rounded-pill bg-light text-dark border px-2 py-1">${this.escHtml(this.decodeEntities(p.category || 'Skincare'))}</span></td>
+                    <td><span class="small text-muted"><i class="fa-regular fa-clock me-1"></i>${Number(p.reading_time) || 5} phút</span></td>
+                    <td><span class="small fw-semibold text-danger"><i class="fa-regular fa-eye me-1"></i>${Number(p.views) || 0}</span></td>
+                    <td><span class="small text-muted">${this.escHtml((p.created_at || '').substring(0, 10))}</span></td>
                     <td class="text-end">
-                        <a href="cam-nang/${p.slug}" target="_blank" class="btn btn-sm btn-outline-info rounded-pill px-2 py-1 me-1" title="Xem trên web"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
-                        <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-2 py-1 me-1" onclick="AdminApp.editPost(${p.id})" title="Chỉnh sửa"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-1" onclick="AdminApp.deletePost(${p.id}, '${p.title.replace(/'/g, "\\'")}')" title="Xóa bài"><i class="fa-solid fa-trash-can"></i></button>
+                        <a href="cam-nang/${postSlug}" target="_blank" class="btn btn-sm btn-outline-info rounded-pill px-2 py-1 me-1" title="Xem trên web"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+                        <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-2 py-1 me-1" onclick="AdminApp.editPost(${Number(p.id)})" title="Chỉnh sửa"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-1" onclick="AdminApp.deletePost(${Number(p.id)})" title="Xóa bài"><i class="fa-solid fa-trash-can"></i></button>
                     </td>
                 </tr>
-            `).join('');
+            `;
+            }).join('');
         } catch(err) {
             tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger py-4">Lỗi kết nối tải bài viết!</td></tr>';
         }
@@ -1967,21 +2036,22 @@ const AdminApp = {
 
     openPostModal(post = null) {
         document.getElementById('post_id').value = post ? post.id : '';
-        document.getElementById('post_title').value = post ? post.title : '';
-        document.getElementById('post_slug').value = post ? post.slug : '';
-        document.getElementById('post_category').value = post ? post.category : 'Skincare';
+        document.getElementById('post_title').value = post ? this.decodeEntities(post.title) : '';
+        document.getElementById('post_slug').value = post ? (post.slug || '') : '';
+        document.getElementById('post_category').value = post ? this.decodeEntities(post.category || 'Skincare') : 'Skincare';
         document.getElementById('post_reading_time').value = post ? post.reading_time : 5;
-        document.getElementById('post_author').value = post ? post.author : 'Chuyên Gia Da Liễu ALICE';
-        document.getElementById('post_image').value = post ? post.image : '';
-        document.getElementById('post_excerpt').value = post ? (post.excerpt || '') : '';
-        document.getElementById('post_content').value = post ? post.content : '';
+        document.getElementById('post_author').value = post ? this.decodeEntities(post.author || 'Chuyên Gia Da Liễu ALICE') : 'Chuyên Gia Da Liễu ALICE';
+        document.getElementById('post_image').value = post ? (post.image || '') : '';
+        document.getElementById('post_excerpt').value = post ? this.decodeEntities(post.excerpt || '') : '';
+        document.getElementById('post_content').value = post ? (post.content || '') : '';
         
         let relatedStr = '';
         if (post && post.related_products) {
             try {
-                const arr = JSON.parse(post.related_products);
+                const decodedRelated = this.decodeEntities(post.related_products);
+                const arr = JSON.parse(decodedRelated);
                 relatedStr = Array.isArray(arr) ? arr.join(', ') : '';
-            } catch(e) { relatedStr = post.related_products; }
+            } catch(e) { relatedStr = this.decodeEntities(post.related_products); }
         }
         document.getElementById('post_related_products').value = relatedStr;
 
@@ -2044,6 +2114,7 @@ const AdminApp = {
                 const modal = bootstrap.Modal.getInstance(document.getElementById('modalAdminPost'));
                 if (modal) modal.hide();
                 this.loadPosts();
+                this.loadStats();
             } else {
                 alert(data.message || 'Lỗi lưu bài viết!');
             }
@@ -2054,7 +2125,9 @@ const AdminApp = {
         }
     },
 
-    async deletePost(id, title) {
+    async deletePost(id, titleArg = null) {
+        const cached = (this.cachedPosts || []).find(it => it.id == id);
+        const title = this.decodeEntities(titleArg !== null ? titleArg : (cached ? cached.title : `#${id}`));
         if (!confirm(`Bạn có chắc chắn muốn xóa bài viết "${title}"?`)) return;
 
         try {
@@ -2067,6 +2140,7 @@ const AdminApp = {
             if (data.success) {
                 alert(data.message || 'Đã xóa bài viết!');
                 this.loadPosts();
+                this.loadStats();
             } else {
                 alert(data.message || 'Không thể xóa bài viết!');
             }

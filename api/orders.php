@@ -14,7 +14,7 @@ $action = $_GET['action'] ?? 'lookup';
 
 // 1. Kiểm tra trạng thái thanh toán thời gian thực (Polling Check)
 if ($action === 'check_status') {
-    $orderCode = cleanInput($_GET['order_code'] ?? ($_POST['order_code'] ?? ''));
+    $orderCode = cleanText($_GET['order_code'] ?? ($_POST['order_code'] ?? ''));
     if (!empty($orderCode)) {
         $stmt = $pdo->prepare("SELECT order_code, customer_name, final_amount, payment_status, sync_status, created_at FROM orders WHERE order_code = ? LIMIT 1");
         $stmt->execute([$orderCode]);
@@ -34,7 +34,7 @@ if ($action === 'check_status') {
 // 2. Xác nhận thanh toán (Từ điện thoại hoặc Webhook)
 if ($action === 'confirm_payment') {
     $input = json_decode(file_get_contents('php://input'), true) ?: $_POST;
-    $orderCode = cleanInput($input['order_code'] ?? ($_GET['order_code'] ?? ''));
+    $orderCode = cleanText($input['order_code'] ?? ($_GET['order_code'] ?? ''));
     if (!empty($orderCode)) {
         $stmt = $pdo->prepare("UPDATE orders SET payment_status = 'paid' WHERE order_code = ?");
         $stmt->execute([$orderCode]);
@@ -42,7 +42,11 @@ if ($action === 'confirm_payment') {
             'success' => true, 
             'message' => 'Đã xác nhận thanh toán thành công cho đơn hàng #' . $orderCode,
             'order_code' => $orderCode,
-            'payment_status' => 'paid'
+            'payment_status' => 'paid',
+            'order' => [
+                'order_code' => $orderCode,
+                'payment_status' => 'paid'
+            ]
         ]);
     }
     jsonResponse(['success' => false, 'message' => 'Mã đơn không hợp lệ'], 400);
