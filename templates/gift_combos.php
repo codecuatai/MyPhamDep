@@ -3,7 +3,7 @@
  * GIFT COMBOS & ROUTINE SECTION - ALICE COSMETIC (LẤY CẢM HỨNG TỪ SET QUÀ MỘC MIÊN BOOKS)
  */
 ?>
-<section class="py-5" style="background: linear-gradient(135deg, #fff0f5 0%, #ffe4ec 100%);">
+<section id="combo-routine" class="py-5" style="background: linear-gradient(135deg, #fff0f5 0%, #ffe4ec 100%);">
     <div class="container">
         <div class="row align-items-center g-4">
             <div class="col-lg-5">

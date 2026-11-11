@@ -91,7 +91,9 @@ if ($action === 'merge') {
         foreach ($guestCart as $guestItem) {
             $foundIndex = -1;
             foreach ($userCart as $idx => $userItem) {
-                if ($userItem['id'] == $guestItem['id'] && ($userItem['selectedVariant'] ?? '') === ($guestItem['selectedVariant'] ?? '')) {
+                $userVariant = $userItem['variant_name'] ?? ($userItem['selectedVariant'] ?? '');
+                $guestVariant = $guestItem['variant_name'] ?? ($guestItem['selectedVariant'] ?? '');
+                if ((string)($userItem['id'] ?? '') === (string)($guestItem['id'] ?? '') && $userVariant === $guestVariant) {
                     $foundIndex = $idx;
                     break;
                 }

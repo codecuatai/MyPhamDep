@@ -4,7 +4,7 @@
  * Quản lý đơn hàng, kho mỹ phẩm, voucher và cấu hình VietQR
  */
 
-if (session_status() === PHP_SESSION_NONE) {
+if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
     session_start();
 }
 
@@ -108,6 +108,10 @@ $isAdmin = ($currentUser && ($currentUser['role'] ?? '') === 'admin');
             background: linear-gradient(135deg, #e63976 0%, #ff5c77 100%);
             color: white;
             box-shadow: 0 4px 12px rgba(255, 77, 141, 0.3);
+        }
+        .bg-pink {
+            background: linear-gradient(135deg, #ff4d8d 0%, #ff758c 100%) !important;
+            color: #ffffff !important;
         }
         .login-card {
             background: #ffffff;
@@ -1068,6 +1072,13 @@ const AdminApp = {
         if (triggerEl) {
             const tab = new bootstrap.Tab(triggerEl);
             tab.show();
+            if (tabId === 'tab-orders') this.loadOrders();
+            else if (tabId === 'tab-products') this.loadProducts();
+            else if (tabId === 'tab-banners') this.loadBanners();
+            else if (tabId === 'tab-categories') this.loadCategories();
+            else if (tabId === 'tab-coupons') this.loadCoupons();
+            else if (tabId === 'tab-posts') this.loadPosts();
+            else if (tabId === 'tab-settings') this.loadSettings();
         }
     },
 
@@ -1089,7 +1100,7 @@ const AdminApp = {
                 const elOutOfStock = document.getElementById('stat-out-of-stock');
                 if (elOutOfStock) elOutOfStock.textContent = s.out_of_stock_count;
                 const elBanners = document.getElementById('stat-banners');
-                if (elBanners) elBanners.textContent = s.total_banners || 0;
+                if (elBanners) elBanners.textContent = (typeof s.active_banners !== 'undefined') ? s.active_banners : (s.total_banners || 0);
 
                 document.getElementById('count-orders-badge').textContent = s.total_orders;
                 document.getElementById('count-products-badge').textContent = s.total_products;
@@ -1507,7 +1518,7 @@ const AdminApp = {
                         </td>
                         <td>
                             <div class="form-check form-switch m-0">
-                                <input class="form-check-input" type="checkbox" role="switch" ${b.is_active == 1 ? 'checked' : ''} onchange="AdminApp.toggleBanner(${b.id})">
+                                <input class="form-check-input" type="checkbox" role="switch" ${b.is_active == 1 ? 'checked' : ''} onchange="AdminApp.toggleBanner(${b.id}, this.checked ? 1 : 0)">
                                 <label class="form-check-label small ${b.is_active == 1 ? 'text-success fw-bold' : 'text-muted'}">${b.is_active == 1 ? 'Bật' : 'Tắt'}</label>
                             </div>
                         </td>
@@ -1604,12 +1615,16 @@ const AdminApp = {
         }
     },
 
-    async toggleBanner(id) {
+    async toggleBanner(id, isActive) {
         try {
+            const payload = { id: id };
+            if (typeof isActive !== 'undefined') {
+                payload.is_active = isActive ? 1 : 0;
+            }
             const res = await fetch('api/admin.php?action=toggle_banner', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ id: id })
+                body: JSON.stringify(payload)
             });
             const data = await res.json();
             if (data.success) {

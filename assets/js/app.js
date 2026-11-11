@@ -610,21 +610,22 @@ const AliceApp = {
         this.openCartDrawer();
     },
 
-    quickAddToCart(productId, productName, productImg, productPrice) {
+    quickAddToCart(productId, productName, productImg, productPrice, variantName = '') {
         this.addItemToCart({
             id: productId,
             name: productName,
             image: productImg,
             price: productPrice,
-            variant_name: '',
+            variant_name: variantName || '',
             quantity: 1
         });
-        this.showToast(`Đã thêm "${productName}" vào giỏ hàng!`, 'success');
+        const label = variantName ? `${productName} (${variantName})` : productName;
+        this.showToast(`Đã thêm "${label}" vào giỏ hàng!`, 'success');
         this.openCartDrawer();
     },
 
     addItemToCart(item) {
-        const existing = this.cart.find(it => it.id === item.id && it.variant_name === item.variant_name);
+        const existing = this.cart.find(it => String(it.id) === String(item.id) && (it.variant_name || '') === (item.variant_name || ''));
         if (existing) {
             existing.quantity = (existing.quantity || 1) + 1;
         } else {
@@ -649,18 +650,23 @@ const AliceApp = {
     },
 
     openCartDrawer() {
-        document.getElementById('cart-drawer-overlay').classList.add('active');
-        document.getElementById('cart-drawer').classList.add('active');
+        const overlay = document.getElementById('cart-drawer-overlay');
+        const drawer = document.getElementById('cart-drawer');
+        if (overlay) overlay.classList.add('active');
+        if (drawer) drawer.classList.add('active');
         this.renderCartDrawer();
     },
 
     closeCartDrawer() {
-        document.getElementById('cart-drawer-overlay').classList.remove('active');
-        document.getElementById('cart-drawer').classList.remove('active');
+        const overlay = document.getElementById('cart-drawer-overlay');
+        const drawer = document.getElementById('cart-drawer');
+        if (overlay) overlay.classList.remove('active');
+        if (drawer) drawer.classList.remove('active');
     },
 
     renderCartDrawer() {
         const bodyEl = document.getElementById('cart-drawer-items');
+        if (!bodyEl) return;
         bodyEl.innerHTML = '';
 
         if (this.cart.length === 0) {

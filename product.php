@@ -4,7 +4,7 @@
  * Đầy đủ thẻ Meta động, Schema Product JSON-LD, Breadcrumb, Open Graph & Canonical
  */
 
-if (session_status() === PHP_SESSION_NONE) {
+if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
     session_start();
 }
 
@@ -49,7 +49,8 @@ if (!$product) {
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
         <link href="<?= $baseUrl ?>/assets/css/style.css?v=<?= defined('APP_VERSION') ? APP_VERSION : '1.0.0' ?>" rel="stylesheet">
     </head>
-    <body style="background: var(--bg-soft);">
+    <body id="top" style="background: var(--bg-soft);">
+        <div id="alice-toast-container" class="alice-toast-container"></div>
         <?php include __DIR__ . '/templates/header.php'; ?>
         <div class="container py-5 text-center my-5">
             <div class="p-5 bg-white rounded-4 shadow-sm mx-auto" style="max-width: 550px;">
@@ -61,8 +62,14 @@ if (!$product) {
                 </a>
             </div>
         </div>
-        <?php include __DIR__ . '/templates/footer.php'; ?>
+        <?php
+        include __DIR__ . '/templates/footer.php';
+        include __DIR__ . '/templates/modals.php';
+        include __DIR__ . '/templates/mobile_nav.php';
+        include __DIR__ . '/templates/floating_contact.php';
+        ?>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+        <script>window.ALICE_BASE_URL = <?= json_encode($baseUrl) ?>;</script>
         <script src="<?= $baseUrl ?>/assets/js/app.js?v=<?= defined('APP_VERSION') ? APP_VERSION : '1.0.0' ?>"></script>
     </body>
     </html>
@@ -262,14 +269,18 @@ $breadcrumbSchema = generateBreadcrumbJsonLd([
                         </div>
                     </div>
 
+                    <?php
+                    $firstVariant = !empty($variants) ? $variants[0] : null;
+                    $initialVariantName = is_array($firstVariant) ? ($firstVariant['name'] ?? '') : (is_string($firstVariant) ? $firstVariant : '');
+                    $initialPrice = (float)$product['price'];
+                    $initialOriginalPrice = (float)$product['original_price'];
+                    ?>
                     <!-- Price Box (Shopee Style Tone Hồng) -->
                     <div class="p-3 rounded-4 mb-3" style="background: var(--primary-soft); border: 1px dashed var(--primary);">
-                        <div class="d-flex align-items-baseline gap-3">
-                            <span class="fs-2 font-bold" style="color: var(--primary-dark); font-family: var(--font-heading);"><?= formatVND($product['price']) ?></span>
-                            <?php if ($product['original_price'] > $product['price']): ?>
-                                <span class="text-muted text-decoration-line-through fs-5"><?= formatVND($product['original_price']) ?></span>
-                                <span class="badge bg-danger rounded-pill px-2 py-1 small">Tiết kiệm <?= formatVND($product['original_price'] - $product['price']) ?></span>
-                            <?php endif; ?>
+                        <div class="d-flex align-items-baseline flex-wrap gap-3">
+                            <span id="detail-price-current" class="fs-2 font-bold" style="color: var(--primary-dark); font-family: var(--font-heading);"><?= formatVND($initialPrice) ?></span>
+                            <span id="detail-price-original" class="text-muted text-decoration-line-through fs-5<?= $initialOriginalPrice > $initialPrice ? '' : ' d-none' ?>"><?= formatVND($initialOriginalPrice) ?></span>
+                            <span id="detail-price-saving" class="badge bg-danger rounded-pill px-2 py-1 small<?= $initialOriginalPrice > $initialPrice ? '' : ' d-none' ?>">Tiết kiệm <?= formatVND(max(0, $initialOriginalPrice - $initialPrice)) ?></span>
                         </div>
                         <div class="small text-muted mt-2 d-flex align-items-center gap-2">
                             <i class="fa-solid fa-gift text-danger"></i>
@@ -282,9 +293,18 @@ $breadcrumbSchema = generateBreadcrumbJsonLd([
                         <div class="mb-3">
                             <div class="small font-bold mb-2">Phân loại / Dung tích:</div>
                             <div class="d-flex flex-wrap gap-2" id="detail-variants-wrap">
-                                <?php foreach ($variants as $idx => $v): ?>
-                                    <button type="button" class="btn btn-sm <?= $idx === 0 ? 'btn-danger' : 'btn-outline-secondary' ?> rounded-pill px-3 py-1 font-semibold variant-select-btn" onclick="document.querySelectorAll('.variant-select-btn').forEach(b => { b.classList.remove('btn-danger'); b.classList.add('btn-outline-secondary'); }); this.classList.remove('btn-outline-secondary'); this.classList.add('btn-danger');">
-                                        <?= htmlspecialchars($v['name'] ?? $v) ?>
+                                <?php foreach ($variants as $idx => $v):
+                                    $vName = is_array($v) ? ($v['name'] ?? '') : (string)$v;
+                                    $vPrice = (is_array($v) && isset($v['price']) && (float)$v['price'] > 0) ? (float)$v['price'] : $initialPrice;
+                                    $vOriginal = (is_array($v) && isset($v['original_price']) && (float)$v['original_price'] > 0) ? (float)$v['original_price'] : $initialOriginalPrice;
+                                ?>
+                                    <button type="button"
+                                            class="btn btn-sm <?= $idx === 0 ? 'btn-danger' : 'btn-outline-secondary' ?> rounded-pill px-3 py-1 font-semibold variant-select-btn"
+                                            data-variant-name="<?= htmlspecialchars($vName, ENT_QUOTES, 'UTF-8') ?>"
+                                            data-variant-price="<?= $vPrice ?>"
+                                            data-variant-original-price="<?= $vOriginal ?>"
+                                            onclick="window.selectProductVariant(this)">
+                                        <?= htmlspecialchars($vName) ?>
                                     </button>
                                 <?php endforeach; ?>
                             </div>
@@ -294,10 +314,10 @@ $breadcrumbSchema = generateBreadcrumbJsonLd([
                     <!-- Action Buttons -->
                     <div class="d-flex flex-wrap gap-2 mb-4 mt-2">
                         <?php if ($stockQty > 0): ?>
-                            <button type="button" class="btn-hero-cta flex-grow-1 border-0 py-3" onclick="AliceApp.quickAddToCart(<?= $product['id'] ?>, '<?= addslashes($product['name']) ?>', '<?= $product['image'] ?>', <?= $product['price'] ?>); AliceApp.openCartDrawer();">
+                            <button type="button" class="btn-hero-cta flex-grow-1 border-0 py-3" onclick="window.addCurrentPageProductToCart()">
                                 <i class="fa-solid fa-bolt-lightning me-1"></i>Mua Ngay Nhanh Chóng
                             </button>
-                            <button type="button" class="btn btn-outline-danger rounded-pill px-4 py-3 font-bold" style="border-color: var(--primary); color: var(--primary-dark);" onclick="AliceApp.quickAddToCart(<?= $product['id'] ?>, '<?= addslashes($product['name']) ?>', '<?= $product['image'] ?>', <?= $product['price'] ?>)">
+                            <button type="button" class="btn btn-outline-danger rounded-pill px-4 py-3 font-bold" style="border-color: var(--primary); color: var(--primary-dark);" onclick="window.addCurrentPageProductToCart()">
                                 <i class="fa-solid fa-cart-plus me-1"></i>Thêm Vào Giỏ
                             </button>
                         <?php else: ?>
@@ -464,7 +484,56 @@ $breadcrumbSchema = generateBreadcrumbJsonLd([
 
     <!-- Bootstrap 5.3 & App Engine -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script>window.ALICE_BASE_URL = <?= json_encode($baseUrl) ?>;</script>
+    <script>
+        window.ALICE_BASE_URL = <?= json_encode($baseUrl) ?>;
+        window.PRODUCT_PAGE_STATE = {
+            id: <?= (int)$product['id'] ?>,
+            name: <?= json_encode($product['name'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>,
+            image: <?= json_encode($product['image'], JSON_UNESCAPED_SLASHES) ?>,
+            price: <?= $initialPrice ?>,
+            originalPrice: <?= $initialOriginalPrice ?>,
+            variantName: <?= json_encode($initialVariantName, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>
+        };
+        window.selectProductVariant = function(btn) {
+            document.querySelectorAll('.variant-select-btn').forEach(b => {
+                b.classList.remove('btn-danger');
+                b.classList.add('btn-outline-secondary');
+            });
+            btn.classList.remove('btn-outline-secondary');
+            btn.classList.add('btn-danger');
+
+            const vName = btn.getAttribute('data-variant-name') || '';
+            const vPrice = parseFloat(btn.getAttribute('data-variant-price')) || window.PRODUCT_PAGE_STATE.price;
+            const vOrig = parseFloat(btn.getAttribute('data-variant-original-price')) || 0;
+
+            window.PRODUCT_PAGE_STATE.variantName = vName;
+            window.PRODUCT_PAGE_STATE.price = vPrice;
+            window.PRODUCT_PAGE_STATE.originalPrice = vOrig;
+
+            const fmt = (n) => new Intl.NumberFormat('vi-VN').format(Math.round(n)) + '₫';
+            const elCur = document.getElementById('detail-price-current');
+            const elOrig = document.getElementById('detail-price-original');
+            const elSav = document.getElementById('detail-price-saving');
+            if (elCur) elCur.textContent = fmt(vPrice);
+            if (elOrig && elSav) {
+                if (vOrig > vPrice) {
+                    elOrig.textContent = fmt(vOrig);
+                    elOrig.classList.remove('d-none');
+                    elSav.textContent = 'Tiết kiệm ' + fmt(vOrig - vPrice);
+                    elSav.classList.remove('d-none');
+                } else {
+                    elOrig.classList.add('d-none');
+                    elSav.classList.add('d-none');
+                }
+            }
+        };
+        window.addCurrentPageProductToCart = function() {
+            const s = window.PRODUCT_PAGE_STATE;
+            if (window.AliceApp && typeof AliceApp.quickAddToCart === 'function') {
+                AliceApp.quickAddToCart(s.id, s.name, s.image, s.price, s.variantName || '');
+            }
+        };
+    </script>
     <script src="<?= $baseUrl ?>/assets/js/app.js?v=<?= defined('APP_VERSION') ? APP_VERSION : '1.0.0' ?>"></script>
 </body>
 </html>

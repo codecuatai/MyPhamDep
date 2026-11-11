@@ -6,7 +6,7 @@
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/seed_data.php';
 
-function getDbDriver(PDO $pdo = null): string {
+function getDbDriver(?PDO $pdo = null): string {
     return $pdo ? (string)$pdo->getAttribute(PDO::ATTR_DRIVER_NAME) : DB_DRIVER;
 }
 
@@ -99,7 +99,7 @@ function ensureDatabaseInitialized(PDO $pdo) {
         try {
             $pdo->exec("SELECT pg_advisory_xact_lock(888101)");
             $hasSettings = $pdo->query("SELECT to_regclass('public.settings')")->fetchColumn();
-            if ($hasSettings !== null) {
+            if ($hasSettings !== null && $hasSettings !== false) {
                 $ready = $pdo->query("SELECT value FROM settings WHERE key = '_db_ready'")->fetchColumn();
                 if ($ready === '1') {
                     $pdo->commit();

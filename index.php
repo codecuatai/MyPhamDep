@@ -5,7 +5,7 @@
  * Kết hợp thẩm mỹ Mộc Miên Books x Sức mạnh chuyển đổi Shopee
  */
 
-if (session_status() === PHP_SESSION_NONE) {
+if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
     session_start();
 }
 

@@ -4,7 +4,7 @@
  * Tích hợp Schema Article, BreadcrumbList, Open Graph, & Khối Sản Phẩm Gợi Ý Chốt Đơn
  */
 
-if (session_status() === PHP_SESSION_NONE) {
+if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
     session_start();
 }
 
@@ -42,7 +42,8 @@ if (!$post) {
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
         <link href="<?= $baseUrl ?>/assets/css/style.css?v=<?= defined('APP_VERSION') ? APP_VERSION : '1.0.0' ?>" rel="stylesheet">
     </head>
-    <body style="background: var(--bg-soft);">
+    <body id="top" style="background: var(--bg-soft);">
+        <div id="alice-toast-container" class="alice-toast-container"></div>
         <?php include __DIR__ . '/templates/header.php'; ?>
         <div class="container py-5 text-center my-5">
             <div class="p-5 bg-white rounded-4 shadow-sm mx-auto" style="max-width: 550px;">
@@ -54,8 +55,14 @@ if (!$post) {
                 </a>
             </div>
         </div>
-        <?php include __DIR__ . '/templates/footer.php'; ?>
+        <?php
+        include __DIR__ . '/templates/footer.php';
+        include __DIR__ . '/templates/modals.php';
+        include __DIR__ . '/templates/mobile_nav.php';
+        include __DIR__ . '/templates/floating_contact.php';
+        ?>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+        <script>window.ALICE_BASE_URL = <?= json_encode($baseUrl) ?>;</script>
         <script src="<?= $baseUrl ?>/assets/js/app.js?v=<?= defined('APP_VERSION') ? APP_VERSION : '1.0.0' ?>"></script>
     </body>
     </html>
@@ -262,7 +269,7 @@ $breadcrumbSchema = generateBreadcrumbJsonLd([
                                                 </a>
                                             </div>
                                             <div class="text-danger font-bold mt-auto mb-2"><?= formatVND($rp['price']) ?></div>
-                                            <button type="button" class="btn btn-sm btn-add-cart-pink w-100" onclick="AliceApp.quickAddToCart(<?= $rp['id'] ?>, '<?= addslashes($rp['name']) ?>', '<?= $rp['image'] ?>', <?= $rp['price'] ?>); AliceApp.openCartDrawer();">
+                                            <button type="button" class="btn btn-sm btn-add-cart-pink w-100" onclick="AliceApp.quickAddToCart(<?= (int)$rp['id'] ?>, <?= htmlspecialchars(json_encode($rp['name'], JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($rp['image']), ENT_QUOTES, 'UTF-8') ?>, <?= (float)$rp['price'] ?>);">
                                                 <i class="fa-solid fa-cart-plus me-1"></i>Mua Nhanh
                                             </button>
                                         </div>

@@ -64,10 +64,16 @@ function getBaseUrl() {
     $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
     
     $scriptDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? ''));
-    if ($scriptDir === '/' || $scriptDir === '\\' || $scriptDir === '.') {
+    if ($scriptDir === '/' || $scriptDir === '\\' || $scriptDir === '.' || $scriptDir === '') {
         $basePath = '';
     } else {
         $basePath = rtrim($scriptDir, '/');
+        if ($basePath !== '' && $basePath[0] !== '/') {
+            $basePath = '/' . $basePath;
+        }
+        if (substr($basePath, -4) === '/api') {
+            $basePath = substr($basePath, 0, -4);
+        }
     }
     
     return rtrim($protocol . $host . $basePath, '/');
@@ -263,4 +269,68 @@ function generateBreadcrumbJsonLd($items, $baseUrl) {
         "@type" => "BreadcrumbList",
         "itemListElement" => $list
     ];
+}
+
+/**
+ * Tạo nội dung XML Sitemap chuẩn Google và cập nhật file tĩnh sitemap.xml
+ */
+function regenerateSitemapXml(PDO $pdo, $baseUrl = null, $writeFile = true) {
+    if ($baseUrl === null) {
+        $baseUrl = getBaseUrl();
+    }
+
+    $categories = $pdo->query("SELECT slug FROM categories ORDER BY id ASC")->fetchAll(PDO::FETCH_COLUMN);
+    $products = $pdo->query("SELECT slug, id FROM products ORDER BY id DESC")->fetchAll();
+
+    $xml = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"></urlset>');
+
+    $urlNode = $xml->addChild('url');
+    $urlNode->addChild('loc', htmlspecialchars($baseUrl . '/'));
+    $urlNode->addChild('lastmod', date('Y-m-d'));
+    $urlNode->addChild('changefreq', 'daily');
+    $urlNode->addChild('priority', '1.0');
+
+    foreach ($categories as $catSlug) {
+        if (empty($catSlug)) continue;
+        $urlNode = $xml->addChild('url');
+        $urlNode->addChild('loc', htmlspecialchars($baseUrl . '/danh-muc/' . $catSlug));
+        $urlNode->addChild('lastmod', date('Y-m-d'));
+        $urlNode->addChild('changefreq', 'weekly');
+        $urlNode->addChild('priority', '0.8');
+    }
+
+    foreach ($products as $prod) {
+        if (empty($prod['slug'])) continue;
+        $urlNode = $xml->addChild('url');
+        $urlNode->addChild('loc', htmlspecialchars($baseUrl . '/san-pham/' . $prod['slug']));
+        $urlNode->addChild('lastmod', date('Y-m-d'));
+        $urlNode->addChild('changefreq', 'daily');
+        $urlNode->addChild('priority', '0.9');
+    }
+
+    $urlNode = $xml->addChild('url');
+    $urlNode->addChild('loc', htmlspecialchars($baseUrl . '/cam-nang'));
+    $urlNode->addChild('lastmod', date('Y-m-d'));
+    $urlNode->addChild('changefreq', 'daily');
+    $urlNode->addChild('priority', '0.8');
+
+    try {
+        $posts = $pdo->query("SELECT slug, created_at FROM posts ORDER BY id DESC")->fetchAll();
+        foreach ($posts as $post) {
+            if (empty($post['slug'])) continue;
+            $urlNode = $xml->addChild('url');
+            $urlNode->addChild('loc', htmlspecialchars($baseUrl . '/cam-nang/' . $post['slug']));
+            $urlNode->addChild('lastmod', date('Y-m-d', strtotime($post['created_at'] ?? 'now')));
+            $urlNode->addChild('changefreq', 'weekly');
+            $urlNode->addChild('priority', '0.8');
+        }
+    } catch (Exception $e) {
+        // Bỏ qua nếu bảng posts chưa sẵn sàng
+    }
+
+    $output = $xml->asXML();
+    if ($writeFile && $output !== false) {
+        @file_put_contents(dirname(__DIR__) . '/sitemap.xml', $output);
+    }
+    return $output;
 }

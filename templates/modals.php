@@ -449,7 +449,7 @@
                     <span class="text-success fw-bold"><i class="fa-solid fa-circle-check me-1"></i>Đã thanh toán (Paid)</span>
                 </div>
             </div>
-            <button type="button" class="btn btn-pink w-100 rounded-pill py-2 font-bold shadow-sm" data-bs-dismiss="modal" onclick="AliceApp.closeModal(this)">
+            <button type="button" class="btn btn-danger w-100 rounded-pill py-2 font-bold shadow-sm" style="background: var(--gradient-pink); border: none;" data-bs-dismiss="modal" onclick="AliceApp.closeModal(this)">
                 <i class="fa-solid fa-bag-shopping me-2"></i>Tiếp Tục Mua Sắm
             </button>
         </div>

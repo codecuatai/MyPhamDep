@@ -98,7 +98,7 @@
                                 <button type="button" class="btn btn-sm btn-outline-danger rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;" onclick="AliceApp.openProductDetail(<?= $p['id'] ?>)" title="Xem nhanh sản phẩm">
                                     <i class="fa-solid fa-eye"></i>
                                 </button>
-                                <button type="button" class="btn btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px; background: var(--gradient-pink); color: #fff; border: none;" onclick="AliceApp.quickAddToCart(<?= $p['id'] ?>, '<?= addslashes($p['name']) ?>', '<?= $p['image'] ?>', <?= $p['price'] ?>)" title="Thêm nhanh vào giỏ">
+                                <button type="button" class="btn btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px; background: var(--gradient-pink); color: #fff; border: none;" onclick="AliceApp.quickAddToCart(<?= (int)$p['id'] ?>, <?= htmlspecialchars(json_encode($p['name'], JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($p['image']), ENT_QUOTES, 'UTF-8') ?>, <?= (float)$p['price'] ?>)" title="Thêm nhanh vào giỏ">
                                     <i class="fa-solid fa-cart-plus"></i>
                                 </button>
                             </div>
