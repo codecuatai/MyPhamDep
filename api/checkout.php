@@ -28,7 +28,7 @@ $paymentMethod  = cleanText($input['payment_method'] ?? 'vietqr') ?: 'vietqr';
 $couponCode     = cleanText($input['coupon_code'] ?? '');
 $items          = $input['items'] ?? ($input['cart'] ?? []);
 $totalAmount    = max(0, (float)($input['total_amount'] ?? 0));
-$discountAmount = max(0, (float)($input['discount_amount'] ?? 0));
+$discountAmount = 0;
 
 if ($totalAmount <= 0 && !empty($items)) {
     foreach ($items as $it) {
@@ -37,7 +37,30 @@ if ($totalAmount <= 0 && !empty($items)) {
         $totalAmount += $price * $qty;
     }
 }
-$finalAmount    = max(0, (float)($input['final_amount'] ?? max(0, $totalAmount - $discountAmount)));
+
+// Kiểm tra và tính lại voucher phía máy chủ để tránh lệch giảm giá khi giỏ thay đổi
+if (!empty($couponCode)) {
+    $couponStmt = $pdo->prepare("SELECT * FROM coupons WHERE UPPER(code) = ?");
+    $couponStmt->execute([strtoupper($couponCode)]);
+    $coupon = $couponStmt->fetch();
+    if ($coupon && $totalAmount >= (float)$coupon['min_order']) {
+        $couponCode = $coupon['code'];
+        if ($coupon['discount_type'] === 'percent') {
+            $discountAmount = ($totalAmount * (float)$coupon['discount_value']) / 100;
+            if ((float)$coupon['max_discount'] > 0 && $discountAmount > (float)$coupon['max_discount']) {
+                $discountAmount = (float)$coupon['max_discount'];
+            }
+        } else {
+            $discountAmount = (float)$coupon['discount_value'];
+        }
+        $discountAmount = (int)min($totalAmount, max(0, round($discountAmount)));
+    } else {
+        $couponCode = '';
+        $discountAmount = 0;
+    }
+}
+
+$finalAmount    = max(0, $totalAmount - $discountAmount);
 
 if (empty($customerName) || empty($phone) || empty($address)) {
     jsonResponse(['success' => false, 'message' => 'Vui lòng điền đầy đủ Họ tên, Số điện thoại và Địa chỉ nhận hàng!'], 400);

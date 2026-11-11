@@ -3,7 +3,7 @@
  * FEEDBACK & REVIEWS SECTION - ALICE COSMETIC
  */
 ?>
-<section class="py-5 bg-white">
+<section id="feedback" class="py-5 bg-white">
     <div class="container">
         <div class="text-center mb-4">
             <span class="badge rounded-pill px-3 py-2" style="background: var(--primary-pastel); color: var(--primary-dark); font-size: 0.78rem; font-weight: 700;">

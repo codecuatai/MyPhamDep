@@ -277,8 +277,14 @@ $breadcrumbSchema = generateBreadcrumbJsonLd([
                     <?php
                     $firstVariant = !empty($variants) ? $variants[0] : null;
                     $initialVariantName = is_array($firstVariant) ? ($firstVariant['name'] ?? '') : (is_string($firstVariant) ? $firstVariant : '');
-                    $initialPrice = (float)$product['price'];
-                    $initialOriginalPrice = (float)$product['original_price'];
+                    $basePrice = (float)$product['price'];
+                    $baseOriginalPrice = (float)$product['original_price'];
+                    $initialPrice = (is_array($firstVariant) && isset($firstVariant['price']) && (float)$firstVariant['price'] > 0)
+                        ? (float)$firstVariant['price']
+                        : $basePrice;
+                    $initialOriginalPrice = (is_array($firstVariant) && isset($firstVariant['original_price']) && (float)$firstVariant['original_price'] > 0)
+                        ? (float)$firstVariant['original_price']
+                        : $baseOriginalPrice;
                     ?>
                     <!-- Price Box (Shopee Style Tone Hồng) -->
                     <div class="p-3 rounded-4 mb-3" style="background: var(--primary-soft); border: 1px dashed var(--primary);">
@@ -300,8 +306,8 @@ $breadcrumbSchema = generateBreadcrumbJsonLd([
                             <div class="d-flex flex-wrap gap-2" id="detail-variants-wrap">
                                 <?php foreach ($variants as $idx => $v):
                                     $vName = is_array($v) ? ($v['name'] ?? '') : (string)$v;
-                                    $vPrice = (is_array($v) && isset($v['price']) && (float)$v['price'] > 0) ? (float)$v['price'] : $initialPrice;
-                                    $vOriginal = (is_array($v) && isset($v['original_price']) && (float)$v['original_price'] > 0) ? (float)$v['original_price'] : $initialOriginalPrice;
+                                    $vPrice = (is_array($v) && isset($v['price']) && (float)$v['price'] > 0) ? (float)$v['price'] : $basePrice;
+                                    $vOriginal = (is_array($v) && isset($v['original_price']) && (float)$v['original_price'] > 0) ? (float)$v['original_price'] : $baseOriginalPrice;
                                 ?>
                                     <button type="button"
                                             class="btn btn-sm <?= $idx === 0 ? 'btn-danger' : 'btn-outline-secondary' ?> rounded-pill px-3 py-1 font-semibold variant-select-btn"

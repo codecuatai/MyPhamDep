@@ -4,6 +4,11 @@
  * Tự động xoay vòng 5s (5000ms) liên tục, chiều cao cố định đồng bộ, hình ảnh gọn gàng & giao diện sạch thoáng
  */
 $banners = !empty($activeBanners) ? $activeBanners : [];
+$freeshipMinVal = (float)($shopConfig['freeship_min'] ?? 299000);
+$freeshipShortLabel = ($freeshipMinVal >= 1000 && ((int)$freeshipMinVal % 1000 === 0))
+    ? ((int)($freeshipMinVal / 1000) . 'K')
+    : formatVND($freeshipMinVal);
+$freeshipFormattedLabel = number_format($freeshipMinVal, 0, ',', '.') . 'đ';
 ?>
 <section class="hero-luxe-section position-relative py-3 py-lg-4">
     <style>
@@ -271,7 +276,7 @@ $banners = !empty($activeBanners) ? $activeBanners : [];
                                                     </div>
                                                     <div class="hero-perk-item">
                                                         <i class="fa-solid fa-truck-fast text-danger"></i>
-                                                        <span>Freeship từ 299K</span>
+                                                        <span>Freeship từ <?= htmlspecialchars($freeshipShortLabel) ?></span>
                                                     </div>
                                                     <div class="hero-perk-item">
                                                         <i class="fa-solid fa-gift" style="color: var(--primary);"></i>
@@ -347,7 +352,7 @@ $banners = !empty($activeBanners) ? $activeBanners : [];
                         <div class="trust-icon"><i class="fa-solid fa-truck-fast"></i></div>
                         <div class="trust-text">
                             <h6>Freeship Toàn Quốc</h6>
-                            <p>Đơn hàng từ 299.000đ</p>
+                            <p>Đơn hàng từ <?= htmlspecialchars($freeshipFormattedLabel) ?></p>
                         </div>
                     </div>
                 </div>

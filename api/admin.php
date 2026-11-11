@@ -141,16 +141,56 @@ if ($action === 'save_product') {
     $discountPercent = ($originalPrice > $price) ? (int)round((($originalPrice - $price) / $originalPrice) * 100) : 0;
 
     if ($id) {
-        // Cập nhật sản phẩm
-        $stmt = $pdo->prepare("UPDATE products SET 
-            name = ?, slug = ?, brand = ?, category_id = ?, price = ?, original_price = ?, 
-            discount_percent = ?, image = ?, description = ?, ingredients = ?, how_to_use = ?, 
-            is_flash_sale = ?, flash_sale_stock = ?, skin_type = ?, stock_quantity = ?, origin = ?, capacity = ?, expiry = ? 
+        // Cập nhật sản phẩm và đồng bộ giá biến thể mặc định nếu Admin thay đổi giá chính
+        $existingStmt = $pdo->prepare("SELECT price, original_price, variants FROM products WHERE id = ? LIMIT 1");
+        $existingStmt->execute([$id]);
+        $existingRow = $existingStmt->fetch();
+        if (!$existingRow) {
+            jsonResponse(['success' => false, 'message' => 'Không tìm thấy sản phẩm cần cập nhật!'], 404);
+        }
+
+        $variantsJson = $existingRow['variants'] ?? '[]';
+        if (isset($input['variants'])) {
+            $variantsJson = is_string($input['variants'])
+                ? $input['variants']
+                : json_encode($input['variants'], JSON_UNESCAPED_UNICODE);
+        } else {
+            $existingVariants = json_decode($variantsJson ?: '[]', true);
+            if (is_array($existingVariants) && !empty($existingVariants)) {
+                $oldPrice = (float)$existingRow['price'];
+                $oldOriginalPrice = (float)$existingRow['original_price'];
+                $variantPrices = [];
+                foreach ($existingVariants as $ev) {
+                    if (is_array($ev) && isset($ev['price'])) {
+                        $variantPrices[(string)(float)$ev['price']] = true;
+                    }
+                }
+                $allSamePrice = (count($variantPrices) <= 1);
+                foreach ($existingVariants as $idx => &$ev) {
+                    if (!is_array($ev)) continue;
+                    $curVarPrice = isset($ev['price']) ? (float)$ev['price'] : $oldPrice;
+                    if ($allSamePrice || $idx === 0 || abs($curVarPrice - $oldPrice) < 0.01) {
+                        $ev['price'] = $price;
+                        $curVarOrig = isset($ev['original_price']) ? (float)$ev['original_price'] : $oldOriginalPrice;
+                        if ($allSamePrice || $idx === 0 || abs($curVarOrig - $oldOriginalPrice) < 0.01) {
+                            $ev['original_price'] = $originalPrice;
+                        }
+                    }
+                }
+                unset($ev);
+                $variantsJson = json_encode($existingVariants, JSON_UNESCAPED_UNICODE);
+            }
+        }
+
+        $stmt = $pdo->prepare("UPDATE products SET
+            name = ?, slug = ?, brand = ?, category_id = ?, price = ?, original_price = ?,
+            discount_percent = ?, image = ?, description = ?, ingredients = ?, how_to_use = ?,
+            is_flash_sale = ?, flash_sale_stock = ?, skin_type = ?, stock_quantity = ?, origin = ?, capacity = ?, expiry = ?, variants = ?
             WHERE id = ?");
         $stmt->execute([
             $name, $slug, $brand, $categoryId, $price, $originalPrice,
             $discountPercent, $image, $description, $ingredients, $howToUse,
-            $isFlashSale, $flashSaleStock, $skinType, $stockQuantity, $origin, $capacity, $expiry, $id
+            $isFlashSale, $flashSaleStock, $skinType, $stockQuantity, $origin, $capacity, $expiry, $variantsJson, $id
         ]);
         regenerateSitemapXml($pdo);
         jsonResponse(['success' => true, 'message' => 'Cập nhật thông tin & tồn kho sản phẩm thành công!', 'id' => $id, 'slug' => $slug]);

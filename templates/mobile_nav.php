@@ -4,7 +4,7 @@
  */
 ?>
 <?php
-$isHomePage = (basename($_SERVER['SCRIPT_NAME'] ?? '') === 'index.php');
+$isHomePage = (basename($_SERVER['SCRIPT_NAME'] ?? '') === 'index.php' && empty($_GET['category']) && empty($_GET['search']));
 $homeUrlPrefix = htmlspecialchars($baseUrl ?? '');
 ?>
 <div class="mobile-bottom-nav">

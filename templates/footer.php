@@ -29,10 +29,10 @@
                 <h6 class="font-bold mb-3" style="color: var(--primary-dark);">HỖ TRỢ KHÁCH HÀNG</h6>
                 <ul class="list-unstyled small text-muted d-flex flex-column gap-2 mb-0">
                     <li><a href="javascript:void(0)" onclick="AliceApp.openCartDrawer()">Hướng dẫn mua hàng</a></li>
-                    <li><a href="javascript:void(0)">Chính sách đổi trả 7 ngày</a></li>
-                    <li><a href="javascript:void(0)">Chính sách bảo hành & bồi hoàn</a></li>
-                    <li><a href="javascript:void(0)">Tra cứu hành trình đơn hàng</a></li>
-                    <li><a href="javascript:void(0)">Tư vấn soi da miễn phí</a></li>
+                    <li><a href="<?= htmlspecialchars($baseUrl ?? '') ?>/#heroBannerCarousel">Chính sách đổi trả 7 ngày</a></li>
+                    <li><a href="<?= htmlspecialchars($baseUrl ?? '') ?>/#feedback">Chính sách bảo hành & bồi hoàn</a></li>
+                    <li><a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#modalOrderLookup">Tra cứu hành trình đơn hàng</a></li>
+                    <li><a href="<?= htmlspecialchars($shopConfig['zalo_url']) ?>" target="_blank" rel="noopener">Tư vấn soi da miễn phí</a></li>
                 </ul>
             </div>
 
@@ -40,12 +40,12 @@
             <div class="col-lg-3 col-md-6 col-6">
                 <h6 class="font-bold mb-3" style="color: var(--primary-dark);">VỀ CHÚNG TÔI</h6>
                 <ul class="list-unstyled small text-muted d-flex flex-column gap-2 mb-0">
-                    <li><a href="javascript:void(0)">Câu chuyện thương hiệu ALICE</a></li>
-                    <li><a href="javascript:void(0)">Cam kết hàng chính hãng 100%</a></li>
+                    <li><a href="<?= htmlspecialchars($baseUrl ?? '') ?>/#top">Câu chuyện thương hiệu ALICE</a></li>
+                    <li><a href="<?= htmlspecialchars($baseUrl ?? '') ?>/#san-pham-section">Cam kết hàng chính hãng 100%</a></li>
                     <li><a href="<?= htmlspecialchars($baseUrl ?? '') ?>/privacy.php" class="text-pink-600 font-bold">Chính sách bảo mật & Quyền riêng tư</a></li>
-                    <li><a href="javascript:void(0)">Dịch vụ đóng hộp quà & viết thiệp</a></li>
-                    <li><a href="javascript:void(0)">Tuyển dụng & Đối tác nhượng quyền</a></li>
-                    <li><a href="javascript:void(0)">Hệ thống cửa hàng phân phối</a></li>
+                    <li><a href="<?= htmlspecialchars($baseUrl ?? '') ?>/#combo-routine">Dịch vụ đóng hộp quà & viết thiệp</a></li>
+                    <li><a href="<?= htmlspecialchars($shopConfig['zalo_url']) ?>" target="_blank" rel="noopener">Tuyển dụng & Đối tác nhượng quyền</a></li>
+                    <li><a href="<?= htmlspecialchars($baseUrl ?? '') ?>/cam-nang">Hệ thống cửa hàng phân phối</a></li>
                 </ul>
             </div>
 

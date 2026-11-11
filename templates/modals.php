@@ -531,19 +531,28 @@ async function lookupOrders() {
             return;
         }
 
-        resBox.innerHTML = data.orders.map(o => `
+        resBox.innerHTML = data.orders.map(o => {
+            const st = o.payment_status || 'pending';
+            const badgeClass = st === 'paid'
+                ? 'bg-success text-white'
+                : (st === 'shipping' ? 'bg-info text-dark' : (st === 'cancelled' ? 'bg-secondary text-white' : 'bg-warning text-dark'));
+            const badgeText = st === 'paid'
+                ? 'Đã thanh toán'
+                : (st === 'shipping' ? 'Đang giao hàng' : (st === 'cancelled' ? 'Đã hủy' : 'Chờ thanh toán'));
+            return `
             <div class="p-3 mb-2 rounded-3" style="background: #fff8fa; border: 1px solid var(--primary-pastel);">
                 <div class="d-flex justify-content-between align-items-center mb-1">
                     <strong class="small text-danger">${escapeOrderHtml(o.order_code)}</strong>
-                    <span class="badge ${o.payment_status === 'paid' ? 'bg-success' : 'bg-warning text-dark'} rounded-pill" style="font-size: 0.7rem;">
-                        ${o.payment_status === 'paid' ? 'Đã thanh toán' : 'Chờ thanh toán'}
+                    <span class="badge ${badgeClass} rounded-pill" style="font-size: 0.7rem;">
+                        ${badgeText}
                     </span>
                 </div>
                 <div class="small text-muted">Khách hàng: <strong>${escapeOrderHtml(o.customer_name)}</strong> - SĐT: ${escapeOrderHtml(o.phone)}</div>
                 <div class="small text-muted">Tổng tiền: <strong class="text-danger">${escapeOrderHtml(o.final_amount_formatted)}</strong> (${o.payment_method === 'vietqr' ? 'VietQR' : 'COD'})</div>
                 <div class="small text-muted" style="font-size: 0.72rem;">Ngày đặt: ${escapeOrderHtml(o.created_at)}</div>
             </div>
-        `).join('');
+        `;
+        }).join('');
     } catch(e) {
         resBox.innerHTML = '<div class="alert alert-danger small">Lỗi kết nối tra cứu!</div>';
     }

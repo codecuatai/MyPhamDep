@@ -395,9 +395,11 @@ a {
 }
 
 .btn-hero-cta:hover,
-.btn-hero-cta:focus-visible {
-    background: var(--gradient-pink);
+.btn-hero-cta:focus-visible,
+.btn-hero-cta:active {
+    background: var(--gradient-pink) !important;
     color: #ffffff !important;
+    border-color: transparent !important;
     transform: translateY(-2px);
     box-shadow: 0 12px 26px rgba(255, 92, 138, 0.45);
 }
@@ -419,10 +421,11 @@ a {
 }
 
 .btn-pdp-add-cart:hover,
-.btn-pdp-add-cart:focus-visible {
-    background: var(--gradient-pink);
+.btn-pdp-add-cart:focus-visible,
+.btn-pdp-add-cart:active {
+    background: var(--gradient-pink) !important;
     color: #ffffff !important;
-    border-color: transparent;
+    border-color: transparent !important;
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(255, 92, 138, 0.32);
 }

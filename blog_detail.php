@@ -274,9 +274,16 @@ $breadcrumbSchema = generateBreadcrumbJsonLd([
                                                 </a>
                                             </div>
                                             <div class="text-danger font-bold mt-auto mb-2"><?= formatVND($rp['price']) ?></div>
-                                            <button type="button" class="btn btn-sm btn-add-cart-pink w-100" onclick="AliceApp.quickAddToCart(<?= (int)$rp['id'] ?>, <?= htmlspecialchars(json_encode($rp['name'], JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($rp['image']), ENT_QUOTES, 'UTF-8') ?>, <?= (float)$rp['price'] ?>);">
-                                                <i class="fa-solid fa-cart-plus me-1"></i>Mua Nhanh
-                                            </button>
+                                            <?php $rpStock = (int)($rp['stock_quantity'] ?? 50); ?>
+                                            <?php if ($rpStock > 0): ?>
+                                                <button type="button" class="btn btn-sm btn-add-cart-pink w-100" onclick="AliceApp.quickAddToCart(<?= (int)$rp['id'] ?>, <?= htmlspecialchars(json_encode($rp['name'], JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($rp['image']), ENT_QUOTES, 'UTF-8') ?>, <?= (float)$rp['price'] ?>);">
+                                                    <i class="fa-solid fa-cart-plus me-1"></i>Mua Nhanh
+                                                </button>
+                                            <?php else: ?>
+                                                <button type="button" class="btn btn-sm btn-secondary rounded-pill w-100" disabled style="opacity: 0.65; cursor: not-allowed;">
+                                                    <i class="fa-solid fa-ban me-1"></i>Tạm Hết Hàng
+                                                </button>
+                                            <?php endif; ?>
                                         </div>
                                     </div>
                                 <?php endforeach; ?>

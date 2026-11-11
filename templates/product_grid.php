@@ -25,11 +25,11 @@
             </div>
         </div>
 
-        <!-- Category Filter Status Bar (Hiển thị trực quan khi bấm danh mục tròn hoặc URL) -->
+        <!-- Category Filter Status Bar (Hiển thị trực quan khi bấm danh mục tròn hoặc tìm kiếm) -->
         <div id="category-filter-status" class="alert alert-light border rounded-pill py-2 px-3 px-md-4 mb-3 d-none align-items-center justify-content-between shadow-sm" style="background: linear-gradient(90deg, #fff5f8 0%, #ffffff 100%); border-color: #ffd1dc !important;">
             <div class="d-flex align-items-center flex-wrap gap-2">
                 <span class="badge rounded-pill bg-danger text-white px-2 py-1"><i class="fa-solid fa-filter me-1"></i>Đang xem</span>
-                <span class="text-dark small">Danh mục: <strong id="filter-cat-name" class="text-danger fw-bold fs-6"></strong> (<span id="filter-cat-count" class="fw-bold">0</span> sản phẩm)</span>
+                <span class="text-dark small"><span id="filter-label-prefix">Danh mục:</span> <strong id="filter-cat-name" class="text-danger fw-bold fs-6"></strong> (<span id="filter-cat-count" class="fw-bold">0</span> sản phẩm)</span>
             </div>
             <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 font-bold" onclick="AliceApp.resetCategoryFilter()">
                 <i class="fa-solid fa-xmark me-1"></i>Xem Tất Cả Mỹ Phẩm
@@ -39,7 +39,7 @@
         <!-- Empty state when no products match -->
         <div id="category-empty-state" class="text-center py-5 d-none">
             <div class="mb-3 text-muted"><i class="fa-solid fa-box-open fa-3x"></i></div>
-            <h5 class="text-muted">Chưa có sản phẩm nào thuộc danh mục này</h5>
+            <h5 id="category-empty-title" class="text-muted">Chưa có sản phẩm nào thuộc danh mục này</h5>
             <button type="button" class="btn btn-sm btn-danger rounded-pill px-4 mt-2" style="background: var(--gradient-pink); border: none;" onclick="AliceApp.resetCategoryFilter()">
                 Xem tất cả sản phẩm
             </button>
@@ -98,9 +98,15 @@
                                 <button type="button" class="btn btn-sm btn-outline-danger rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;" onclick="AliceApp.openProductDetail(<?= $p['id'] ?>)" title="Xem nhanh sản phẩm">
                                     <i class="fa-solid fa-eye"></i>
                                 </button>
-                                <button type="button" class="btn btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px; background: var(--gradient-pink); color: #fff; border: none;" onclick="AliceApp.quickAddToCart(<?= (int)$p['id'] ?>, <?= htmlspecialchars(json_encode($p['name'], JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($p['image']), ENT_QUOTES, 'UTF-8') ?>, <?= (float)$p['price'] ?>)" title="Thêm nhanh vào giỏ">
-                                    <i class="fa-solid fa-cart-plus"></i>
-                                </button>
+                                <?php if ($stock > 0): ?>
+                                    <button type="button" class="btn btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px; background: var(--gradient-pink); color: #fff; border: none;" onclick="AliceApp.quickAddToCart(<?= (int)$p['id'] ?>, <?= htmlspecialchars(json_encode($p['name'], JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($p['image']), ENT_QUOTES, 'UTF-8') ?>, <?= (float)$p['price'] ?>)" title="Thêm nhanh vào giỏ">
+                                        <i class="fa-solid fa-cart-plus"></i>
+                                    </button>
+                                <?php else: ?>
+                                    <button type="button" class="btn btn-sm btn-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px; opacity: 0.55; cursor: not-allowed;" disabled title="Sản phẩm tạm hết hàng">
+                                        <i class="fa-solid fa-ban"></i>
+                                    </button>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>

@@ -52,10 +52,10 @@ $headerBaseUrl = htmlspecialchars($baseUrl ?? '');
                     </div>
                     <div class="search-quick-tags d-none d-md-flex">
                         <span>Gợi ý hot:</span>
-                        <a href="javascript:void(0)" onclick="AliceApp.goToCategory('serum-tinh-chat')">Serum B5</a>
-                        <a href="javascript:void(0)" onclick="AliceApp.goToCategory('chong-nang')">Kem chống nắng</a>
-                        <a href="javascript:void(0)" onclick="AliceApp.goToCategory('makeup-son')">Son môi</a>
-                        <a href="javascript:void(0)" onclick="AliceApp.goToCategory('combo-routine')">Set quà</a>
+                        <a href="<?= $headerBaseUrl ?>/danh-muc/serum-tinh-chat" onclick="if(document.getElementById('san-pham-section')){event.preventDefault(); AliceApp.goToCategory('serum-tinh-chat');}">Serum B5</a>
+                        <a href="<?= $headerBaseUrl ?>/danh-muc/chong-nang" onclick="if(document.getElementById('san-pham-section')){event.preventDefault(); AliceApp.goToCategory('chong-nang');}">Kem chống nắng</a>
+                        <a href="<?= $headerBaseUrl ?>/danh-muc/makeup-son" onclick="if(document.getElementById('san-pham-section')){event.preventDefault(); AliceApp.goToCategory('makeup-son');}">Son môi</a>
+                        <a href="<?= $headerBaseUrl ?>/danh-muc/combo-routine" onclick="if(document.getElementById('san-pham-section')){event.preventDefault(); AliceApp.goToCategory('combo-routine');}">Set quà</a>
                     </div>
                 </div>
             </div>

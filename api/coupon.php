@@ -55,6 +55,10 @@ jsonResponse([
     'discount' => (int)$discount,
     'discount_amount' => (int)$discount,
     'discount_formatted' => formatVND($discount),
+    'min_order' => (float)$coupon['min_order'],
+    'discount_type' => $coupon['discount_type'],
+    'discount_value' => (float)$coupon['discount_value'],
+    'max_discount' => (float)$coupon['max_discount'],
     'description' => $coupon['description'],
     'message' => 'Áp dụng mã giảm giá thành công! Tiết kiệm ' . formatVND($discount)
 ]);

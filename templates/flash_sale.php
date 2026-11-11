@@ -36,6 +36,9 @@
                         <div class="product-thumb-wrap">
                             <span class="badge-mall-official">MALL CHÍNH HÃNG</span>
                             <span class="badge-discount-tag">-<?= $p['discount_percent'] ?>%</span>
+                            <?php if ((int)($p['stock_quantity'] ?? 50) <= 0): ?>
+                                <span class="badge bg-secondary position-absolute bottom-0 start-0 m-2 z-2"><i class="fa-solid fa-ban me-1"></i>Hết hàng</span>
+                            <?php endif; ?>
                             <a href="<?= $baseUrl ?>/san-pham/<?= htmlspecialchars($p['slug']) ?>" class="d-block w-100 h-100" title="<?= htmlspecialchars($p['name']) ?>">
                                 <img src="<?= htmlspecialchars($p['image']) ?>" 
                                      alt="<?= htmlspecialchars($p['name']) ?>" 

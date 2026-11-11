@@ -633,6 +633,90 @@ const AliceApp = {
         this.openCartDrawer();
     },
 
+    getCartSubtotal() {
+        return this.cart.reduce((sum, it) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 1), 0);
+    },
+
+    persistCouponStorage() {
+        try {
+            const couponKey = this.getUserCouponKey();
+            if (this.appliedCoupon) {
+                localStorage.setItem(couponKey, JSON.stringify(this.appliedCoupon));
+            } else {
+                localStorage.removeItem(couponKey);
+            }
+        } catch (e) {}
+    },
+
+    async revalidateLegacyCoupon(subtotal) {
+        if (!this.appliedCoupon || !this.appliedCoupon.code || this._revalidatingCoupon) return;
+        if (typeof this.appliedCoupon.min_order !== 'undefined') return;
+        this._revalidatingCoupon = true;
+        try {
+            const code = this.appliedCoupon.code;
+            const res = await fetch(this.apiUrl(`api/coupon.php?code=${encodeURIComponent(code)}&subtotal=${subtotal}`));
+            const data = await res.json();
+            if (data && data.success) {
+                this.appliedCoupon = data;
+            } else {
+                this.appliedCoupon = null;
+            }
+            this.saveCart(false);
+        } catch (e) {
+            // Keep capped fallback silently if offline
+        } finally {
+            this._revalidatingCoupon = false;
+        }
+    },
+
+    recalculateCoupon(subtotal, notify = false) {
+        if (!this.appliedCoupon) return 0;
+
+        if (!Array.isArray(this.cart) || this.cart.length === 0 || subtotal <= 0) {
+            this.appliedCoupon = null;
+            this.persistCouponStorage();
+            return 0;
+        }
+
+        if (typeof this.appliedCoupon.min_order !== 'undefined') {
+            const minOrder = Number(this.appliedCoupon.min_order) || 0;
+            if (subtotal < minOrder) {
+                const removedCode = this.appliedCoupon.code || '';
+                this.appliedCoupon = null;
+                this.persistCouponStorage();
+                if (notify && removedCode) {
+                    this.showToast(`Mã ${removedCode} đã được gỡ vì đơn dưới mức tối thiểu ${this.formatVND(minOrder)}`, 'warning');
+                }
+                return 0;
+            }
+
+            let discount = 0;
+            if (this.appliedCoupon.discount_type === 'percent') {
+                const val = Number(this.appliedCoupon.discount_value) || 0;
+                const maxD = Number(this.appliedCoupon.max_discount) || 0;
+                discount = Math.round((subtotal * val) / 100);
+                if (maxD > 0 && discount > maxD) {
+                    discount = maxD;
+                }
+            } else {
+                const fixedVal = typeof this.appliedCoupon.discount_value !== 'undefined'
+                    ? Number(this.appliedCoupon.discount_value)
+                    : (Number(this.appliedCoupon.discount_amount) || 0);
+                discount = fixedVal;
+            }
+
+            discount = Math.min(subtotal, Math.max(0, Math.round(discount)));
+            this.appliedCoupon.discount = discount;
+            this.appliedCoupon.discount_amount = discount;
+            this.appliedCoupon.discount_formatted = this.formatVND(discount);
+            this.persistCouponStorage();
+            return discount;
+        }
+
+        this.revalidateLegacyCoupon(subtotal);
+        return Math.min(subtotal, Math.max(0, Number(this.appliedCoupon.discount_amount) || 0));
+    },
+
     addItemToCart(item) {
         const existing = this.cart.find(it => String(it.id) === String(item.id) && (it.variant_name || '') === (item.variant_name || ''));
         if (existing) {
@@ -640,6 +724,7 @@ const AliceApp = {
         } else {
             this.cart.push(item);
         }
+        this.recalculateCoupon(this.getCartSubtotal(), false);
         this.saveCart();
     },
 
@@ -649,11 +734,13 @@ const AliceApp = {
         if (this.cart[index].quantity <= 0) {
             this.cart.splice(index, 1);
         }
+        this.recalculateCoupon(this.getCartSubtotal(), true);
         this.saveCart();
     },
 
     removeItem(index) {
         this.cart.splice(index, 1);
+        this.recalculateCoupon(this.getCartSubtotal(), true);
         this.saveCart();
         this.showToast('Đã xóa sản phẩm khỏi giỏ hàng', 'warning');
     },
@@ -744,11 +831,7 @@ const AliceApp = {
         const discountEl = document.getElementById('cart-discount');
         const finalEl = document.getElementById('cart-final-total');
 
-        let discount = 0;
-        if (this.appliedCoupon) {
-            discount = this.appliedCoupon.discount_amount || 0;
-        }
-
+        const discount = this.recalculateCoupon(subtotal, false);
         const finalTotal = Math.max(0, subtotal - discount);
 
         if (subtotalEl) subtotalEl.textContent = this.formatVND(subtotal);
@@ -797,14 +880,14 @@ const AliceApp = {
         }
         this.closeCartDrawer();
 
-        const subtotal = this.cart.reduce((sum, it) => sum + it.price * (it.quantity || 1), 0);
-        let discount = this.appliedCoupon ? (this.appliedCoupon.discount_amount || 0) : 0;
+        const subtotal = this.getCartSubtotal();
+        const discount = this.recalculateCoupon(subtotal, false);
         const finalTotal = Math.max(0, subtotal - discount);
 
         document.getElementById('checkout-items-summary').innerHTML = this.cart.map(it => `
             <div class="d-flex justify-content-between small mb-1">
                 <span class="text-truncate" style="max-width: 240px;">${this.escHtml(it.name)} ${it.variant_name ? '(' + this.escHtml(it.variant_name) + ')' : ''} x${Number(it.quantity) || 1}</span>
-                <span class="font-bold">${this.formatVND(it.price * it.quantity)}</span>
+                <span class="font-bold">${this.formatVND(it.price * (it.quantity || 1))}</span>
             </div>
         `).join('');
 
@@ -842,8 +925,8 @@ const AliceApp = {
             return;
         }
 
-        const subtotal = this.cart.reduce((sum, it) => sum + it.price * (it.quantity || 1), 0);
-        const discount = this.appliedCoupon ? (this.appliedCoupon.discount_amount || 0) : 0;
+        const subtotal = this.getCartSubtotal();
+        const discount = this.recalculateCoupon(subtotal, false);
         const finalTotal = Math.max(0, subtotal - discount);
 
         const payload = {
@@ -1106,10 +1189,14 @@ const AliceApp = {
     currentFilterSkin: 'all',
     currentFilterCategory: 'all',
     currentCategoryName: '',
+    currentSearchQuery: '',
 
     filterByCategory(catId, catName) {
         this.currentFilterCategory = catId;
         this.currentCategoryName = catName || catId;
+        this.currentSearchQuery = '';
+        const searchInput = document.getElementById('header-search-input');
+        if (searchInput && searchInput.value) searchInput.value = '';
 
         // Highlight active bubble item
         document.querySelectorAll('.bubble-category-item').forEach(item => {
@@ -1133,6 +1220,9 @@ const AliceApp = {
     resetCategoryFilter() {
         this.currentFilterCategory = 'all';
         this.currentCategoryName = '';
+        this.currentSearchQuery = '';
+        const searchInput = document.getElementById('header-search-input');
+        if (searchInput) searchInput.value = '';
 
         // Remove active state on bubbles
         document.querySelectorAll('.bubble-category-item').forEach(item => {
@@ -1154,16 +1244,22 @@ const AliceApp = {
 
     applyProductFilter() {
         const cards = document.querySelectorAll('.product-grid-item');
+        const lowerKw = (this.currentSearchQuery || '').trim().toLowerCase();
         let visibleCount = 0;
 
         cards.forEach(card => {
             const cardSkin = card.getAttribute('data-skin');
             const cardCat = card.getAttribute('data-category');
+            const titleEl = card.querySelector('.product-name');
+            const brandEl = card.querySelector('.product-brand');
+            const title = titleEl ? titleEl.textContent.toLowerCase() : '';
+            const brand = brandEl ? brandEl.textContent.toLowerCase() : '';
 
-            let matchSkin = (this.currentFilterSkin === 'all' || cardSkin === this.currentFilterSkin || cardSkin === 'all');
-            let matchCat = (this.currentFilterCategory === 'all' || cardCat === this.currentFilterCategory);
+            const matchSkin = (this.currentFilterSkin === 'all' || cardSkin === this.currentFilterSkin || cardSkin === 'all');
+            const matchCat = (this.currentFilterCategory === 'all' || cardCat === this.currentFilterCategory);
+            const matchSearch = (!lowerKw || title.includes(lowerKw) || brand.includes(lowerKw));
 
-            if (matchSkin && matchCat) {
+            if (matchSkin && matchCat && matchSearch) {
                 card.style.display = '';
                 visibleCount++;
             } else {
@@ -1173,16 +1269,27 @@ const AliceApp = {
 
         // Update status bar
         const statusBar = document.getElementById('category-filter-status');
+        const filterPrefix = document.getElementById('filter-label-prefix');
         const filterName = document.getElementById('filter-cat-name');
         const filterCount = document.getElementById('filter-cat-count');
         const emptyState = document.getElementById('category-empty-state');
+        const emptyTitle = document.getElementById('category-empty-title');
 
-        if (this.currentFilterCategory !== 'all') {
+        if (this.currentFilterCategory !== 'all' || lowerKw !== '') {
             if (statusBar) {
                 statusBar.classList.remove('d-none');
                 statusBar.classList.add('d-flex');
             }
-            if (filterName) filterName.textContent = this.currentCategoryName || this.currentFilterCategory;
+            if (this.currentFilterCategory !== 'all' && lowerKw !== '') {
+                if (filterPrefix) filterPrefix.textContent = 'Danh mục:';
+                if (filterName) filterName.textContent = `${this.currentCategoryName || this.currentFilterCategory} • Tìm "${this.currentSearchQuery}"`;
+            } else if (this.currentFilterCategory !== 'all') {
+                if (filterPrefix) filterPrefix.textContent = 'Danh mục:';
+                if (filterName) filterName.textContent = this.currentCategoryName || this.currentFilterCategory;
+            } else {
+                if (filterPrefix) filterPrefix.textContent = 'Tìm kiếm:';
+                if (filterName) filterName.textContent = `"${this.currentSearchQuery}"`;
+            }
             if (filterCount) filterCount.textContent = visibleCount;
         } else {
             if (statusBar) {
@@ -1193,6 +1300,11 @@ const AliceApp = {
 
         if (emptyState) {
             if (visibleCount === 0) {
+                if (emptyTitle) {
+                    emptyTitle.textContent = lowerKw !== ''
+                        ? `Không tìm thấy sản phẩm phù hợp với từ khóa "${this.currentSearchQuery}"`
+                        : 'Chưa có sản phẩm nào thuộc danh mục này';
+                }
                 emptyState.classList.remove('d-none');
             } else {
                 emptyState.classList.add('d-none');
@@ -1766,19 +1878,17 @@ const AliceApp = {
         const kw = searchInput ? searchInput.value.trim() : '';
         const section = document.getElementById('san-pham-section');
         if (section) {
-            const lowerKw = kw.toLowerCase();
-            const cards = document.querySelectorAll('.product-grid-item');
-            cards.forEach(card => {
-                const titleEl = card.querySelector('.product-name');
-                const brandEl = card.querySelector('.product-brand');
-                const title = titleEl ? titleEl.textContent.toLowerCase() : '';
-                const brand = brandEl ? brandEl.textContent.toLowerCase() : '';
-                if (!lowerKw || title.includes(lowerKw) || brand.includes(lowerKw)) {
-                    card.style.display = '';
-                } else {
-                    card.style.display = 'none';
-                }
+            this.currentFilterCategory = 'all';
+            this.currentCategoryName = '';
+            this.currentFilterSkin = 'all';
+            this.currentSearchQuery = kw;
+
+            document.querySelectorAll('.bubble-category-item').forEach(item => item.classList.remove('active'));
+            document.querySelectorAll('.routine-tab-btn').forEach(b => {
+                b.classList.toggle('active', b.getAttribute('data-skin') === 'all');
             });
+
+            this.applyProductFilter();
             section.scrollIntoView({ behavior: 'smooth' });
         } else {
             window.location.href = kw

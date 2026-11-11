@@ -17,11 +17,47 @@ $pdo = getDbConnection();
 $shopConfig = getShopConfig($pdo);
 $baseUrl = getBaseUrl();
 
+// Lấy danh mục kèm số lượng sản phẩm thực tế trong DB
+$catStmt = $pdo->query("SELECT c.*, (SELECT COUNT(*) FROM products p WHERE p.category_id = c.id) AS actual_product_count FROM categories c ORDER BY c.count DESC, c.id ASC");
+$categories = $catStmt->fetchAll();
+
+// Xác định danh mục đang xem nếu truy cập qua URL SEO (/danh-muc/<slug>)
+$requestedCategoryParam = cleanText($_GET['category'] ?? '');
+$activeCategory = null;
+if ($requestedCategoryParam !== '') {
+    foreach ($categories as $cat) {
+        if (($cat['slug'] ?? '') === $requestedCategoryParam || ($cat['id'] ?? '') === $requestedCategoryParam) {
+            $activeCategory = $cat;
+            break;
+        }
+    }
+}
+
 // SEO Meta variables
 $canonicalUrl = $baseUrl . '/';
 $pageTitle = htmlspecialchars($shopConfig['shop_name']) . ' — Thế Giới Mỹ Phẩm & Routine Skincare Chính Hãng';
 $pageDesc = htmlspecialchars($shopConfig['slogan']) . ' - Cam kết 100% chính hãng, Freeship toàn quốc từ ' . formatVND($shopConfig['freeship_min']) . ', tặng hộp quà nơ hồng & thiệp viết tay yêu thương.';
 $ogImage = 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=700&q=80';
+$breadcrumbSchema = null;
+
+if ($activeCategory) {
+    $activeCatSlug = $activeCategory['slug'] ?: $activeCategory['id'];
+    $canonicalUrl = $baseUrl . '/danh-muc/' . $activeCatSlug;
+    $pageTitle = htmlspecialchars($activeCategory['name']) . ' Chính Hãng — ' . htmlspecialchars($shopConfig['shop_name']);
+    $rawCatDesc = !empty($activeCategory['description'])
+        ? $activeCategory['description']
+        : ($activeCategory['name'] . ' chính hãng tại ' . $shopConfig['shop_name']);
+    $pageDesc = htmlspecialchars(truncateSeoDescription($rawCatDesc . ' - Freeship toàn quốc từ ' . formatVND($shopConfig['freeship_min']) . '.'));
+    if (!empty($activeCategory['image'])) {
+        $ogImage = (strpos($activeCategory['image'], 'http') === 0)
+            ? $activeCategory['image']
+            : ($baseUrl . '/' . ltrim($activeCategory['image'], '/'));
+    }
+    $breadcrumbSchema = generateBreadcrumbJsonLd([
+        'Trang chủ' => $baseUrl . '/',
+        $activeCategory['name'] => $canonicalUrl
+    ], $baseUrl);
+}
 
 // JSON-LD Schemas
 $shopSchema = generateShopJsonLd($shopConfig, $baseUrl);
@@ -36,10 +72,6 @@ $websiteSchema = [
         "query-input" => "required name=search_term_string"
     ]
 ];
-
-// Lấy danh mục
-$catStmt = $pdo->query("SELECT * FROM categories ORDER BY count DESC");
-$categories = $catStmt->fetchAll();
 
 // Lấy sản phẩm Flash Sale
 $flashStmt = $pdo->query("SELECT * FROM products WHERE is_flash_sale = 1 ORDER BY flash_sale_sold DESC");
@@ -108,6 +140,11 @@ try {
     <script type="application/ld+json">
     <?= json_encode($websiteSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) ?>
     </script>
+    <?php if (!empty($breadcrumbSchema)): ?>
+    <script type="application/ld+json">
+    <?= json_encode($breadcrumbSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) ?>
+    </script>
+    <?php endif; ?>
 
     <?php include __DIR__ . '/templates/social_auth_head.php'; ?>
 </head>
@@ -165,25 +202,22 @@ try {
     <script>
     document.addEventListener('DOMContentLoaded', () => {
         <?php if (!empty($_GET['category'])): ?>
-        const catSlug = <?= json_encode($_GET['category']) ?>;
-        setTimeout(() => {
-            const catItem = Array.from(document.querySelectorAll('.bubble-category-item')).find(el => el.getAttribute('data-cat-id') === catSlug);
-            if (catItem) {
-                catItem.click();
-            } else {
-                AliceApp.filterByCategory(catSlug, catSlug);
-            }
-        }, 150);
+        const catId = <?= json_encode($activeCategory ? $activeCategory['id'] : cleanText($_GET['category'])) ?>;
+        const catName = <?= json_encode($activeCategory ? $activeCategory['name'] : cleanText($_GET['category']), JSON_UNESCAPED_UNICODE) ?>;
+        const catItem = Array.from(document.querySelectorAll('.bubble-category-item')).find(el => el.getAttribute('data-cat-id') === catId || el.getAttribute('data-cat-slug') === catId);
+        if (catItem) {
+            AliceApp.filterByCategory(catItem.getAttribute('data-cat-id'), catName);
+        } else {
+            AliceApp.filterByCategory(catId, catName);
+        }
         <?php endif; ?>
         <?php if (!empty($_GET['search'])): ?>
         const searchVal = <?= json_encode($_GET['search']) ?>;
-        setTimeout(() => {
-            const input = document.getElementById('header-search-input');
-            if (input) {
-                input.value = searchVal;
-                AliceApp.handleHeaderSearch();
-            }
-        }, 150);
+        const input = document.getElementById('header-search-input');
+        if (input) {
+            input.value = searchVal;
+            AliceApp.handleHeaderSearch();
+        }
         <?php endif; ?>
     });
     </script>

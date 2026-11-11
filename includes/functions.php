@@ -208,7 +208,7 @@ function generateProductJsonLd($product, $shopConfig, $baseUrl) {
             "price" => $price,
             "priceValidUntil" => date('Y-12-31', strtotime('+1 year')),
             "itemCondition" => "https://schema.org/NewCondition",
-            "availability" => "https://schema.org/InStock",
+            "availability" => (!isset($product['stock_quantity']) || (int)$product['stock_quantity'] > 0) ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
             "seller" => [
                 "@type" => "Organization",
                 "name" => $shopConfig['shop_name'] ?? 'ALICE Cosmetic'

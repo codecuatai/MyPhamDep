@@ -16,6 +16,14 @@ $pdo = getDbConnection();
 $shopConfig = getShopConfig($pdo);
 $currentUser = $_SESSION['user'] ?? null;
 $isAdmin = ($currentUser && ($currentUser['role'] ?? '') === 'admin');
+$adminCategories = [];
+$adminCategoryMap = [];
+if ($isAdmin) {
+    $adminCategories = $pdo->query("SELECT id, name, slug FROM categories ORDER BY count DESC, id ASC")->fetchAll();
+    foreach ($adminCategories as $ac) {
+        $adminCategoryMap[$ac['id']] = $ac['name'];
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -769,12 +777,18 @@ $isAdmin = ($currentUser && ($currentUser['role'] ?? '') === 'admin');
                             <div class="col-md-4">
                                 <label class="form-label small fw-semibold">Danh Mục</label>
                                 <select id="prod_category_id" class="form-select">
-                                    <option value="tay-trang">Làm Sạch & Tẩy Trang</option>
-                                    <option value="serum-tinh-chat">Tinh Chất & Serum</option>
-                                    <option value="chong-nang">Kem Chống Nắng</option>
-                                    <option value="kem-duong">Dưỡng Ẩm & Phục Hồi</option>
-                                    <option value="makeup-son">Son Môi & Trang Điểm</option>
-                                    <option value="combo-routine">Set Quà & Routine</option>
+                                    <?php if (!empty($adminCategories)): ?>
+                                        <?php foreach ($adminCategories as $ac): ?>
+                                            <option value="<?= htmlspecialchars($ac['id']) ?>"><?= htmlspecialchars($ac['name']) ?></option>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <option value="tay-trang">Làm Sạch &amp; Tẩy Trang</option>
+                                        <option value="serum-tinh-chat">Tinh Chất &amp; Serum</option>
+                                        <option value="chong-nang">Kem Chống Nắng</option>
+                                        <option value="kem-duong">Dưỡng Ẩm &amp; Phục Hồi</option>
+                                        <option value="makeup-son">Son Môi &amp; Trang Điểm</option>
+                                        <option value="combo-routine">Set Quà &amp; Routine</option>
+                                    <?php endif; ?>
                                 </select>
                             </div>
                             <div class="col-md-4">
@@ -1027,6 +1041,14 @@ const AdminApp = {
     cachedCategories: [],
     cachedCoupons: [],
     cachedPosts: [],
+    categoryLabels: <?= json_encode($adminCategoryMap, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_FORCE_OBJECT) ?>,
+
+    getCategoryLabel(catId) {
+        if (this.categoryLabels && this.categoryLabels[catId]) {
+            return this.decodeEntities(this.categoryLabels[catId]);
+        }
+        return catId || '';
+    },
 
     formatVND(num) {
         return new Intl.NumberFormat('vi-VN').format(num) + '₫';
@@ -1179,7 +1201,15 @@ const AdminApp = {
                 // Render đơn gần đây
                 const tbody = document.getElementById('tbody-recent-orders');
                 if (data.recent_orders && data.recent_orders.length > 0) {
-                    tbody.innerHTML = data.recent_orders.map(o => `
+                    const statusMap = {
+                        paid: { cls: 'bg-success text-white', label: 'Đã Thanh Toán' },
+                        shipping: { cls: 'bg-info text-dark', label: 'Đang Giao Hàng' },
+                        cancelled: { cls: 'bg-secondary text-white', label: 'Đã Hủy' },
+                        pending: { cls: 'bg-warning text-dark', label: 'Chờ Thanh Toán' }
+                    };
+                    tbody.innerHTML = data.recent_orders.map(o => {
+                        const st = statusMap[o.payment_status] || statusMap.pending;
+                        return `
                         <tr>
                             <td class="fw-bold text-dark">#${this.escHtml(o.order_code)}</td>
                             <td>${this.escHtml(this.decodeEntities(o.customer_name))}</td>
@@ -1187,13 +1217,14 @@ const AdminApp = {
                             <td class="fw-bold text-danger">${this.formatVND(o.final_amount)}</td>
                             <td><span class="badge bg-light text-dark border">${o.payment_method === 'vietqr' ? '⚡ VietQR' : '💵 COD'}</span></td>
                             <td>
-                                <span class="badge badge-status ${o.payment_status === 'paid' ? 'bg-success text-white' : 'bg-warning text-dark'}">
-                                    ${o.payment_status === 'paid' ? 'Đã Thanh Toán' : 'Chờ Thanh Toán'}
+                                <span class="badge badge-status ${st.cls}">
+                                    ${st.label}
                                 </span>
                             </td>
                             <td class="small text-muted">${this.escHtml(o.created_at || 'Mới đây')}</td>
                         </tr>
-                    `).join('');
+                    `;
+                    }).join('');
                 } else {
                     tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">Chưa có đơn hàng nào</td></tr>`;
                 }
@@ -1249,7 +1280,7 @@ const AdminApp = {
                     <td class="fw-bold text-danger">${this.formatVND(o.final_amount)}</td>
                     <td><span class="badge bg-light text-dark border">${o.payment_method === 'vietqr' ? '⚡ VietQR' : '💵 COD'}</span></td>
                     <td>
-                        <select class="form-select form-select-sm rounded-pill fw-semibold ${o.payment_status === 'paid' ? 'text-success border-success' : 'text-warning border-warning'}" onchange="AdminApp.updateOrderStatus(${Number(o.id)}, this.value)">
+                        <select class="form-select form-select-sm rounded-pill fw-semibold ${o.payment_status === 'paid' ? 'text-success border-success' : (o.payment_status === 'shipping' ? 'text-info border-info' : (o.payment_status === 'cancelled' ? 'text-danger border-danger' : 'text-warning border-warning'))}" onchange="AdminApp.updateOrderStatus(${Number(o.id)}, this.value)">
                             <option value="pending" ${o.payment_status === 'pending' ? 'selected' : ''}>⏳ Chờ TT</option>
                             <option value="paid" ${o.payment_status === 'paid' ? 'selected' : ''}>✅ Đã Thanh Toán</option>
                             <option value="shipping" ${o.payment_status === 'shipping' ? 'selected' : ''}>🚚 Đang Giao</option>
@@ -1347,7 +1378,7 @@ const AdminApp = {
                         <div class="small text-muted mt-1"><i class="fa-solid fa-earth-americas me-1 text-danger"></i>${this.escHtml(this.decodeEntities(p.origin || 'Hàn Quốc'))}</div>
                     </td>
                     <td>
-                        <div class="small text-dark fw-semibold">${this.escHtml(p.category_id)}</div>
+                        <div class="small text-dark fw-semibold">${this.escHtml(this.getCategoryLabel(p.category_id))}</div>
                         <div class="small text-muted">${this.escHtml(this.decodeEntities(p.capacity || 'Tiêu chuẩn'))}</div>
                     </td>
                     <td class="fw-bold text-danger">${this.formatVND(p.price)}</td>
@@ -1718,6 +1749,25 @@ const AdminApp = {
             const data = await res.json();
             if (data.success) {
                 this.cachedCategories = data.categories || [];
+                this.categoryLabels = {};
+                const prodCatSelect = document.getElementById('prod_category_id');
+                const prevSelectedCat = prodCatSelect ? prodCatSelect.value : '';
+                if (prodCatSelect && this.cachedCategories.length > 0) {
+                    prodCatSelect.innerHTML = '';
+                }
+                this.cachedCategories.forEach(c => {
+                    const decodedName = this.decodeEntities(c.name);
+                    this.categoryLabels[c.id] = decodedName;
+                    if (prodCatSelect) {
+                        const opt = document.createElement('option');
+                        opt.value = c.id;
+                        opt.textContent = decodedName;
+                        prodCatSelect.appendChild(opt);
+                    }
+                });
+                if (prodCatSelect && prevSelectedCat) {
+                    prodCatSelect.value = prevSelectedCat;
+                }
                 const badgeCategories = document.getElementById('count-categories-badge');
                 if (badgeCategories) badgeCategories.textContent = this.cachedCategories.length;
                 if (this.cachedCategories.length === 0) {
@@ -1939,7 +1989,7 @@ const AdminApp = {
 
     updatePreviewQR() {
         const bankId = document.getElementById('cfg_bank_id').value || 'MB';
-        const accountNo = document.getElementById('cfg_account_no').value.trim() || '5550372005777';
+        const accountNo = document.getElementById('cfg_account_no').value.trim() || '0869571734';
         const accountName = document.getElementById('cfg_account_name').value.trim() || 'ALICE COSMETIC';
 
         const qrUrl = `https://img.vietqr.io/image/${encodeURIComponent(bankId)}-${encodeURIComponent(accountNo)}-compact2.png?accountName=${encodeURIComponent(accountName)}`;
@@ -1963,7 +2013,7 @@ const AdminApp = {
             bank_name: (this.banks.find(b => b.id === document.getElementById('cfg_bank_id').value) || {}).name || '',
             account_no: document.getElementById('cfg_account_no').value.trim(),
             account_name: document.getElementById('cfg_account_name').value.trim().toUpperCase(),
-            qr_template: 'compact2',
+            qr_template: 'qr_only',
             google_sheet_webhook: document.getElementById('cfg_google_sheet_webhook').value.trim()
         };
 
