@@ -774,6 +774,10 @@ if ($isAdmin) {
                                 <label class="form-label small fw-semibold">Thương Hiệu</label>
                                 <input type="text" id="prod_brand" class="form-control" placeholder="Rom&nd, La Roche-Posay...">
                             </div>
+                            <div class="col-12">
+                                <label class="form-label small fw-semibold">Đường Dẫn SEO (Slug - Để trống tự giữ/tạo)</label>
+                                <input type="text" id="prod_slug" class="form-control font-monospace" placeholder="son-kem-li-romand-zero-velvet-tint">
+                            </div>
                             <div class="col-md-4">
                                 <label class="form-label small fw-semibold">Danh Mục</label>
                                 <select id="prod_category_id" class="form-select">
@@ -1438,6 +1442,7 @@ const AdminApp = {
         document.getElementById('modalProductTitle').textContent = 'Thêm Mỹ Phẩm Mới';
         document.getElementById('formProductDetail').reset();
         document.getElementById('prod_id').value = '';
+        document.getElementById('prod_slug').value = '';
         document.getElementById('prod_stock_quantity').value = 50;
         document.getElementById('prod_origin').value = 'Hàn Quốc';
         document.getElementById('prod_capacity').value = '50ml';
@@ -1445,7 +1450,7 @@ const AdminApp = {
         document.getElementById('prod_skin_type').value = 'all';
         document.getElementById('prod_ingredients').value = '';
         document.getElementById('prod_how_to_use').value = '';
-        new bootstrap.Modal(document.getElementById('modalAdminProduct')).show();
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('modalAdminProduct')).show();
     },
 
     editProduct(id) {
@@ -1456,6 +1461,7 @@ const AdminApp = {
         document.getElementById('modalProductTitle').textContent = 'Sửa Sản Phẩm: ' + cleanName;
         document.getElementById('prod_id').value = p.id;
         document.getElementById('prod_name').value = cleanName;
+        document.getElementById('prod_slug').value = p.slug || '';
         document.getElementById('prod_brand').value = this.decodeEntities(p.brand);
         document.getElementById('prod_category_id').value = p.category_id;
         document.getElementById('prod_price').value = p.price;
@@ -1474,7 +1480,7 @@ const AdminApp = {
         document.getElementById('prod_ingredients').value = this.decodeEntities(p.ingredients || '');
         document.getElementById('prod_how_to_use').value = this.decodeEntities(p.how_to_use || '');
 
-        new bootstrap.Modal(document.getElementById('modalAdminProduct')).show();
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('modalAdminProduct')).show();
     },
 
     async saveProduct(e) {
@@ -1485,6 +1491,7 @@ const AdminApp = {
         const payload = {
             id: document.getElementById('prod_id').value || null,
             name: document.getElementById('prod_name').value.trim(),
+            slug: document.getElementById('prod_slug').value.trim(),
             brand: document.getElementById('prod_brand').value.trim(),
             category_id: document.getElementById('prod_category_id').value,
             price: document.getElementById('prod_price').value,
@@ -1512,7 +1519,8 @@ const AdminApp = {
             btn.disabled = false;
             if (data.success) {
                 alert(data.message);
-                bootstrap.Modal.getInstance(document.getElementById('modalAdminProduct')).hide();
+                const prodModal = bootstrap.Modal.getInstance(document.getElementById('modalAdminProduct'));
+                if (prodModal) prodModal.hide();
                 this.loadProducts();
                 this.loadStats();
             } else {

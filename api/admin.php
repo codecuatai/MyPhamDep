@@ -123,8 +123,24 @@ if ($action === 'save_product') {
         jsonResponse(['success' => false, 'message' => 'Vui lòng điền tên, giá bán và link ảnh sản phẩm!'], 400);
     }
 
+    $existingRow = null;
+    if ($id) {
+        $existingStmt = $pdo->prepare("SELECT slug, price, original_price, variants FROM products WHERE id = ? LIMIT 1");
+        $existingStmt->execute([$id]);
+        $existingRow = $existingStmt->fetch();
+        if (!$existingRow) {
+            jsonResponse(['success' => false, 'message' => 'Không tìm thấy sản phẩm cần cập nhật!'], 404);
+        }
+    }
+
     $customSlug = trim($input['slug'] ?? '');
-    $slug = !empty($customSlug) ? slugify($customSlug) : slugify($name);
+    if ($customSlug !== '') {
+        $slug = slugify($customSlug);
+    } elseif ($existingRow && !empty($existingRow['slug'])) {
+        $slug = $existingRow['slug'];
+    } else {
+        $slug = slugify($name);
+    }
     if (empty($slug)) {
         $slug = 'san-pham-' . time();
     }
@@ -132,7 +148,7 @@ if ($action === 'save_product') {
     $slugCheckStmt = $pdo->prepare("SELECT id FROM products WHERE slug = ? AND id != ? LIMIT 1");
     $slugCheckStmt->execute([$slug, $id ?: 0]);
     if ($slugCheckStmt->fetch()) {
-        if (!empty($customSlug)) {
+        if ($customSlug !== '') {
             jsonResponse(['success' => false, 'message' => 'Đường dẫn SEO (slug) này đã tồn tại ở sản phẩm khác!'], 400);
         }
         $slug .= '-' . substr((string)time(), -4) . '-' . random_int(10, 99);
@@ -142,13 +158,6 @@ if ($action === 'save_product') {
 
     if ($id) {
         // Cập nhật sản phẩm và đồng bộ giá biến thể mặc định nếu Admin thay đổi giá chính
-        $existingStmt = $pdo->prepare("SELECT price, original_price, variants FROM products WHERE id = ? LIMIT 1");
-        $existingStmt->execute([$id]);
-        $existingRow = $existingStmt->fetch();
-        if (!$existingRow) {
-            jsonResponse(['success' => false, 'message' => 'Không tìm thấy sản phẩm cần cập nhật!'], 404);
-        }
-
         $variantsJson = $existingRow['variants'] ?? '[]';
         if (isset($input['variants'])) {
             $variantsJson = is_string($input['variants'])
