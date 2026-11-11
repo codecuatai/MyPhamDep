@@ -49,7 +49,7 @@ define('SHOP_CONFIG', [
     'bank_id'       => 'MB',
     'bank_name'     => 'MBBank - Ngân hàng TMCP Quân Đội',
     'account_no'    => '0869571734',
-    'account_name'  => 'TIEM SACH MOC MIEN',
+    'account_name'  => 'ALICE COSMETIC',
     'qr_template'   => 'qr_only',
 
     // Đồng bộ đơn hàng về Google Sheets (qua Google Apps Script WebApp)

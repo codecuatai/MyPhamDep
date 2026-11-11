@@ -100,7 +100,7 @@ $vietqrData = null;
 if ($paymentMethod === 'vietqr') {
     $bankId = $config['bank_id'] ?? 'MB';
     $accountNo = $config['account_no'] ?? '0869571734';
-    $accountName = $config['account_name'] ?? 'TIEM SACH MOC MIEN';
+    $accountName = $config['account_name'] ?? 'ALICE COSMETIC';
     $template = $config['qr_template'] ?? 'qr_only';
 
     // Nội dung chuyển khoản chuẩn: Mã đơn hàng

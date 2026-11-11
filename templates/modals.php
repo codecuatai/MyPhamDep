@@ -334,7 +334,7 @@
 
                         <!-- Account Name -->
                         <div class="small fw-bold text-dark text-uppercase mt-1" id="vqr-card-accname" style="font-size: 0.82rem; letter-spacing: 0.3px;">
-                            TIEM SACH MOC MIEN
+                            ALICE COSMETIC
                         </div>
 
                         <!-- Account Number -->

@@ -865,7 +865,7 @@ const AliceApp = {
         if (elCardBank) elCardBank.textContent = vqr.bank_id || 'MB';
 
         const elCardAccName = document.getElementById('vqr-card-accname');
-        if (elCardAccName) elCardAccName.textContent = vqr.account_name || 'TIEM SACH MOC MIEN';
+        if (elCardAccName) elCardAccName.textContent = vqr.account_name || 'ALICE COSMETIC';
 
         const elCardAccNo = document.getElementById('vqr-card-accno');
         if (elCardAccNo) elCardAccNo.textContent = vqr.account_no || '0869571734';
