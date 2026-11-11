@@ -317,10 +317,10 @@ $breadcrumbSchema = generateBreadcrumbJsonLd([
                     <!-- Action Buttons -->
                     <div class="d-flex flex-wrap gap-2 mb-4 mt-2">
                         <?php if ($stockQty > 0): ?>
-                            <button type="button" class="btn-hero-cta flex-grow-1 border-0 py-3" onclick="window.addCurrentPageProductToCart()">
+                            <button type="button" class="btn-hero-cta flex-grow-1 border-0 py-3" onclick="window.addCurrentPageProductToCart(true)">
                                 <i class="fa-solid fa-bolt-lightning me-1"></i>Mua Ngay Nhanh Chóng
                             </button>
-                            <button type="button" class="btn btn-outline-danger rounded-pill px-4 py-3 font-bold" style="border-color: var(--primary); color: var(--primary-dark);" onclick="window.addCurrentPageProductToCart()">
+                            <button type="button" class="btn-pdp-add-cart px-4 py-3" onclick="window.addCurrentPageProductToCart(false)">
                                 <i class="fa-solid fa-cart-plus me-1"></i>Thêm Vào Giỏ
                             </button>
                         <?php else: ?>
@@ -328,7 +328,7 @@ $breadcrumbSchema = generateBreadcrumbJsonLd([
                                 <i class="fa-solid fa-circle-xmark me-1"></i>Sản Phẩm Tạm Hết Hàng
                             </button>
                         <?php endif; ?>
-                        <a href="<?= htmlspecialchars($shopConfig['zalo_url']) ?>" target="_blank" class="btn btn-light rounded-pill px-3 py-3 border font-semibold text-primary" title="Tư vấn soi da qua Zalo">
+                        <a href="<?= htmlspecialchars($shopConfig['zalo_url']) ?>" target="_blank" class="btn btn-light rounded-pill px-3 py-3 border font-semibold text-primary d-inline-flex align-items-center justify-content-center" title="Tư vấn soi da qua Zalo">
                             <i class="fa-solid fa-comment-dots me-1"></i>Tư vấn Zalo
                         </a>
                     </div>
@@ -495,7 +495,8 @@ $breadcrumbSchema = generateBreadcrumbJsonLd([
             image: <?= json_encode($product['image'], JSON_UNESCAPED_SLASHES) ?>,
             price: <?= $initialPrice ?>,
             originalPrice: <?= $initialOriginalPrice ?>,
-            variantName: <?= json_encode($initialVariantName, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>
+            variantName: <?= json_encode($initialVariantName, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>,
+            stockQuantity: <?= (int)$stockQty ?>
         };
         window.selectProductVariant = function(btn) {
             document.querySelectorAll('.variant-select-btn').forEach(b => {
@@ -530,10 +531,35 @@ $breadcrumbSchema = generateBreadcrumbJsonLd([
                 }
             }
         };
-        window.addCurrentPageProductToCart = function() {
+        window.addCurrentPageProductToCart = function(buyNow = false) {
             const s = window.PRODUCT_PAGE_STATE;
-            if (window.AliceApp && typeof AliceApp.quickAddToCart === 'function') {
-                AliceApp.quickAddToCart(s.id, s.name, s.image, s.price, s.variantName || '');
+            const app = window.AliceApp || (typeof AliceApp !== 'undefined' ? AliceApp : null);
+            if (!app) {
+                console.error('AliceApp is not loaded yet.');
+                return;
+            }
+            if (typeof s.stockQuantity !== 'undefined' && Number(s.stockQuantity) <= 0) {
+                app.showToast('Sản phẩm "' + s.name + '" tạm thời đã hết hàng trong kho!', 'warning');
+                return;
+            }
+            if (buyNow) {
+                app.addItemToCart({
+                    id: s.id,
+                    name: s.name,
+                    image: s.image,
+                    price: s.price,
+                    variant_name: s.variantName || '',
+                    quantity: 1
+                });
+                const label = s.variantName ? `${s.name} (${s.variantName})` : s.name;
+                app.showToast(`Đã chọn mua "${label}"`, 'success');
+                if (typeof app.openCheckoutModal === 'function') {
+                    app.openCheckoutModal();
+                } else {
+                    app.openCartDrawer();
+                }
+            } else if (typeof app.quickAddToCart === 'function') {
+                app.quickAddToCart(s.id, s.name, s.image, s.price, s.variantName || '');
             }
         };
     </script>

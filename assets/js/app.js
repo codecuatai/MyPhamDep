@@ -1729,6 +1729,8 @@ const AliceApp = {
     }
 };
 
+window.AliceApp = AliceApp;
+
 // Khởi tạo Facebook SDK dự phòng nếu chưa khai báo ở header
 if (!window.fbAsyncInit) {
     window.fbAsyncInit = function() {
