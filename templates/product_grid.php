@@ -25,6 +25,26 @@
             </div>
         </div>
 
+        <!-- Category Filter Status Bar (Hiển thị trực quan khi bấm danh mục tròn hoặc URL) -->
+        <div id="category-filter-status" class="alert alert-light border rounded-pill py-2 px-3 px-md-4 mb-3 d-none align-items-center justify-content-between shadow-sm" style="background: linear-gradient(90deg, #fff5f8 0%, #ffffff 100%); border-color: #ffd1dc !important;">
+            <div class="d-flex align-items-center flex-wrap gap-2">
+                <span class="badge rounded-pill bg-danger text-white px-2 py-1"><i class="fa-solid fa-filter me-1"></i>Đang xem</span>
+                <span class="text-dark small">Danh mục: <strong id="filter-cat-name" class="text-danger fw-bold fs-6"></strong> (<span id="filter-cat-count" class="fw-bold">0</span> sản phẩm)</span>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 font-bold" onclick="AliceApp.resetCategoryFilter()">
+                <i class="fa-solid fa-xmark me-1"></i>Xem Tất Cả Mỹ Phẩm
+            </button>
+        </div>
+
+        <!-- Empty state when no products match -->
+        <div id="category-empty-state" class="text-center py-5 d-none">
+            <div class="mb-3 text-muted"><i class="fa-solid fa-box-open fa-3x"></i></div>
+            <h5 class="text-muted">Chưa có sản phẩm nào thuộc danh mục này</h5>
+            <button type="button" class="btn btn-sm btn-danger rounded-pill px-4 mt-2" style="background: var(--gradient-pink); border: none;" onclick="AliceApp.resetCategoryFilter()">
+                Xem tất cả sản phẩm
+            </button>
+        </div>
+
         <!-- Product Cards Grid -->
         <div class="row row-cols-2 row-cols-md-4 g-3" id="main-product-grid">
             <?php foreach ($allProducts as $p): ?>
@@ -42,7 +62,7 @@
                             <?php elseif ($stock <= 10): ?>
                                 <span class="badge bg-warning text-dark position-absolute bottom-0 start-0 m-2 z-2"><i class="fa-solid fa-fire me-1"></i>Còn <?= $stock ?> sp</span>
                             <?php endif; ?>
-                            <a href="san-pham/<?= htmlspecialchars($p['slug']) ?>" onclick="AliceApp.openProductDetail(<?= $p['id'] ?>); return false;" class="d-block w-100 h-100" title="<?= htmlspecialchars($p['name']) ?>">
+                            <a href="<?= $baseUrl ?>/san-pham/<?= htmlspecialchars($p['slug']) ?>" class="d-block w-100 h-100" title="<?= htmlspecialchars($p['name']) ?>">
                                 <img src="<?= htmlspecialchars($p['image']) ?>" 
                                      alt="<?= htmlspecialchars($p['name']) ?>" 
                                      class="product-thumb-img" 
@@ -54,7 +74,7 @@
                         <div class="product-info-wrap">
                             <div class="product-brand"><?= htmlspecialchars($p['brand']) ?></div>
                             <h3 class="product-name" title="<?= htmlspecialchars($p['name']) ?>">
-                                <a href="san-pham/<?= htmlspecialchars($p['slug']) ?>" onclick="AliceApp.openProductDetail(<?= $p['id'] ?>); return false;" class="text-decoration-none text-dark d-block">
+                                <a href="<?= $baseUrl ?>/san-pham/<?= htmlspecialchars($p['slug']) ?>" class="text-decoration-none text-dark d-block">
                                     <?= htmlspecialchars($p['name']) ?>
                                 </a>
                             </h3>
@@ -72,8 +92,11 @@
                             </div>
 
                             <div class="d-flex gap-2 mt-auto">
-                                <button type="button" class="btn-add-cart-pink flex-grow-1" onclick="AliceApp.openProductDetail(<?= $p['id'] ?>)">
-                                    <i class="fa-solid fa-eye me-1"></i>Xem Chi Tiết
+                                <a href="<?= $baseUrl ?>/san-pham/<?= htmlspecialchars($p['slug']) ?>" class="btn-add-cart-pink flex-grow-1 text-center text-decoration-none d-flex align-items-center justify-content-center">
+                                    Chi Tiết
+                                </a>
+                                <button type="button" class="btn btn-sm btn-outline-danger rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;" onclick="AliceApp.openProductDetail(<?= $p['id'] ?>)" title="Xem nhanh sản phẩm">
+                                    <i class="fa-solid fa-eye"></i>
                                 </button>
                                 <button type="button" class="btn btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px; background: var(--gradient-pink); color: #fff; border: none;" onclick="AliceApp.quickAddToCart(<?= $p['id'] ?>, '<?= addslashes($p['name']) ?>', '<?= $p['image'] ?>', <?= $p['price'] ?>)" title="Thêm nhanh vào giỏ">
                                     <i class="fa-solid fa-cart-plus"></i>

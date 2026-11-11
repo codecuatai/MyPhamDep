@@ -152,11 +152,14 @@
                             </div>
                         </div>
 
-                        <!-- Nút Mua ngay -->
-                        <div class="d-flex gap-2 pt-2">
+                        <!-- Nút Mua ngay & Xem trang chi tiết -->
+                        <div class="d-flex flex-wrap gap-2 pt-2">
                             <button type="button" id="pdp-btn-add-cart" class="btn btn-danger flex-grow-1 rounded-pill py-2 font-bold" style="background: var(--gradient-pink); border: none;" onclick="AliceApp.addToCartCurrentProduct()">
                                 <i class="fa-solid fa-cart-shopping me-2"></i>Thêm Vào Giỏ Hàng
                             </button>
+                            <a id="pdp-full-page-link" href="#" class="btn btn-outline-danger rounded-pill px-3 py-2 font-bold small d-inline-flex align-items-center justify-content-center" title="Mở trang chi tiết chuẩn SEO">
+                                <i class="fa-solid fa-arrow-up-right-from-square me-1"></i>Trang Đầy Đủ
+                            </a>
                         </div>
                     </div>
                 </div>

@@ -31,6 +31,7 @@ if ($action === 'stats') {
     $totalProducts = (int)$pdo->query("SELECT COUNT(*) FROM products")->fetchColumn();
     $totalUsers = (int)$pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
     $totalBanners = (int)$pdo->query("SELECT COUNT(*) FROM banners")->fetchColumn();
+    $totalCategories = (int)$pdo->query("SELECT COUNT(*) FROM categories")->fetchColumn();
 
     // Thống kê Tồn kho & Cảnh báo sắp hết hàng
     $lowStockCount = (int)$pdo->query("SELECT COUNT(*) FROM products WHERE stock_quantity > 0 AND stock_quantity <= 10")->fetchColumn();
@@ -50,6 +51,7 @@ if ($action === 'stats') {
             'total_products' => $totalProducts,
             'total_users' => $totalUsers,
             'total_banners' => $totalBanners,
+            'total_categories' => $totalCategories,
             'low_stock_count' => $lowStockCount,
             'out_of_stock_count' => $outOfStockCount
         ],
@@ -349,6 +351,29 @@ if ($action === 'delete_banner') {
     }
     $pdo->prepare("DELETE FROM banners WHERE id = ?")->execute([$id]);
     jsonResponse(['success' => true, 'message' => 'Đã xóa banner thành công!']);
+}
+
+// 8. Quản lý Danh mục (Categories)
+if ($action === 'categories') {
+    $stmt = $pdo->query("SELECT c.*, (SELECT COUNT(*) FROM products p WHERE p.category_id = c.id) as actual_product_count FROM categories c ORDER BY c.count DESC, c.id ASC");
+    $categories = $stmt->fetchAll();
+    jsonResponse(['success' => true, 'categories' => $categories]);
+}
+
+if ($action === 'save_category') {
+    $input = json_decode(file_get_contents('php://input'), true) ?: $_POST;
+    $id = cleanInput($input['id'] ?? '');
+    $name = cleanInput($input['name'] ?? '');
+    $image = trim($input['image'] ?? '');
+    $description = cleanInput($input['description'] ?? '');
+
+    if (empty($id) || empty($name) || empty($image)) {
+        jsonResponse(['success' => false, 'message' => 'Vui lòng nhập đầy đủ tên và link ảnh danh mục!'], 400);
+    }
+
+    $stmt = $pdo->prepare("UPDATE categories SET name = ?, image = ?, description = ? WHERE id = ?");
+    $stmt->execute([$name, $image, $description, $id]);
+    jsonResponse(['success' => true, 'message' => "Đã cập nhật danh mục '{$name}' thành công!"]);
 }
 
 jsonResponse(['success' => false, 'message' => 'Hành động không hợp lệ'], 400);

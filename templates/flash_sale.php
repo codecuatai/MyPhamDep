@@ -36,7 +36,7 @@
                         <div class="product-thumb-wrap">
                             <span class="badge-mall-official">MALL CHÍNH HÃNG</span>
                             <span class="badge-discount-tag">-<?= $p['discount_percent'] ?>%</span>
-                            <a href="san-pham/<?= htmlspecialchars($p['slug']) ?>" onclick="AliceApp.openProductDetail(<?= $p['id'] ?>); return false;" class="d-block w-100 h-100" title="<?= htmlspecialchars($p['name']) ?>">
+                            <a href="<?= $baseUrl ?>/san-pham/<?= htmlspecialchars($p['slug']) ?>" class="d-block w-100 h-100" title="<?= htmlspecialchars($p['name']) ?>">
                                 <img src="<?= htmlspecialchars($p['image']) ?>" 
                                      alt="<?= htmlspecialchars($p['name']) ?>" 
                                      class="product-thumb-img" 
@@ -48,7 +48,7 @@
                         <div class="product-info-wrap">
                             <div class="product-brand"><?= htmlspecialchars($p['brand']) ?></div>
                             <h3 class="product-name" title="<?= htmlspecialchars($p['name']) ?>">
-                                <a href="san-pham/<?= htmlspecialchars($p['slug']) ?>" onclick="AliceApp.openProductDetail(<?= $p['id'] ?>); return false;" class="text-decoration-none text-dark d-block">
+                                <a href="<?= $baseUrl ?>/san-pham/<?= htmlspecialchars($p['slug']) ?>" class="text-decoration-none text-dark d-block">
                                     <?= htmlspecialchars($p['name']) ?>
                                 </a>
                             </h3>
@@ -71,10 +71,12 @@
                                 </div>
                             </div>
 
-                            <div class="mt-3">
-                                <button type="button" class="btn-add-cart-pink" onclick="AliceApp.openProductDetail(<?= $p['id'] ?>)">
-                                    <i class="fa-solid fa-cart-plus"></i>
-                                    <span>Chọn Mua</span>
+                            <div class="d-flex gap-2 mt-3">
+                                <a href="<?= $baseUrl ?>/san-pham/<?= htmlspecialchars($p['slug']) ?>" class="btn-add-cart-pink flex-grow-1 text-center text-decoration-none d-flex align-items-center justify-content-center">
+                                    Săn Deal Ngay
+                                </a>
+                                <button type="button" class="btn btn-sm btn-outline-danger rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;" onclick="AliceApp.openProductDetail(<?= $p['id'] ?>)" title="Xem nhanh sản phẩm">
+                                    <i class="fa-solid fa-eye"></i>
                                 </button>
                             </div>
                         </div>

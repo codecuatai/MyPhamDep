@@ -178,5 +178,21 @@ try {
 
     <!-- App Engine JavaScript -->
     <script src="assets/js/app.js?v=<?= time() ?>"></script>
+
+    <?php if (!empty($_GET['category'])): ?>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const catSlug = '<?= addslashes(htmlspecialchars($_GET['category'])) ?>';
+        setTimeout(() => {
+            const catItem = document.querySelector(`.bubble-category-item[data-cat-id="${catSlug}"]`);
+            if (catItem) {
+                catItem.click();
+            } else {
+                AliceApp.filterByCategory(catSlug, catSlug);
+            }
+        }, 150);
+    });
+    </script>
+    <?php endif; ?>
 </body>
 </html>

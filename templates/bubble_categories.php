@@ -17,7 +17,7 @@
         <div class="row row-cols-3 row-cols-md-6 g-3 justify-content-center">
             <?php foreach ($categories as $cat): ?>
                 <div class="col">
-                    <a href="javascript:void(0)" onclick="AliceApp.filterProducts('all', '<?= $cat['id'] ?>'); document.getElementById('san-pham-section').scrollIntoView({behavior: 'smooth'});" class="bubble-category-item">
+                    <a href="javascript:void(0)" onclick="AliceApp.filterByCategory('<?= $cat['id'] ?>', '<?= addslashes(htmlspecialchars($cat['name'])) ?>');" class="bubble-category-item" data-cat-id="<?= htmlspecialchars($cat['id']) ?>" title="<?= htmlspecialchars($cat['name']) ?>">
                         <div class="bubble-circle-wrap">
                             <img src="<?= htmlspecialchars($cat['image']) ?>" 
                                  alt="<?= htmlspecialchars($cat['name']) ?>" 

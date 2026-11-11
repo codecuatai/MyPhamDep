@@ -631,6 +631,17 @@ a {
     color: var(--primary);
 }
 
+.bubble-category-item.active .bubble-circle-wrap {
+    background: linear-gradient(135deg, #ff4d8d 0%, #ff1a68 100%);
+    box-shadow: 0 0 0 4px rgba(255, 77, 141, 0.35), 0 10px 22px rgba(255, 77, 141, 0.4);
+    transform: translateY(-4px) scale(1.06);
+}
+
+.bubble-category-item.active .bubble-name {
+    color: var(--primary-dark);
+    font-weight: 800;
+}
+
 /* ==========================================================================
    5. FLASH SALE WIDGET (Shopee Style with Pink Theme)
    ========================================================================== */

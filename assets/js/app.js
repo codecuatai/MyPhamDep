@@ -397,6 +397,12 @@ const AliceApp = {
             this.renderAddOnDealsUI(product);
             this.renderReviewsUI(product.reviews || []);
 
+            // Set link to full product detail page
+            const elFullPageLink = document.getElementById('pdp-full-page-link');
+            if (elFullPageLink) {
+                elFullPageLink.href = product.slug ? `san-pham/${product.slug}` : `san-pham/${product.id}`;
+            }
+
             // Open Bootstrap Modal
             const modalEl = document.getElementById('modalProductDetail');
             const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
@@ -1026,21 +1032,111 @@ const AliceApp = {
     // ==========================================
     // 5. BỘ LỌC DANH MỤC & LOẠI DA (Filter Engine)
     // ==========================================
-    filterProducts(skinType = 'all', category = 'all') {
+    currentFilterSkin: 'all',
+    currentFilterCategory: 'all',
+    currentCategoryName: '',
+
+    filterByCategory(catId, catName) {
+        this.currentFilterCategory = catId;
+        this.currentCategoryName = catName || catId;
+
+        // Highlight active bubble item
+        document.querySelectorAll('.bubble-category-item').forEach(item => {
+            if (item.getAttribute('data-cat-id') === catId) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        });
+
+        // Apply product filtering
+        this.applyProductFilter();
+
+        // Scroll smoothly to products section
+        const section = document.getElementById('san-pham-section');
+        if (section) {
+            section.scrollIntoView({ behavior: 'smooth' });
+        }
+    },
+
+    resetCategoryFilter() {
+        this.currentFilterCategory = 'all';
+        this.currentCategoryName = '';
+
+        // Remove active state on bubbles
+        document.querySelectorAll('.bubble-category-item').forEach(item => {
+            item.classList.remove('active');
+        });
+
+        // Reset skin tabs to All
+        document.querySelectorAll('.routine-tab-btn').forEach(b => {
+            if (b.getAttribute('data-skin') === 'all') {
+                b.classList.add('active');
+            } else {
+                b.classList.remove('active');
+            }
+        });
+        this.currentFilterSkin = 'all';
+
+        this.applyProductFilter();
+    },
+
+    applyProductFilter() {
         const cards = document.querySelectorAll('.product-grid-item');
+        let visibleCount = 0;
+
         cards.forEach(card => {
             const cardSkin = card.getAttribute('data-skin');
             const cardCat = card.getAttribute('data-category');
 
-            let matchSkin = (skinType === 'all' || cardSkin === skinType || cardSkin === 'all');
-            let matchCat = (category === 'all' || cardCat === category);
+            let matchSkin = (this.currentFilterSkin === 'all' || cardSkin === this.currentFilterSkin || cardSkin === 'all');
+            let matchCat = (this.currentFilterCategory === 'all' || cardCat === this.currentFilterCategory);
 
             if (matchSkin && matchCat) {
-                card.style.display = 'block';
+                card.style.display = '';
+                visibleCount++;
             } else {
                 card.style.display = 'none';
             }
         });
+
+        // Update status bar
+        const statusBar = document.getElementById('category-filter-status');
+        const filterName = document.getElementById('filter-cat-name');
+        const filterCount = document.getElementById('filter-cat-count');
+        const emptyState = document.getElementById('category-empty-state');
+
+        if (this.currentFilterCategory !== 'all') {
+            if (statusBar) {
+                statusBar.classList.remove('d-none');
+                statusBar.classList.add('d-flex');
+            }
+            if (filterName) filterName.textContent = this.currentCategoryName || this.currentFilterCategory;
+            if (filterCount) filterCount.textContent = visibleCount;
+        } else {
+            if (statusBar) {
+                statusBar.classList.remove('d-flex');
+                statusBar.classList.add('d-none');
+            }
+        }
+
+        if (emptyState) {
+            if (visibleCount === 0) {
+                emptyState.classList.remove('d-none');
+            } else {
+                emptyState.classList.add('d-none');
+            }
+        }
+    },
+
+    filterProducts(skinType = 'all', category = 'all') {
+        if (skinType !== undefined && skinType !== null) {
+            this.currentFilterSkin = skinType;
+        }
+        if (category !== undefined && category !== null && category !== 'all') {
+            this.currentFilterCategory = category;
+        }
+        this.applyProductFilter();
     },
 
     // ==========================================
@@ -1505,7 +1601,8 @@ const AliceApp = {
                 document.querySelectorAll('.routine-tab-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 const skinType = btn.getAttribute('data-skin');
-                this.filterProducts(skinType, 'all');
+                this.currentFilterSkin = skinType;
+                this.applyProductFilter();
             });
         });
 

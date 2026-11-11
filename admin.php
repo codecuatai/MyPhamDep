@@ -223,6 +223,11 @@ $isAdmin = ($currentUser && ($currentUser['role'] ?? '') === 'admin');
                 </button>
             </li>
             <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-categories" type="button" onclick="AdminApp.loadCategories()">
+                    <i class="fa-solid fa-shapes me-1"></i>Danh Mục (6)
+                </button>
+            </li>
+            <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-coupons" type="button" onclick="AdminApp.loadCoupons()">
                     <i class="fa-solid fa-ticket me-1"></i>Mã Giảm Giá
                 </button>
@@ -485,6 +490,36 @@ $isAdmin = ($currentUser && ($currentUser['role'] ?? '') === 'admin');
                 </div>
             </div>
 
+            <!-- TAB: QUẢN LÝ DANH MỤC TRÒN (CATEGORIES) -->
+            <div class="tab-pane fade" id="tab-categories" role="tabpanel">
+                <div class="card border-0 shadow-sm rounded-4 p-4">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+                        <div>
+                            <h5 class="fw-bold mb-1"><i class="fa-solid fa-shapes me-2 text-danger"></i>6 Danh Mục Làm Đẹp Tròn Trang Chủ</h5>
+                            <p class="text-muted small mb-0">Quản lý hình ảnh và thông tin của 6 bong bóng danh mục tròn (Khám Phá Theo Nhu Cầu Da)</p>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr class="small text-muted">
+                                    <th style="width: 90px;">ẢNH TRÒN</th>
+                                    <th>TÊN DANH MỤC</th>
+                                    <th>MÃ ĐỊNH DANH (SLUG)</th>
+                                    <th>SẢN PHẨM HIỆN CÓ</th>
+                                    <th>MÔ TẢ CHI TIẾT</th>
+                                    <th class="text-end" style="width: 100px;">THAO TÁC</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-categories">
+                                <tr><td colspan="6" class="text-center py-4 text-muted">Đang tải danh sách danh mục...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <!-- TAB 4: MÃ GIẢM GIÁ (COUPONS) -->
             <div class="tab-pane fade" id="tab-coupons" role="tabpanel">
                 <div class="card border-0 shadow-sm rounded-4 p-4">
@@ -730,12 +765,12 @@ $isAdmin = ($currentUser && ($currentUser['role'] ?? '') === 'admin');
                             <div class="col-md-4">
                                 <label class="form-label small fw-semibold">Danh Mục</label>
                                 <select id="prod_category_id" class="form-select">
-                                    <option value="son-moi">Son Môi</option>
-                                    <option value="duong-da">Chăm Sóc Da (Skincare)</option>
-                                    <option value="trang-diem">Trang Điểm (Makeup)</option>
+                                    <option value="tay-trang">Làm Sạch & Tẩy Trang</option>
+                                    <option value="serum-tinh-chat">Tinh Chất & Serum</option>
                                     <option value="chong-nang">Kem Chống Nắng</option>
-                                    <option value="combo-qua">Combo Quà Tặng</option>
-                                    <option value="nuoc-hoa">Nước Hoa & Body</option>
+                                    <option value="kem-duong">Dưỡng Ẩm & Phục Hồi</option>
+                                    <option value="makeup-son">Son Môi & Trang Điểm</option>
+                                    <option value="combo-routine">Set Quà & Routine</option>
                                 </select>
                             </div>
                             <div class="col-md-4">
@@ -914,6 +949,59 @@ $isAdmin = ($currentUser && ($currentUser['role'] ?? '') === 'admin');
                         <div class="text-end mt-4">
                             <button type="button" class="btn btn-light rounded-pill px-4 me-2" data-bs-dismiss="modal">Hủy</button>
                             <button type="submit" id="btnSaveCoupon" class="btn btn-pink rounded-pill px-4">Tạo Mã Voucher</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CHỈNH SỬA DANH MỤC TRÒN -->
+    <div class="modal fade" id="modalEditCategory" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="modalCategoryTitle">Chỉnh Sửa Danh Mục Tròn</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formCategoryDetail" onsubmit="AdminApp.saveCategory(event)">
+                        <input type="hidden" id="cat_id">
+                        
+                        <!-- Preview ảnh tròn -->
+                        <div class="text-center mb-3">
+                            <label class="form-label small fw-semibold d-block text-muted">Xem Trước Ảnh Bong Bóng</label>
+                            <div class="d-inline-block position-relative p-1 rounded-circle border border-2 border-danger-subtle shadow-sm bg-light">
+                                <img id="cat_image_preview" src="" alt="Preview" 
+                                     class="rounded-circle object-fit-cover" 
+                                     style="width: 80px; height: 80px;"
+                                     onerror="this.src='https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=500&q=80'">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Link Ảnh Danh Mục (URL) *</label>
+                            <input type="url" id="cat_image" class="form-control" required 
+                                   placeholder="https://images.unsplash.com/photo-..."
+                                   oninput="document.getElementById('cat_image_preview').src = this.value.trim()">
+                            <div class="form-text small">Dán link ảnh trực tiếp (Unsplash, Imgur, link web ảnh công khai...).</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Tên Danh Mục *</label>
+                            <input type="text" id="cat_name" class="form-control" required placeholder="Ví dụ: Son Môi & Trang Điểm">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Mô Tả Ngắn</label>
+                            <textarea id="cat_description" class="form-control" rows="2" placeholder="Nước tẩy trang, sữa rửa mặt dịu lành..."></textarea>
+                        </div>
+
+                        <div class="text-end mt-4">
+                            <button type="button" class="btn btn-light rounded-pill px-4 me-2" data-bs-dismiss="modal">Hủy</button>
+                            <button type="submit" id="btnSaveCategory" class="btn btn-pink rounded-pill px-4">
+                                <i class="fa-solid fa-floppy-disk me-1"></i>Lưu Danh Mục
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -1551,6 +1639,105 @@ const AdminApp = {
                 alert(data.message || 'Lỗi xóa banner!');
             }
         } catch(e) {
+            alert('Lỗi kết nối máy chủ!');
+        }
+    },
+
+    // 3.5. QUẢN LÝ DANH MỤC TRÒN (CATEGORIES)
+    async loadCategories() {
+        const tbody = document.getElementById('tbody-categories');
+        if (!tbody) return;
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted"><i class="fa-solid fa-spinner fa-spin me-2"></i>Đang tải danh mục...</td></tr>';
+
+        try {
+            const res = await fetch('api/admin.php?action=categories');
+            const data = await res.json();
+            if (data.success) {
+                this.cachedCategories = data.categories || [];
+                if (this.cachedCategories.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">Chưa có danh mục nào.</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = this.cachedCategories.map(c => `
+                    <tr>
+                        <td>
+                            <div class="d-inline-block p-1 rounded-circle border border-danger-subtle bg-white shadow-sm">
+                                <img src="${c.image}" width="50" height="50" class="rounded-circle object-fit-cover" alt="${c.name}" onerror="this.src='https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=500&q=80'">
+                            </div>
+                        </td>
+                        <td>
+                            <div class="fw-bold text-dark fs-6">${c.name}</div>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark font-monospace border px-2 py-1">${c.id}</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-pink text-white rounded-pill px-3 py-1">
+                                <i class="fa-solid fa-tag me-1"></i>${c.actual_product_count || 0} sản phẩm
+                            </span>
+                        </td>
+                        <td>
+                            <div class="small text-muted text-truncate" style="max-width: 280px;" title="${c.description || ''}">${c.description || '—'}</div>
+                        </td>
+                        <td class="text-end">
+                            <button class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="AdminApp.editCategory('${c.id}')">
+                                <i class="fa-solid fa-pen me-1"></i>Sửa
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        } catch(e) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-danger">Lỗi tải danh mục!</td></tr>';
+        }
+    },
+
+    editCategory(id) {
+        const cat = (this.cachedCategories || []).find(c => c.id === id);
+        if (!cat) return;
+        document.getElementById('cat_id').value = cat.id;
+        document.getElementById('cat_name').value = cat.name;
+        document.getElementById('cat_image').value = cat.image;
+        document.getElementById('cat_image_preview').src = cat.image;
+        document.getElementById('cat_description').value = cat.description || '';
+        document.getElementById('modalCategoryTitle').textContent = `Chỉnh Sửa Danh Mục: ${cat.name}`;
+        new bootstrap.Modal(document.getElementById('modalEditCategory')).show();
+    },
+
+    async saveCategory(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btnSaveCategory');
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-2"></i>Đang lưu...`;
+
+        const payload = {
+            id: document.getElementById('cat_id').value.trim(),
+            name: document.getElementById('cat_name').value.trim(),
+            image: document.getElementById('cat_image').value.trim(),
+            description: document.getElementById('cat_description').value.trim()
+        };
+
+        try {
+            const res = await fetch('api/admin.php?action=save_category', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            btn.disabled = false;
+            btn.innerHTML = `<i class="fa-solid fa-floppy-disk me-1"></i>Lưu Danh Mục`;
+
+            if (data.success) {
+                alert(data.message || 'Cập nhật danh mục thành công!');
+                bootstrap.Modal.getInstance(document.getElementById('modalEditCategory')).hide();
+                this.loadCategories();
+            } else {
+                alert(data.message || 'Lưu thất bại!');
+            }
+        } catch(err) {
+            btn.disabled = false;
+            btn.innerHTML = `<i class="fa-solid fa-floppy-disk me-1"></i>Lưu Danh Mục`;
             alert('Lỗi kết nối máy chủ!');
         }
     },
