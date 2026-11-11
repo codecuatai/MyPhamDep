@@ -6,7 +6,7 @@
 <div class="floating-contact-wrap">
     <!-- Nút Chat Zalo -->
     <a href="<?= htmlspecialchars($shopConfig['zalo_url']) ?>" target="_blank" class="btn-float-action btn-float-zalo" title="Chat Zalo tư vấn da liễu">
-        <img src="assets/images/zalo-chat.svg" alt="Zalo" style="width: 30px; height: 30px; object-fit: contain;">
+        <img src="<?= htmlspecialchars($baseUrl ?? '') ?>/assets/images/zalo-chat.svg" alt="Zalo" style="width: 30px; height: 30px; object-fit: contain;">
     </a>
 
     <!-- Nút Chat Messenger -->

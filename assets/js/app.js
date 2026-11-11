@@ -4,6 +4,25 @@
  */
 
 const AliceApp = {
+    baseUrl: (typeof window.ALICE_BASE_URL === 'string' && window.ALICE_BASE_URL)
+        ? window.ALICE_BASE_URL.replace(/\/+$/, '')
+        : (() => {
+            const scripts = document.getElementsByTagName('script');
+            for (let i = scripts.length - 1; i >= 0; i--) {
+                const src = scripts[i].src || '';
+                const idx = src.indexOf('/assets/js/app.js');
+                if (idx !== -1) {
+                    return src.substring(0, idx);
+                }
+            }
+            return window.location.origin;
+        })(),
+
+    apiUrl(path) {
+        const cleanPath = String(path || '').replace(/^\/+/, '');
+        return `${this.baseUrl}/${cleanPath}`;
+    },
+
     cart: [],
     wishlist: [],
     currentUser: null,
@@ -103,7 +122,7 @@ const AliceApp = {
         clearTimeout(this._syncCartTimer);
         this._syncCartTimer = setTimeout(async () => {
             try {
-                await fetch('api/cart.php?action=save', {
+                await fetch(this.apiUrl('api/cart.php?action=save'), {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
@@ -120,7 +139,7 @@ const AliceApp = {
     async fetchUserCart() {
         if (!this.currentUser) return;
         try {
-            const res = await fetch('api/cart.php?action=get');
+            const res = await fetch(this.apiUrl('api/cart.php?action=get'));
             const data = await res.json();
             if (data.authenticated && Array.isArray(data.cart)) {
                 this.cart = data.cart;
@@ -144,7 +163,7 @@ const AliceApp = {
         if (guestCart && guestCart.length > 0) {
             this.showToast('Đang đồng bộ giỏ hàng cá nhân...', 'info');
             try {
-                const res = await fetch('api/cart.php?action=merge', {
+                const res = await fetch(this.apiUrl('api/cart.php?action=merge'), {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
@@ -292,7 +311,7 @@ const AliceApp = {
     // ==========================================
     async openProductDetail(productId) {
         try {
-            const res = await fetch(`api/products.php?action=detail&id=${productId}`);
+            const res = await fetch(this.apiUrl(`api/products.php?action=detail&id=${productId}`));
             const product = await res.json();
             if (!product || product.error) {
                 this.showToast('Không thể tải thông tin sản phẩm!', 'warning');
@@ -400,7 +419,7 @@ const AliceApp = {
             // Set link to full product detail page
             const elFullPageLink = document.getElementById('pdp-full-page-link');
             if (elFullPageLink) {
-                elFullPageLink.href = product.slug ? `san-pham/${product.slug}` : `san-pham/${product.id}`;
+                elFullPageLink.href = this.apiUrl(product.slug ? `san-pham/${product.slug}` : `san-pham/${product.id}`);
             }
 
             // Open Bootstrap Modal
@@ -717,7 +736,7 @@ const AliceApp = {
         }
 
         try {
-            const res = await fetch(`api/coupon.php?code=${encodeURIComponent(code)}&subtotal=${subtotal}`);
+            const res = await fetch(this.apiUrl(`api/coupon.php?code=${encodeURIComponent(code)}&subtotal=${subtotal}`));
             const data = await res.json();
 
             if (data.success) {
@@ -810,7 +829,7 @@ const AliceApp = {
         btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-2"></i>Đang xử lý đơn hàng...`;
 
         try {
-            const res = await fetch('api/checkout.php', {
+            const res = await fetch(this.apiUrl('api/checkout.php'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -829,7 +848,7 @@ const AliceApp = {
                     try {
                         localStorage.removeItem(this.getUserStorageKey());
                         localStorage.removeItem(this.getUserCouponKey());
-                        fetch('api/cart.php?action=clear', { method: 'POST' }).catch(() => {});
+                        fetch(this.apiUrl('api/cart.php?action=clear'), { method: 'POST' }).catch(() => {});
                     } catch(e) {}
                 }
                 this.saveCart(false);
@@ -880,7 +899,7 @@ const AliceApp = {
         if (elCardAmountVal) elCardAmountVal.textContent = vqr.amount_formatted || (new Intl.NumberFormat('vi-VN').format(orderData.final_amount) + ' VND');
 
         // Sinh link xác nhận thanh toán quét bằng Camera / Zalo điện thoại (mã QR như cũ)
-        const payUrl = window.location.origin + '/pay.php?code=' + encodeURIComponent(orderData.order_code);
+        const payUrl = this.apiUrl('pay.php?code=' + encodeURIComponent(orderData.order_code));
         const smartQrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=8&data=' + encodeURIComponent(payUrl);
         const vqrImg = document.getElementById('vqr-image');
         if (vqrImg) {
@@ -907,7 +926,7 @@ const AliceApp = {
 
         this.paymentPollingTimer = setInterval(async () => {
             try {
-                const res = await fetch(`api/orders.php?action=check_status&order_code=${encodeURIComponent(orderCode)}`);
+                const res = await fetch(this.apiUrl(`api/orders.php?action=check_status&order_code=${encodeURIComponent(orderCode)}`));
                 const data = await res.json();
                 if (data.success && data.is_paid) {
                     clearInterval(this.paymentPollingTimer);
@@ -961,7 +980,7 @@ const AliceApp = {
         if (statusText) statusText.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-danger me-1"></i>Đang mô phỏng xác nhận từ điện thoại...';
 
         try {
-            const res = await fetch(`api/orders.php?action=confirm_payment`, {
+            const res = await fetch(this.apiUrl(`api/orders.php?action=confirm_payment`), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: `order_code=${encodeURIComponent(this.currentActiveOrder.order_code)}`
@@ -1007,7 +1026,7 @@ const AliceApp = {
 
     async confirmPaymentManual(orderCode) {
         try {
-            const res = await fetch(`api/orders.php?action=confirm_payment`, {
+            const res = await fetch(this.apiUrl(`api/orders.php?action=confirm_payment`), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: `order_code=${encodeURIComponent(orderCode)}`
@@ -1144,7 +1163,7 @@ const AliceApp = {
     // ==========================================
     async checkAuth() {
         try {
-            const res = await fetch('api/auth.php?action=me');
+            const res = await fetch(this.apiUrl('api/auth.php?action=me'));
             const data = await res.json();
             if (data.authenticated && data.user) {
                 this.currentUser = data.user;
@@ -1208,7 +1227,7 @@ const AliceApp = {
         btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-1"></i>Đang đăng nhập...`;
 
         try {
-            const res = await fetch('api/auth.php?action=login', {
+            const res = await fetch(this.apiUrl('api/auth.php?action=login'), {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ identifier, password })
@@ -1272,7 +1291,7 @@ const AliceApp = {
         btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-1"></i>Đang tạo tài khoản...`;
 
         try {
-            const res = await fetch('api/auth.php?action=register', {
+            const res = await fetch(this.apiUrl('api/auth.php?action=register'), {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ fullname, email, phone, password, confirm_password: confirmPassword })
@@ -1299,14 +1318,14 @@ const AliceApp = {
     async logout() {
         try {
             if (this.currentUser) {
-                await fetch('api/cart.php?action=save', {
+                await fetch(this.apiUrl('api/cart.php?action=save'), {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ cart: this.cart, coupon: this.appliedCoupon })
                 }).catch(() => {});
             }
 
-            const res = await fetch('api/auth.php?action=logout');
+            const res = await fetch(this.apiUrl('api/auth.php?action=logout'));
             const data = await res.json();
 
             this.currentUser = null;
@@ -1330,7 +1349,7 @@ const AliceApp = {
 
     async sendOAuthRequest(provider, fullname, email, avatar) {
         try {
-            const res = await fetch('api/auth.php?action=oauth', {
+            const res = await fetch(this.apiUrl('api/auth.php?action=oauth'), {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ provider, fullname, email, avatar })
@@ -1524,7 +1543,7 @@ const AliceApp = {
         this.showToast('Đang xác thực thông tin tài khoản Google của bạn...', 'info');
 
         try {
-            const res = await fetch('api/auth.php?action=google_login', {
+            const res = await fetch(this.apiUrl('api/auth.php?action=google_login'), {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ access_token: accessToken })
@@ -1549,7 +1568,7 @@ const AliceApp = {
         this.showToast('Đang xác thực tài khoản Google của bạn...', 'info');
 
         try {
-            const res = await fetch('api/auth.php?action=google_login', {
+            const res = await fetch(this.apiUrl('api/auth.php?action=google_login'), {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ credential: response.credential })
@@ -1611,19 +1630,49 @@ const AliceApp = {
         if (searchInput) {
             searchInput.addEventListener('keyup', (e) => {
                 if (e.key === 'Enter') {
-                    const kw = searchInput.value.toLowerCase().trim();
-                    const cards = document.querySelectorAll('.product-grid-item');
-                    cards.forEach(card => {
-                        const title = card.querySelector('.product-name').textContent.toLowerCase();
-                        const brand = card.querySelector('.product-brand').textContent.toLowerCase();
-                        if (title.includes(kw) || brand.includes(kw)) {
-                            card.style.display = 'block';
-                        } else {
-                            card.style.display = 'none';
-                        }
-                    });
+                    this.handleHeaderSearch();
                 }
             });
+        }
+    },
+
+    goToCategory(catId) {
+        const section = document.getElementById('san-pham-section');
+        if (section) {
+            const catItem = document.querySelector(`.bubble-category-item[data-cat-id="${catId}"]`);
+            if (catItem) {
+                catItem.click();
+            } else {
+                this.filterByCategory(catId, catId);
+            }
+        } else {
+            window.location.href = `${this.baseUrl}/danh-muc/${encodeURIComponent(catId)}`;
+        }
+    },
+
+    handleHeaderSearch() {
+        const searchInput = document.getElementById('header-search-input');
+        const kw = searchInput ? searchInput.value.trim() : '';
+        const section = document.getElementById('san-pham-section');
+        if (section) {
+            const lowerKw = kw.toLowerCase();
+            const cards = document.querySelectorAll('.product-grid-item');
+            cards.forEach(card => {
+                const titleEl = card.querySelector('.product-name');
+                const brandEl = card.querySelector('.product-brand');
+                const title = titleEl ? titleEl.textContent.toLowerCase() : '';
+                const brand = brandEl ? brandEl.textContent.toLowerCase() : '';
+                if (!lowerKw || title.includes(lowerKw) || brand.includes(lowerKw)) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            section.scrollIntoView({ behavior: 'smooth' });
+        } else {
+            window.location.href = kw
+                ? `${this.baseUrl}/?search=${encodeURIComponent(kw)}`
+                : `${this.baseUrl}/#san-pham-section`;
         }
     }
 };

@@ -23,7 +23,7 @@ if (isset($pdo)) {
                     Bí Quyết Chăm Sóc Da Cùng Chuyên Gia
                 </h2>
             </div>
-            <a href="cam-nang" class="small font-bold d-none d-md-inline" style="color: var(--primary-dark);">
+            <a href="<?= htmlspecialchars($baseUrl ?? '') ?>/cam-nang" class="small font-bold d-none d-md-inline" style="color: var(--primary-dark);">
                 Xem tất cả bài viết <i class="fa-solid fa-arrow-right ms-1"></i>
             </a>
         </div>
@@ -33,7 +33,7 @@ if (isset($pdo)) {
                 <?php foreach ($blogPosts as $bp): ?>
                     <div class="col-md-4">
                         <div class="card h-100 border-0 rounded-4 shadow-sm overflow-hidden bg-white d-flex flex-column" style="border: 1px solid var(--primary-pastel) !important;">
-                            <a href="cam-nang/<?= htmlspecialchars($bp['slug']) ?>" class="d-block overflow-hidden" style="height: 180px;">
+                            <a href="<?= htmlspecialchars($baseUrl ?? '') ?>/cam-nang/<?= htmlspecialchars($bp['slug']) ?>" class="d-block overflow-hidden" style="height: 180px;">
                                 <img src="<?= htmlspecialchars($bp['image']) ?>" 
                                      alt="<?= htmlspecialchars($bp['title']) ?>" 
                                      class="w-100 h-100" 
@@ -48,7 +48,7 @@ if (isset($pdo)) {
                                     <span class="small text-muted"><i class="fa-regular fa-clock me-1"></i><?= $bp['reading_time'] ?> phút đọc • <?= htmlspecialchars($bp['category']) ?></span>
                                 </div>
                                 <h3 class="card-title font-bold mt-1 mb-2" style="font-size: 0.95rem; line-height: 1.4;">
-                                    <a href="cam-nang/<?= htmlspecialchars($bp['slug']) ?>" class="text-decoration-none text-dark">
+                                    <a href="<?= htmlspecialchars($baseUrl ?? '') ?>/cam-nang/<?= htmlspecialchars($bp['slug']) ?>" class="text-decoration-none text-dark">
                                         <?= htmlspecialchars($bp['title']) ?>
                                     </a>
                                 </h3>
@@ -56,7 +56,7 @@ if (isset($pdo)) {
                                     <?= htmlspecialchars($bp['excerpt'] ?: strip_tags($bp['content'])) ?>
                                 </p>
                                 <div class="mt-auto pt-2 border-top text-end">
-                                    <a href="cam-nang/<?= htmlspecialchars($bp['slug']) ?>" class="small font-bold text-decoration-none" style="color: var(--primary-dark);">
+                                    <a href="<?= htmlspecialchars($baseUrl ?? '') ?>/cam-nang/<?= htmlspecialchars($bp['slug']) ?>" class="small font-bold text-decoration-none" style="color: var(--primary-dark);">
                                         Đọc tiếp <i class="fa-solid fa-angle-right ms-1"></i>
                                     </a>
                                 </div>

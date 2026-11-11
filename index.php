@@ -100,7 +100,7 @@ try {
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 
     <!-- Custom Tone Hồng Pastel Stylesheet (Cache tối ưu theo Version & File Timestamp) -->
-    <link href="assets/css/style.css?v=<?= file_exists(__DIR__ . '/assets/css/style.css') ? filemtime(__DIR__ . '/assets/css/style.css') : (defined('APP_VERSION') ? APP_VERSION : time()) ?>" rel="stylesheet">
+    <link href="<?= $baseUrl ?>/assets/css/style.css?v=<?= file_exists(__DIR__ . '/assets/css/style.css') ? filemtime(__DIR__ . '/assets/css/style.css') : (defined('APP_VERSION') ? APP_VERSION : time()) ?>" rel="stylesheet">
 
     <!-- Dữ liệu có cấu trúc Schema.org JSON-LD (Hiển thị thông tin thương hiệu & tìm kiếm Google) -->
     <script type="application/ld+json">
@@ -177,12 +177,14 @@ try {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- App Engine JavaScript -->
-    <script src="assets/js/app.js?v=<?= time() ?>"></script>
+    <script>window.ALICE_BASE_URL = <?= json_encode($baseUrl) ?>;</script>
+    <script src="<?= $baseUrl ?>/assets/js/app.js?v=<?= defined('APP_VERSION') ? APP_VERSION : time() ?>"></script>
 
-    <?php if (!empty($_GET['category'])): ?>
+    <?php if (!empty($_GET['category']) || !empty($_GET['search'])): ?>
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const catSlug = '<?= addslashes(htmlspecialchars($_GET['category'])) ?>';
+        <?php if (!empty($_GET['category'])): ?>
+        const catSlug = <?= json_encode($_GET['category']) ?>;
         setTimeout(() => {
             const catItem = document.querySelector(`.bubble-category-item[data-cat-id="${catSlug}"]`);
             if (catItem) {
@@ -191,6 +193,17 @@ try {
                 AliceApp.filterByCategory(catSlug, catSlug);
             }
         }, 150);
+        <?php endif; ?>
+        <?php if (!empty($_GET['search'])): ?>
+        const searchVal = <?= json_encode($_GET['search']) ?>;
+        setTimeout(() => {
+            const input = document.getElementById('header-search-input');
+            if (input) {
+                input.value = searchVal;
+                AliceApp.handleHeaderSearch();
+            }
+        }, 150);
+        <?php endif; ?>
     });
     </script>
     <?php endif; ?>

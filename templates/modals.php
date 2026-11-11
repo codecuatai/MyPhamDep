@@ -512,7 +512,10 @@ async function lookupOrders() {
     resBox.innerHTML = '<div class="text-center py-3"><i class="fa-solid fa-spinner fa-spin text-pink-500"></i> Đang tìm...</div>';
 
     try {
-        const res = await fetch(`api/orders.php?q=${encodeURIComponent(q)}`);
+        const lookupUrl = (typeof AliceApp !== 'undefined' && typeof AliceApp.apiUrl === 'function')
+            ? AliceApp.apiUrl(`api/orders.php?q=${encodeURIComponent(q)}`)
+            : `/api/orders.php?q=${encodeURIComponent(q)}`;
+        const res = await fetch(lookupUrl);
         const data = await res.json();
         if (!data.orders || data.orders.length === 0) {
             resBox.innerHTML = '<div class="alert alert-light text-center small">Không tìm thấy đơn hàng nào khớp với thông tin trên.</div>';

@@ -19,12 +19,16 @@
 </div>
 
 <!-- 2. MAIN HEADER (Lai ghép Shopee Search Bar & Mộc Miên Branding) -->
+<?php
+$isHomePage = (basename($_SERVER['SCRIPT_NAME'] ?? '') === 'index.php' && empty($_GET['category']) && empty($_GET['search']));
+$headerBaseUrl = htmlspecialchars($baseUrl ?? '');
+?>
 <header class="site-header py-2 shadow-sm">
     <div class="container">
         <div class="row align-items-center g-2">
             <!-- Cột 1: Logo ALICE Cosmetic -->
             <div class="col-lg-3 col-md-4 col-auto">
-                <a href="#top" class="brand-logo-wrap text-decoration-none">
+                <a href="<?= $isHomePage ? '#top' : $headerBaseUrl . '/' ?>" class="brand-logo-wrap text-decoration-none">
                     <div class="brand-icon-box">
                         <i class="fa-solid fa-spa"></i>
                     </div>
@@ -41,17 +45,17 @@
                     <div class="search-input-group">
                         <i class="fa-solid fa-magnifying-glass text-muted me-2" style="font-size: 0.8rem;"></i>
                         <input type="text" id="header-search-input" placeholder="Tìm serum B5, kem chống nắng, son Rom&nd...">
-                        <button type="button" class="btn-search-pink" onclick="document.getElementById('san-pham-section').scrollIntoView({behavior: 'smooth'})">
+                        <button type="button" class="btn-search-pink" onclick="AliceApp.handleHeaderSearch()">
                             <span>Tìm kiếm</span>
                             <i class="fa-solid fa-arrow-right" style="font-size: 0.75rem;"></i>
                         </button>
                     </div>
                     <div class="search-quick-tags d-none d-md-flex">
                         <span>Gợi ý hot:</span>
-                        <a href="javascript:void(0)" onclick="AliceApp.filterProducts('all', 'serum-tinh-chat')">Serum B5</a>
-                        <a href="javascript:void(0)" onclick="AliceApp.filterProducts('all', 'chong-nang')">Kem chống nắng</a>
-                        <a href="javascript:void(0)" onclick="AliceApp.filterProducts('all', 'makeup-son')">Son môi</a>
-                        <a href="javascript:void(0)" onclick="AliceApp.filterProducts('all', 'combo-routine')">Set quà</a>
+                        <a href="javascript:void(0)" onclick="AliceApp.goToCategory('serum-tinh-chat')">Serum B5</a>
+                        <a href="javascript:void(0)" onclick="AliceApp.goToCategory('chong-nang')">Kem chống nắng</a>
+                        <a href="javascript:void(0)" onclick="AliceApp.goToCategory('makeup-son')">Son môi</a>
+                        <a href="javascript:void(0)" onclick="AliceApp.goToCategory('combo-routine')">Set quà</a>
                     </div>
                 </div>
             </div>
@@ -89,7 +93,7 @@
                                     </a>
                                 </li>
                                 <li id="dropdown-admin-link" style="display: none;">
-                                    <a class="dropdown-item small py-2 rounded-3 text-dark fw-bold" href="admin.php" style="background: #fff0f5; color: #ff4d8d !important;">
+                                    <a class="dropdown-item small py-2 rounded-3 text-dark fw-bold" href="<?= $headerBaseUrl ?>/admin.php" style="background: #fff0f5; color: #ff4d8d !important;">
                                         <i class="fa-solid fa-gauge-high me-2 text-danger"></i>Quản Trị Hệ Thống
                                     </a>
                                 </li>

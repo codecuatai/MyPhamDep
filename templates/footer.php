@@ -42,7 +42,7 @@
                 <ul class="list-unstyled small text-muted d-flex flex-column gap-2 mb-0">
                     <li><a href="javascript:void(0)">Câu chuyện thương hiệu ALICE</a></li>
                     <li><a href="javascript:void(0)">Cam kết hàng chính hãng 100%</a></li>
-                    <li><a href="privacy.php" class="text-pink-600 font-bold">Chính sách bảo mật & Quyền riêng tư</a></li>
+                    <li><a href="<?= htmlspecialchars($baseUrl ?? '') ?>/privacy.php" class="text-pink-600 font-bold">Chính sách bảo mật & Quyền riêng tư</a></li>
                     <li><a href="javascript:void(0)">Dịch vụ đóng hộp quà & viết thiệp</a></li>
                     <li><a href="javascript:void(0)">Tuyển dụng & Đối tác nhượng quyền</a></li>
                     <li><a href="javascript:void(0)">Hệ thống cửa hàng phân phối</a></li>
@@ -64,7 +64,7 @@
                     <a href="<?= htmlspecialchars($shopConfig['facebook_url']) ?>" target="_blank" class="btn btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background: #1877f2; color: #fff;"><i class="fa-brands fa-facebook-f"></i></a>
                     <a href="<?= htmlspecialchars($shopConfig['tiktok_url']) ?>" target="_blank" class="btn btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background: #000; color: #fff;"><i class="fa-brands fa-tiktok"></i></a>
                     <a href="<?= htmlspecialchars($shopConfig['instagram_url']) ?>" target="_blank" class="btn btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background: #e1306c; color: #fff;"><i class="fa-brands fa-instagram"></i></a>
-                    <a href="<?= htmlspecialchars($shopConfig['zalo_url']) ?>" target="_blank" class="btn btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background: #0068ff; color: #fff;" title="Chat Zalo"><img src="assets/images/zalo-chat.svg" alt="Zalo" style="width: 22px; height: 22px; object-fit: contain;"></a>
+                    <a href="<?= htmlspecialchars($shopConfig['zalo_url']) ?>" target="_blank" class="btn btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background: #0068ff; color: #fff;" title="Chat Zalo"><img src="<?= htmlspecialchars($baseUrl ?? '') ?>/assets/images/zalo-chat.svg" alt="Zalo" style="width: 22px; height: 22px; object-fit: contain;"></a>
                 </div>
             </div>
         </div>
@@ -78,7 +78,7 @@
             <div class="col-md-6 text-center text-md-end">
                 <span>Hệ thống bán hàng mỹ phẩm tự động hóa & Thanh toán VietQR</span>
                 <span class="mx-2">•</span>
-                <a href="admin.php" class="text-decoration-none text-muted" title="Cổng Quản Trị Hệ Thống">
+                <a href="<?= htmlspecialchars($baseUrl ?? '') ?>/admin.php" class="text-decoration-none text-muted" title="Cổng Quản Trị Hệ Thống">
                     <i class="fa-solid fa-user-shield me-1"></i>Quản Trị
                 </a>
             </div>

@@ -464,6 +464,7 @@ $breadcrumbSchema = generateBreadcrumbJsonLd([
 
     <!-- Bootstrap 5.3 & App Engine -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>window.ALICE_BASE_URL = <?= json_encode($baseUrl) ?>;</script>
     <script src="<?= $baseUrl ?>/assets/js/app.js?v=<?= defined('APP_VERSION') ? APP_VERSION : '1.0.0' ?>"></script>
 </body>
 </html>
