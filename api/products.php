@@ -69,7 +69,7 @@ if ($isFlash !== null) {
 }
 
 if (!empty($search)) {
-    $sql .= " AND (name LIKE ? OR brand LIKE ? OR description LIKE ?)";
+    $sql .= " AND (LOWER(name) LIKE LOWER(?) OR LOWER(brand) LIKE LOWER(?) OR LOWER(description) LIKE LOWER(?))";
     $like = '%' . $search . '%';
     $params[] = $like;
     $params[] = $like;

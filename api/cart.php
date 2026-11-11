@@ -57,9 +57,9 @@ if ($action === 'save') {
     $cartJson = json_encode(is_array($cart) ? $cart : [], JSON_UNESCAPED_UNICODE);
     $couponJson = !empty($coupon) ? json_encode($coupon, JSON_UNESCAPED_UNICODE) : null;
 
-    // INSERT OR REPLACE tương thích SQLite
-    $stmt = $pdo->prepare("INSERT OR REPLACE INTO user_carts (user_id, cart_json, coupon_json, updated_at) VALUES (?, ?, ?, datetime('now'))");
-    $stmt->execute([$userId, $cartJson, $couponJson]);
+    $now = date('Y-m-d H:i:s');
+    $stmt = $pdo->prepare("INSERT INTO user_carts (user_id, cart_json, coupon_json, updated_at) VALUES (?, ?, ?, ?) ON CONFLICT (user_id) DO UPDATE SET cart_json = EXCLUDED.cart_json, coupon_json = EXCLUDED.coupon_json, updated_at = EXCLUDED.updated_at");
+    $stmt->execute([$userId, $cartJson, $couponJson, $now]);
 
     jsonResponse([
         'success' => true,
@@ -112,8 +112,9 @@ if ($action === 'merge') {
     $couponJson = !empty($finalCoupon) ? json_encode($finalCoupon, JSON_UNESCAPED_UNICODE) : null;
 
     // Lưu lại giỏ đã gộp vào Database
-    $saveStmt = $pdo->prepare("INSERT OR REPLACE INTO user_carts (user_id, cart_json, coupon_json, updated_at) VALUES (?, ?, ?, datetime('now'))");
-    $saveStmt->execute([$userId, $cartJson, $couponJson]);
+    $now = date('Y-m-d H:i:s');
+    $saveStmt = $pdo->prepare("INSERT INTO user_carts (user_id, cart_json, coupon_json, updated_at) VALUES (?, ?, ?, ?) ON CONFLICT (user_id) DO UPDATE SET cart_json = EXCLUDED.cart_json, coupon_json = EXCLUDED.coupon_json, updated_at = EXCLUDED.updated_at");
+    $saveStmt->execute([$userId, $cartJson, $couponJson, $now]);
 
     jsonResponse([
         'success' => true,
@@ -125,8 +126,9 @@ if ($action === 'merge') {
 
 // 4. Xóa trắng giỏ hàng của user (Ví dụ sau khi thanh toán đơn thành công)
 if ($action === 'clear') {
-    $stmt = $pdo->prepare("UPDATE user_carts SET cart_json = '[]', coupon_json = NULL, updated_at = datetime('now') WHERE user_id = ?");
-    $stmt->execute([$userId]);
+    $now = date('Y-m-d H:i:s');
+    $stmt = $pdo->prepare("UPDATE user_carts SET cart_json = '[]', coupon_json = NULL, updated_at = ? WHERE user_id = ?");
+    $stmt->execute([$now, $userId]);
 
     jsonResponse([
         'success' => true,

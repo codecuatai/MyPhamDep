@@ -96,9 +96,11 @@ if ($action === 'register') {
     $defaultAvatar = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80';
 
     try {
-        $insertStmt = $pdo->prepare("INSERT INTO users (fullname, email, phone, password, avatar) VALUES (?, ?, ?, ?, ?)");
-        $insertStmt->execute([$fullname, $email, $phone, $hashedPassword, $defaultAvatar]);
-        $newUserId = $pdo->lastInsertId();
+        $newUserId = dbInsertReturningId(
+            $pdo,
+            "INSERT INTO users (fullname, email, phone, password, avatar) VALUES (?, ?, ?, ?, ?)",
+            [$fullname, $email, $phone, $hashedPassword, $defaultAvatar]
+        );
 
         $user = [
             'id' => $newUserId,
@@ -156,9 +158,11 @@ if ($action === 'oauth') {
     } else {
         // Tạo tài khoản mới cho user mạng xã hội
         $randomPwd = password_hash(bin2hex(random_bytes(10)), PASSWORD_DEFAULT);
-        $insert = $pdo->prepare("INSERT INTO users (fullname, email, phone, password, avatar) VALUES (?, ?, '', ?, ?)");
-        $insert->execute([$fullname, $email, $randomPwd, $avatar]);
-        $newId = $pdo->lastInsertId();
+        $newId = dbInsertReturningId(
+            $pdo,
+            "INSERT INTO users (fullname, email, phone, password, avatar) VALUES (?, ?, '', ?, ?)",
+            [$fullname, $email, $randomPwd, $avatar]
+        );
 
         $newUser = [
             'id' => $newId,
@@ -267,9 +271,11 @@ if ($action === 'google_login') {
         ]);
     } else {
         $randomPwd = password_hash(bin2hex(random_bytes(16)), PASSWORD_DEFAULT);
-        $insert = $pdo->prepare("INSERT INTO users (fullname, email, phone, password, avatar) VALUES (?, ?, '', ?, ?)");
-        $insert->execute([$fullname, $email, $randomPwd, $avatar]);
-        $newId = $pdo->lastInsertId();
+        $newId = dbInsertReturningId(
+            $pdo,
+            "INSERT INTO users (fullname, email, phone, password, avatar) VALUES (?, ?, '', ?, ?)",
+            [$fullname, $email, $randomPwd, $avatar]
+        );
 
         $newUser = [
             'id' => $newId,

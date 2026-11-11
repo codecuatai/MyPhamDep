@@ -22,9 +22,10 @@ function getShopConfig($pdo = null) {
     $config = SHOP_CONFIG;
     if ($pdo) {
         try {
-            $stmt = $pdo->query("SELECT `key`, `value` FROM settings");
+            $stmt = $pdo->query("SELECT key, value FROM settings");
             $rows = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
             if ($rows) {
+                unset($rows['_db_ready']);
                 $config = array_merge($config, $rows);
             }
         } catch (Exception $e) {

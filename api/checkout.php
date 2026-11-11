@@ -73,13 +73,14 @@ $itemsJson = json_encode($items, JSON_UNESCAPED_UNICODE);
 
 // Thêm vào cơ sở dữ liệu
 try {
+    $createdAt = date('Y-m-d H:i:s');
     $stmt = $pdo->prepare("INSERT INTO orders 
         (order_code, customer_name, phone, address, note, payment_method, total_amount, discount_amount, final_amount, coupon_code, items_json, payment_status, sync_status, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'pending', datetime('now', 'localtime'))");
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'pending', ?)");
     $stmt->execute([
         $orderCode, $customerName, $phone, $address, $note,
         $paymentMethod, $totalAmount, $discountAmount, $finalAmount,
-        $couponCode, $itemsJson
+        $couponCode, $itemsJson, $createdAt
     ]);
 
     // 2. Tự động trừ tồn kho và tăng số lượng đã bán
@@ -87,8 +88,8 @@ try {
         $pid = (int)($it['id'] ?? 0);
         $qty = (int)($it['quantity'] ?? 1);
         if ($pid > 0) {
-            $deductStmt = $pdo->prepare("UPDATE products SET stock_quantity = MAX(0, stock_quantity - ?), sold_count = sold_count + ? WHERE id = ?");
-            $deductStmt->execute([$qty, $qty, $pid]);
+            $deductStmt = $pdo->prepare("UPDATE products SET stock_quantity = CASE WHEN stock_quantity > ? THEN stock_quantity - ? ELSE 0 END, sold_count = sold_count + ? WHERE id = ?");
+            $deductStmt->execute([$qty, $qty, $qty, $pid]);
         }
     }
 } catch (Exception $e) {

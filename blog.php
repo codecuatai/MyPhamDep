@@ -28,7 +28,7 @@ if ($selectedCategory !== 'all' && !empty($selectedCategory)) {
 }
 
 if (!empty($search)) {
-    $sql .= " AND (title LIKE ? OR content LIKE ?)";
+    $sql .= " AND (LOWER(title) LIKE LOWER(?) OR LOWER(content) LIKE LOWER(?))";
     $params[] = "%$search%";
     $params[] = "%$search%";
 }

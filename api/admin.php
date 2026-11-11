@@ -191,7 +191,7 @@ if ($action === 'save_coupon') {
         jsonResponse(['success' => false, 'message' => 'Vui lòng nhập mã voucher và giá trị giảm!'], 400);
     }
 
-    $stmt = $pdo->prepare("INSERT OR REPLACE INTO coupons (code, discount_type, discount_value, min_order, max_discount, description) VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt = $pdo->prepare("INSERT INTO coupons (code, discount_type, discount_value, min_order, max_discount, description) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT (code) DO UPDATE SET discount_type = EXCLUDED.discount_type, discount_value = EXCLUDED.discount_value, min_order = EXCLUDED.min_order, max_discount = EXCLUDED.max_discount, description = EXCLUDED.description");
     $stmt->execute([$code, $discountType, $discountValue, $minOrder, $maxDiscount, $description]);
 
     jsonResponse(['success' => true, 'message' => "Đã tạo/cập nhật mã voucher $code thành công!"]);
@@ -217,7 +217,7 @@ if ($action === 'settings') {
             'google_sheet_webhook'
         ];
 
-        $stmt = $pdo->prepare("INSERT OR REPLACE INTO settings (`key`, `value`) VALUES (?, ?)");
+        $stmt = $pdo->prepare("INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value");
         foreach ($allowedKeys as $key) {
             if (isset($input[$key])) {
                 $stmt->execute([$key, trim($input[$key])]);
@@ -326,9 +326,12 @@ if ($action === 'save_banner') {
         $stmt->execute([$title, $subtitle, $badgeText, $imageUrl, $linkUrl, $buttonText, $sortOrder, $isActive, $id]);
         jsonResponse(['success' => true, 'message' => 'Đã cập nhật banner thành công!', 'id' => $id]);
     } else {
-        $stmt = $pdo->prepare("INSERT INTO banners (title, subtitle, badge_text, image_url, link_url, button_text, sort_order, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$title, $subtitle, $badgeText, $imageUrl, $linkUrl, $buttonText, $sortOrder, $isActive]);
-        jsonResponse(['success' => true, 'message' => 'Thêm mới banner thành công!', 'id' => (int)$pdo->lastInsertId()]);
+        $newBannerId = dbInsertReturningId(
+            $pdo,
+            "INSERT INTO banners (title, subtitle, badge_text, image_url, link_url, button_text, sort_order, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            [$title, $subtitle, $badgeText, $imageUrl, $linkUrl, $buttonText, $sortOrder, $isActive]
+        );
+        jsonResponse(['success' => true, 'message' => 'Thêm mới banner thành công!', 'id' => $newBannerId]);
     }
 }
 

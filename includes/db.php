@@ -6,6 +6,21 @@
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/seed_data.php';
 
+function getDbDriver(PDO $pdo = null): string {
+    return $pdo ? (string)$pdo->getAttribute(PDO::ATTR_DRIVER_NAME) : DB_DRIVER;
+}
+
+function dbInsertReturningId(PDO $pdo, string $sql, array $params = []): int {
+    if (getDbDriver($pdo) === 'pgsql') {
+        $stmt = $pdo->prepare(rtrim($sql, "; \t\n\r\0\x0B") . ' RETURNING id');
+        $stmt->execute($params);
+        return (int)$stmt->fetchColumn();
+    }
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    return (int)$pdo->lastInsertId();
+}
+
 function getDbConnection() {
     static $pdo = null;
     if ($pdo !== null) {
@@ -13,22 +28,54 @@ function getDbConnection() {
     }
 
     try {
-        if (DB_DRIVER === 'sqlite') {
+        $databaseUrl = getenv('DATABASE_URL');
+        if ($databaseUrl === false || $databaseUrl === '') {
+            $databaseUrl = $_ENV['DATABASE_URL'] ?? ($_SERVER['DATABASE_URL'] ?? '');
+        }
+
+        if (!empty($databaseUrl) && preg_match('/^postgres(ql)?:\/\//i', $databaseUrl)) {
+            $parts = parse_url($databaseUrl);
+            $host = $parts['host'] ?? 'localhost';
+            $port = $parts['port'] ?? 5432;
+            $dbname = ltrim($parts['path'] ?? '', '/');
+            $user = isset($parts['user']) ? urldecode($parts['user']) : '';
+            $pass = isset($parts['pass']) ? urldecode($parts['pass']) : '';
+
+            $queryParams = [];
+            if (!empty($parts['query'])) {
+                parse_str($parts['query'], $queryParams);
+            }
+            $sslmode = $queryParams['sslmode'] ?? 'require';
+
+            // Loại bỏ channel_binding vì PHP pdo_pgsql không hỗ trợ tham số DSN này
+            $dsn = "pgsql:host={$host};port={$port};dbname={$dbname};sslmode={$sslmode}";
+            if (!empty($queryParams['options'])) {
+                $dsn .= ";options=" . $queryParams['options'];
+            }
+
+            $pdo = new PDO($dsn, $user, $pass, [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES => true,
+            ]);
+        } elseif (DB_DRIVER === 'sqlite') {
             $dbDir = dirname(DB_SQLITE_PATH);
             if (!is_dir($dbDir)) {
                 mkdir($dbDir, 0777, true);
             }
             $pdo = new PDO('sqlite:' . DB_SQLITE_PATH);
+            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
         } else {
             $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4";
-            $pdo = new PDO($dsn, DB_USER, DB_PASS);
+            $pdo = new PDO($dsn, DB_USER, DB_PASS, [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            ]);
         }
 
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-
-        // Khởi tạo bảng nếu chưa có
-        initDatabaseTables($pdo);
+        // Khởi tạo bảng & dữ liệu mẫu (tránh chạy lại DDL trên mỗi request với Postgres)
+        ensureDatabaseInitialized($pdo);
 
         return $pdo;
     } catch (PDOException $e) {
@@ -36,7 +83,52 @@ function getDbConnection() {
     }
 }
 
+function ensureDatabaseInitialized(PDO $pdo) {
+    $driver = getDbDriver($pdo);
+    if ($driver === 'pgsql') {
+        try {
+            $ready = $pdo->query("SELECT value FROM settings WHERE key = '_db_ready'")->fetchColumn();
+            if ($ready === '1') {
+                return;
+            }
+        } catch (Exception $e) {
+            // Chưa có bảng settings, tiếp tục khởi tạo bên dưới
+        }
+
+        $pdo->beginTransaction();
+        try {
+            $pdo->exec("SELECT pg_advisory_xact_lock(888101)");
+            $hasSettings = $pdo->query("SELECT to_regclass('public.settings')")->fetchColumn();
+            if ($hasSettings !== null) {
+                $ready = $pdo->query("SELECT value FROM settings WHERE key = '_db_ready'")->fetchColumn();
+                if ($ready === '1') {
+                    $pdo->commit();
+                    return;
+                }
+            }
+
+            initDatabaseTables($pdo);
+            $pdo->prepare("INSERT INTO settings (key, value) VALUES ('_db_ready', '1') ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value")->execute();
+            $pdo->commit();
+        } catch (Exception $e) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            throw $e;
+        }
+        return;
+    }
+
+    initDatabaseTables($pdo);
+}
+
 function initDatabaseTables(PDO $pdo) {
+    $driver = getDbDriver($pdo);
+    $pkAuto = ($driver === 'pgsql') ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
+    $tsType = ($driver === 'pgsql') ? 'TIMESTAMP' : 'DATETIME';
+    $moneyType = ($driver === 'pgsql') ? 'DOUBLE PRECISION' : 'DECIMAL(12,2)';
+    $ratingType = ($driver === 'pgsql') ? 'DOUBLE PRECISION' : 'DECIMAL(3,2)';
+
     // 1. Bảng Categories
     $pdo->exec("CREATE TABLE IF NOT EXISTS categories (
         id VARCHAR(50) PRIMARY KEY,
@@ -50,15 +142,15 @@ function initDatabaseTables(PDO $pdo) {
 
     // 2. Bảng Products
     $pdo->exec("CREATE TABLE IF NOT EXISTS products (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id {$pkAuto},
         name VARCHAR(255) NOT NULL,
         slug VARCHAR(255) NOT NULL,
         brand VARCHAR(150),
         category_id VARCHAR(50),
-        price DECIMAL(12,2) NOT NULL,
-        original_price DECIMAL(12,2) NOT NULL,
+        price {$moneyType} NOT NULL,
+        original_price {$moneyType} NOT NULL,
         discount_percent INT DEFAULT 0,
-        rating DECIMAL(3,2) DEFAULT 5.0,
+        rating {$ratingType} DEFAULT 5.0,
         review_count INT DEFAULT 0,
         sold_count INT DEFAULT 0,
         image TEXT NOT NULL,
@@ -71,41 +163,45 @@ function initDatabaseTables(PDO $pdo) {
         flash_sale_sold INT DEFAULT 0,
         skin_type VARCHAR(50) DEFAULT 'all',
         variants TEXT,
-        add_on_deals TEXT
+        add_on_deals TEXT,
+        stock_quantity INT DEFAULT 100,
+        origin VARCHAR(150) DEFAULT 'Chính hãng nhập khẩu',
+        capacity VARCHAR(100) DEFAULT 'Tiêu chuẩn',
+        expiry VARCHAR(100) DEFAULT '36 tháng kể từ NSX (12 tháng sau mở nắp)'
     )");
 
     // 3. Bảng Coupons
     $pdo->exec("CREATE TABLE IF NOT EXISTS coupons (
         code VARCHAR(50) PRIMARY KEY,
         discount_type VARCHAR(20) DEFAULT 'fixed',
-        discount_value DECIMAL(12,2) NOT NULL,
-        min_order DECIMAL(12,2) DEFAULT 0,
-        max_discount DECIMAL(12,2) DEFAULT 0,
+        discount_value {$moneyType} NOT NULL,
+        min_order {$moneyType} DEFAULT 0,
+        max_discount {$moneyType} DEFAULT 0,
         description TEXT
     )");
 
     // 4. Bảng Orders
     $pdo->exec("CREATE TABLE IF NOT EXISTS orders (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id {$pkAuto},
         order_code VARCHAR(50) UNIQUE NOT NULL,
         customer_name VARCHAR(150) NOT NULL,
         phone VARCHAR(50) NOT NULL,
         address TEXT NOT NULL,
         note TEXT,
         payment_method VARCHAR(50) DEFAULT 'vietqr',
-        total_amount DECIMAL(12,2) NOT NULL,
-        discount_amount DECIMAL(12,2) DEFAULT 0,
-        final_amount DECIMAL(12,2) NOT NULL,
+        total_amount {$moneyType} NOT NULL,
+        discount_amount {$moneyType} DEFAULT 0,
+        final_amount {$moneyType} NOT NULL,
         coupon_code VARCHAR(50),
         items_json TEXT NOT NULL,
         payment_status VARCHAR(50) DEFAULT 'pending',
         sync_status VARCHAR(50) DEFAULT 'pending',
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        created_at {$tsType} DEFAULT CURRENT_TIMESTAMP
     )");
 
     // 5. Bảng Reviews
     $pdo->exec("CREATE TABLE IF NOT EXISTS reviews (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id {$pkAuto},
         product_id INT NOT NULL,
         author_name VARCHAR(150) NOT NULL,
         rating INT DEFAULT 5,
@@ -116,27 +212,31 @@ function initDatabaseTables(PDO $pdo) {
 
     // 6. Bảng Settings
     $pdo->exec("CREATE TABLE IF NOT EXISTS settings (
-        `key` VARCHAR(100) PRIMARY KEY,
-        `value` TEXT
+        key VARCHAR(100) PRIMARY KEY,
+        value TEXT
     )");
 
     // 7. Bảng Users (Hệ thống thành viên Đăng ký / Đăng nhập & Phân quyền)
     $pdo->exec("CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id {$pkAuto},
         fullname VARCHAR(150) NOT NULL,
         email VARCHAR(150) UNIQUE NOT NULL,
         phone VARCHAR(50),
         password VARCHAR(255) NOT NULL,
         avatar TEXT,
         role VARCHAR(20) DEFAULT 'customer',
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        created_at {$tsType} DEFAULT CURRENT_TIMESTAMP
     )");
 
     // Đảm bảo cột role tồn tại nếu DB đã tạo từ trước
-    try {
-        $pdo->exec("ALTER TABLE users ADD COLUMN role VARCHAR(20) DEFAULT 'customer'");
-    } catch (Exception $e) {
-        // Cột đã tồn tại, bỏ qua
+    if ($driver === 'pgsql') {
+        $pdo->exec("ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(20) DEFAULT 'customer'");
+    } else {
+        try {
+            $pdo->exec("ALTER TABLE users ADD COLUMN role VARCHAR(20) DEFAULT 'customer'");
+        } catch (Exception $e) {
+            // Cột đã tồn tại, bỏ qua
+        }
     }
 
     // 8. Bảng User Carts (Đồng bộ giỏ hàng cá nhân đa thiết bị)
@@ -144,12 +244,12 @@ function initDatabaseTables(PDO $pdo) {
         user_id INTEGER PRIMARY KEY,
         cart_json TEXT NOT NULL DEFAULT '[]',
         coupon_json TEXT DEFAULT NULL,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        updated_at {$tsType} DEFAULT CURRENT_TIMESTAMP
     )");
 
     // 9. Bảng Banners (Quản lý Banner quảng cáo & Slider Trang chủ)
     $pdo->exec("CREATE TABLE IF NOT EXISTS banners (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id {$pkAuto},
         title VARCHAR(255) NOT NULL,
         subtitle VARCHAR(255),
         badge_text VARCHAR(100) DEFAULT 'ƯU ĐÃI ĐẶC BIỆT',
@@ -158,12 +258,12 @@ function initDatabaseTables(PDO $pdo) {
         button_text VARCHAR(100) DEFAULT 'Khám Phá Ngay',
         sort_order INT DEFAULT 0,
         is_active INT DEFAULT 1,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        created_at {$tsType} DEFAULT CURRENT_TIMESTAMP
     )");
 
     // 10. Bảng Posts (Cẩm nang làm đẹp & Bài viết chuẩn SEO)
     $pdo->exec("CREATE TABLE IF NOT EXISTS posts (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id {$pkAuto},
         title VARCHAR(255) NOT NULL,
         slug VARCHAR(255) UNIQUE NOT NULL,
         category VARCHAR(100) DEFAULT 'Skincare',
@@ -174,7 +274,7 @@ function initDatabaseTables(PDO $pdo) {
         reading_time INT DEFAULT 5,
         related_products TEXT DEFAULT '[]',
         views INT DEFAULT 150,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        created_at {$tsType} DEFAULT CURRENT_TIMESTAMP
     )");
 
     // Đảm bảo các cột Quản lý Tồn kho & Chi tiết mỹ phẩm tồn tại trong bảng products
@@ -185,10 +285,14 @@ function initDatabaseTables(PDO $pdo) {
         'expiry'         => "VARCHAR(100) DEFAULT '36 tháng kể từ NSX (12 tháng sau mở nắp)'"
     ];
     foreach ($productNewCols as $col => $colDef) {
-        try {
-            $pdo->exec("ALTER TABLE products ADD COLUMN $col $colDef");
-        } catch (Exception $e) {
-            // Cột đã tồn tại
+        if ($driver === 'pgsql') {
+            $pdo->exec("ALTER TABLE products ADD COLUMN IF NOT EXISTS $col $colDef");
+        } else {
+            try {
+                $pdo->exec("ALTER TABLE products ADD COLUMN $col $colDef");
+            } catch (Exception $e) {
+                // Cột đã tồn tại
+            }
         }
     }
 
@@ -277,7 +381,7 @@ function initDatabaseTables(PDO $pdo) {
 function seedInitialData(PDO $pdo) {
     // Seed Categories
     $categories = getInitialCategories();
-    $catStmt = $pdo->prepare("INSERT OR REPLACE INTO categories (id, name, slug, icon, image, count, description) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $catStmt = $pdo->prepare("INSERT INTO categories (id, name, slug, icon, image, count, description) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, slug = EXCLUDED.slug, icon = EXCLUDED.icon, image = EXCLUDED.image, count = EXCLUDED.count, description = EXCLUDED.description");
     foreach ($categories as $c) {
         $catStmt->execute([$c['id'], $c['name'], $c['slug'], $c['icon'], $c['image'], $c['count'], $c['description']]);
     }
@@ -286,7 +390,7 @@ function seedInitialData(PDO $pdo) {
     $products = getInitialProducts();
     $prodStmt = $pdo->prepare("INSERT INTO products 
         (id, name, slug, brand, category_id, price, original_price, discount_percent, rating, review_count, sold_count, image, gallery, description, ingredients, how_to_use, is_flash_sale, flash_sale_stock, flash_sale_sold, skin_type, variants, add_on_deals) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO NOTHING");
     foreach ($products as $p) {
         $prodStmt->execute([
             $p['id'], $p['name'], $p['slug'], $p['brand'], $p['category_id'],
@@ -298,9 +402,13 @@ function seedInitialData(PDO $pdo) {
         ]);
     }
 
+    if (getDbDriver($pdo) === 'pgsql') {
+        $pdo->exec("SELECT setval(pg_get_serial_sequence('products', 'id'), COALESCE((SELECT MAX(id) FROM products), 1), true)");
+    }
+
     // Seed Coupons
     $coupons = getInitialCoupons();
-    $cpnStmt = $pdo->prepare("INSERT OR REPLACE INTO coupons (code, discount_type, discount_value, min_order, max_discount, description) VALUES (?, ?, ?, ?, ?, ?)");
+    $cpnStmt = $pdo->prepare("INSERT INTO coupons (code, discount_type, discount_value, min_order, max_discount, description) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT (code) DO UPDATE SET discount_type = EXCLUDED.discount_type, discount_value = EXCLUDED.discount_value, min_order = EXCLUDED.min_order, max_discount = EXCLUDED.max_discount, description = EXCLUDED.description");
     foreach ($coupons as $cp) {
         $cpnStmt->execute([$cp['code'], $cp['discount_type'], $cp['discount_value'], $cp['min_order'], $cp['max_discount'], $cp['description']]);
     }
@@ -399,7 +507,7 @@ function seedInitialPosts(PDO $pdo) {
         ]
     ];
 
-    $stmt = $pdo->prepare("INSERT OR REPLACE INTO posts (title, slug, category, reading_time, image, related_products, excerpt, content) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt = $pdo->prepare("INSERT INTO posts (title, slug, category, reading_time, image, related_products, excerpt, content) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (slug) DO UPDATE SET title = EXCLUDED.title, category = EXCLUDED.category, reading_time = EXCLUDED.reading_time, image = EXCLUDED.image, related_products = EXCLUDED.related_products, excerpt = EXCLUDED.excerpt, content = EXCLUDED.content");
     foreach ($posts as $p) {
         $stmt->execute([
             $p['title'], $p['slug'], $p['category'], $p['reading_time'],
